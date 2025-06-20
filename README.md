@@ -287,7 +287,16 @@ This is a personal project, but if you'd like to contribute:
 
 ## License
 
-[Choose appropriate license]
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+### What this means:
+- ✅ **Free to use** - Use for personal or commercial projects
+- ✅ **Attribution required** - Must credit original work
+- ✅ **Patent protection** - Contributors grant patent rights
+- ✅ **Modification allowed** - Can modify and distribute changes
+- ✅ **Private use** - Can use privately without sharing changes
+
+The Apache 2.0 license ensures proper attribution while enabling open collaboration and innovation.
 
 ---
 
