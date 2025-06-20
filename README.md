@@ -24,6 +24,11 @@ MiniLog is designed to help parents log baby feeding information quickly and eff
 - ✅ Custom formula types
 - ✅ Auto-refresh interface when returning to app after extended absence (1+ hours)
 - ✅ Smart haptic feedback (5mL light clicks, 25mL medium clicks)
+- ✅ **Snapchat-style horizontal navigation** with four-pane interface
+- ✅ **Feed Overview** - Today's feeding summary with statistics and 7-day trend analysis
+- ✅ **Pumping logger** - Dedicated pumping session tracking
+- ✅ **Pumping Overview** - Today's pumping summary with session list and weekly insights
+- ✅ **7-day historical comparison** - Visual charts and analytics for pattern recognition
 
 ## Technical Architecture
 
@@ -45,23 +50,35 @@ feedtracker/
 ├── .gitignore                  # Git exclusions for sensitive files
 ├── MiniLog.xcodeproj/         # Xcode project configuration
 └── FeedTracker/               # Source code directory
-    ├── FeedTrackerApp.swift       # App entry point, Google Sign-In & Siri config
-    ├── ContentView.swift          # Main UI with precision drag slider & haptics
-    ├── SettingsView.swift         # Settings page with haptic preferences
-    ├── SpreadsheetPickerView.swift # Mobile-optimized spreadsheet browser  
-    ├── GoogleSheetsService.swift  # Google Sheets/Drive API integration
-    ├── LogFeedIntent.swift        # Siri Shortcuts integration (iOS 16+)
-    ├── Info.plist                 # App configuration (OAuth URL schemes)
-    ├── Assets.xcassets/           # App icons and visual assets
-    └── GoogleService-Info.plist   # OAuth credentials (git-ignored)
+    ├── FeedTrackerApp.swift           # App entry point, Google Sign-In & Siri config
+    ├── HorizontalNavigationView.swift # Snapchat-style four-pane navigation container
+    ├── ContentView.swift              # Legacy main UI (now FeedLoggingView)
+    ├── FeedHistoryView.swift          # Left pane: Feed overview with 7-day analytics
+    ├── PumpingView.swift              # Right pane: Pumping session logger
+    ├── PumpingHistoryView.swift       # Far right: Pumping overview with weekly insights
+    ├── WeeklySummaryView.swift        # Reusable 7-day trend analysis component
+    ├── SettingsView.swift             # Settings page with haptic preferences
+    ├── SpreadsheetPickerView.swift    # Mobile-optimized spreadsheet browser  
+    ├── GoogleSheetsService.swift      # Google Sheets/Drive API integration
+    ├── Models.swift                   # Data models (FeedEntry, PumpingEntry, DailyTotal)
+    ├── Utilities.swift                # Shared utilities (RelativeTimeFormatter)
+    ├── LogFeedIntent.swift            # Siri Shortcuts integration (iOS 16+)
+    ├── Info.plist                     # App configuration (OAuth URL schemes)
+    ├── Assets.xcassets/               # App icons and visual assets
+    └── GoogleService-Info.plist       # OAuth credentials (git-ignored)
 ```
 
 ### Data Model
-Google Sheets columns:
+**Feed Log Sheet:**
 - **A**: Date (M/d/yyyy format)
 - **B**: Time (HH:mm format)  
 - **C**: Volume (numeric only, no units)
 - **D**: Formula Type (text)
+
+**Pumping Sheet:**
+- **A**: Date (M/d/yyyy format)
+- **B**: Time (HH:mm format)  
+- **C**: Volume (numeric only, no units)
 
 ## Current Implementation Status
 
@@ -99,13 +116,21 @@ Google Sheets columns:
    - Auto-refresh interface after returning from 1+ hour absence
    - Enhanced Settings page with haptic preferences and UI controls
 
-### Recent Improvements
-- **Precision Drag Slider**: Optimized sensitivity at 3 pixels per 1mL for faster, more accurate volume adjustments
+### Latest Release: Four-Pane Navigation with 7-Day Analytics
+- **🔄 Snapchat-Style Navigation**: Revolutionary four-pane horizontal swipe interface for intuitive data access
+- **📊 Feed Overview**: Left pane with today's feeding summary, statistics, chronological list, and 7-day trend analysis
+- **🤱 Pumping Integration**: Dedicated pumping logger with separate sheet tracking and volume optimization  
+- **📈 Pumping Overview**: Far-right pane with today's sessions, statistics, and weekly performance insights
+- **📉 7-Day Historical Comparison**: Visual bar charts showing weekly patterns with trend analysis and performance indicators
+- **🎯 Smart Analytics**: Weekly averages, best day identification, and today vs. historical performance comparisons
+- **🔄 Unified Data Management**: Shared authentication state across all views with automatic data refresh
+- **⚡ Performance Optimizations**: Concurrent data loading and efficient chart rendering for smooth navigation
+
+### Previous Improvements
+- **Precision Drag Slider**: Optimized sensitivity at 2.5 pixels per 1mL for faster, more accurate volume adjustments
 - **Advanced Haptic Feedback**: Smart haptic system with light clicks every 5mL and medium clicks every 25mL
 - **Enhanced Settings**: New haptic feedback toggle with descriptive explanation for user preference control
-- **Improved Spreadsheet Picker**: Bottom-aligned selection button for better mobile UX flow
 - **Auto-Refresh System**: Interface automatically refreshes after 1+ hour absence for fresh data entry
-- **Mobile-Optimized UI**: Pagination (6 sheets per page) and improved button placement
 - **Siri Integration Refinements**: Removed pronunciation issues and simplified voice commands
 
 ## TODO / Roadmap

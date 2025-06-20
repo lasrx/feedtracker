@@ -1,8 +1,104 @@
 import SwiftUI
-import GoogleSignIn
 import AppIntents
+import Foundation
 
-struct ContentView: View {
+struct HorizontalNavigationView: View {
+    @State private var currentPage: Int = 1 // Start at center (feed logging)
+    @GestureState private var dragOffset: CGFloat = 0
+    @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
+    @StateObject private var sheetsService = GoogleSheetsService()
+    @State private var pumpingViewTrigger: Int = 0
+    @State private var feedHistoryViewTrigger: Int = 0
+    @State private var pumpingHistoryViewTrigger: Int = 0
+    
+    var body: some View {
+        GeometryReader { geometry in
+            HStack(spacing: 0) {
+                // Left pane: Feed History
+                FeedHistoryView(sheetsService: sheetsService, refreshTrigger: feedHistoryViewTrigger)
+                    .frame(width: geometry.size.width)
+                    .tag(0)
+                
+                // Center pane: Feed Logging (existing ContentView)
+                FeedLoggingView(sheetsService: sheetsService)
+                    .frame(width: geometry.size.width)
+                    .tag(1)
+                
+                // Right pane: Pumping Logger
+                PumpingView(sheetsService: sheetsService, refreshTrigger: pumpingViewTrigger)
+                    .frame(width: geometry.size.width)
+                    .tag(2)
+                
+                // Far right pane: Pumping History
+                PumpingHistoryView(sheetsService: sheetsService, refreshTrigger: pumpingHistoryViewTrigger)
+                    .frame(width: geometry.size.width)
+                    .tag(3)
+            }
+            .offset(x: -CGFloat(currentPage) * geometry.size.width + dragOffset)
+            .animation(.interpolatingSpring(stiffness: 300, damping: 30), value: currentPage)
+            .onChange(of: currentPage) { oldPage, newPage in
+                print("HorizontalNavigationView: Page changed from \(oldPage) to \(newPage)")
+                // Trigger data loading when navigating to specific views
+                if newPage == 0 {
+                    // Navigated to Feed History - trigger refresh
+                    print("HorizontalNavigationView: Triggering Feed History refresh")
+                    feedHistoryViewTrigger += 1
+                } else if newPage == 2 {
+                    // Navigated to Pumping View - trigger refresh
+                    print("HorizontalNavigationView: Triggering Pumping View refresh")
+                    pumpingViewTrigger += 1
+                } else if newPage == 3 {
+                    // Navigated to Pumping History - trigger refresh
+                    print("HorizontalNavigationView: Triggering Pumping History refresh")
+                    pumpingHistoryViewTrigger += 1
+                }
+            }
+            .gesture(
+                DragGesture()
+                    .updating($dragOffset) { value, state, _ in
+                        state = value.translation.width
+                    }
+                    .onEnded { value in
+                        let threshold: CGFloat = 50
+                        let dragDistance = value.translation.width
+                        
+                        if dragDistance > threshold && currentPage > 0 {
+                            // Swipe right - go to previous page
+                            currentPage -= 1
+                            if hapticFeedbackEnabled {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            }
+                        } else if dragDistance < -threshold && currentPage < 3 {
+                            // Swipe left - go to next page
+                            currentPage += 1
+                            if hapticFeedbackEnabled {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            }
+                        }
+                    }
+            )
+        }
+        .clipped()
+        .overlay(
+            // Page indicator
+            VStack {
+                Spacer()
+                HStack(spacing: 8) {
+                    ForEach(0..<4) { index in
+                        Circle()
+                            .fill(index == currentPage ? Color.accentColor : Color.secondary.opacity(0.3))
+                            .frame(width: 8, height: 8)
+                            .animation(.easeInOut(duration: 0.2), value: currentPage)
+                    }
+                }
+                .padding(.bottom, 20)
+            }
+        )
+    }
+}
+
+// Extract the existing ContentView logic into FeedLoggingView
+struct FeedLoggingView: View {
     @State private var selectedDate = Date()
     @State private var selectedTime = Date()
     @State private var volume = ""
@@ -21,7 +117,7 @@ struct ContentView: View {
     @State private var dragVelocity: Double = 0
     @State private var lastDragTime = Date()
     
-    @StateObject private var sheetsService = GoogleSheetsService()
+    @ObservedObject var sheetsService: GoogleSheetsService
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("formulaTypes") private var formulaTypesData = ""
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
@@ -442,5 +538,5 @@ struct ContentView: View {
 
 
 #Preview {
-    ContentView()
+    HorizontalNavigationView()
 }

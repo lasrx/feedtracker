@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var sheetsService = GoogleSheetsService()
-    @AppStorage("spreadsheetId") private var spreadsheetId = ""
+    @AppStorage("spreadsheetId") private var spreadsheetId = "1Et-xvX1mCv6xOEUAjGbgFERhWpx1t-RzjBDtwXZUSNw"
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("formulaTypes") private var formulaTypesData = ""
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
@@ -24,6 +24,14 @@ struct SettingsView: View {
             return defaultFormulaTypes
         }
         return formulaTypesData.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+    }
+    
+    var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+    }
+    
+    var appBuild: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
     }
     
     var body: some View {
@@ -217,14 +225,14 @@ struct SettingsView: View {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text("1.0.0")
+                        Text(appVersion)
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
                         Text("Build")
                         Spacer()
-                        Text("1")
+                        Text(appBuild)
                             .foregroundColor(.secondary)
                     }
                 }

@@ -20,7 +20,7 @@ struct FeedTrackerApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HorizontalNavigationView()
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
