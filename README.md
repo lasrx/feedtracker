@@ -36,14 +36,24 @@ MiniLog is designed to help parents log baby feeding information quickly and eff
 
 ### Project Structure
 ```
-MiniLog/
-├── FeedTrackerApp.swift       # App entry point, Google Sign-In & Siri config
-├── ContentView.swift          # Main UI and interaction logic
-├── SettingsView.swift         # Settings page with configuration options
-├── SpreadsheetPickerView.swift # Google Drive spreadsheet browser
-├── GoogleSheetsService.swift  # Google Sheets API integration
-├── LogFeedIntent.swift        # Siri Shortcuts integration (iOS 16+)
-└── GoogleService-Info.plist   # Google OAuth configuration (git-ignored)
+feedtracker/
+├── README.md                   # Project overview and setup guide
+├── SETUP.md                    # Detailed configuration instructions  
+├── CLAUDE.md                   # Developer documentation
+├── Privacy.md                  # Privacy policy and data handling
+├── LICENSE                     # Apache 2.0 license
+├── .gitignore                  # Git exclusions for sensitive files
+├── MiniLog.xcodeproj/         # Xcode project configuration
+└── FeedTracker/               # Source code directory
+    ├── FeedTrackerApp.swift       # App entry point, Google Sign-In & Siri config
+    ├── ContentView.swift          # Main UI with precision drag slider & haptics
+    ├── SettingsView.swift         # Settings page with haptic preferences
+    ├── SpreadsheetPickerView.swift # Mobile-optimized spreadsheet browser  
+    ├── GoogleSheetsService.swift  # Google Sheets/Drive API integration
+    ├── LogFeedIntent.swift        # Siri Shortcuts integration (iOS 16+)
+    ├── Info.plist                 # App configuration (OAuth URL schemes)
+    ├── Assets.xcassets/           # App icons and visual assets
+    └── GoogleService-Info.plist   # OAuth credentials (git-ignored)
 ```
 
 ### Data Model
