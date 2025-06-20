@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var sheetsService = GoogleSheetsService()
-    @AppStorage("spreadsheetId") private var spreadsheetId = "1Et-xvX1mCv6xOEUAjGbgFERhWpx1t-RzjBDtwXZUSNw"
+    @AppStorage("spreadsheetId") private var spreadsheetId = ""
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("formulaTypes") private var formulaTypesData = ""
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true

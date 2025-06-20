@@ -6,7 +6,7 @@ class GoogleSheetsService: ObservableObject {
     @Published var userEmail: String?
     @Published var error: Error?
     
-    private var spreadsheetId = "1Et-xvX1mCv6xOEUAjGbgFERhWpx1t-RzjBDtwXZUSNw" // Default development spreadsheet
+    private var spreadsheetId = "" // Will be set from UserDefaults or Settings
     private let range = "A:D" // Date, Time, Volume (mL), Formula Type
     private let pumpingRange = "Pumping!A:C" // Date, Time, Volume (mL) for pumping sheet
     private let scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
