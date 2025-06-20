@@ -1,0 +1,359 @@
+import Foundation
+import GoogleSignIn
+
+class GoogleSheetsService: ObservableObject {
+    @Published var isSignedIn = false
+    @Published var userEmail: String?
+    @Published var error: Error?
+    
+    private var spreadsheetId = "" // Will be set from UserDefaults or Settings
+    private let range = "A:D" // Date, Time, Volume (mL), Formula Type
+    private let scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
+    
+    init() {
+        // Load spreadsheet ID from UserDefaults
+        if let savedSpreadsheetId = UserDefaults.standard.string(forKey: "spreadsheetId") {
+            self.spreadsheetId = savedSpreadsheetId
+        }
+        
+        // Check if already signed in
+        GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, error in
+            if let user = user {
+                self?.isSignedIn = true
+                self?.userEmail = user.profile?.email
+            }
+        }
+    }
+    
+    func updateSpreadsheetId(_ newId: String) {
+        spreadsheetId = newId
+        UserDefaults.standard.set(newId, forKey: "spreadsheetId")
+    }
+    
+    func signIn() {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            return
+        }
+        
+        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController,
+                                       hint: nil,
+                                       additionalScopes: scopes) { [weak self] result, error in
+            if let error = error {
+                self?.error = error
+                return
+            }
+            
+            if let user = result?.user {
+                self?.isSignedIn = true
+                self?.userEmail = user.profile?.email
+            }
+        }
+    }
+    
+    func signOut() {
+        GIDSignIn.sharedInstance.signOut()
+        isSignedIn = false
+        userEmail = nil
+    }
+    
+    func appendRow(date: String, time: String, volume: String, formulaType: String) async throws {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            throw SheetsServiceError.notSignedIn
+        }
+        
+        // Refresh token if needed
+        do {
+            try await user.refreshTokensIfNeeded()
+        } catch {
+            throw SheetsServiceError.authenticationError(error)
+        }
+        
+        let accessToken = user.accessToken.tokenString
+        
+        // Prepare the request
+        let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range):append?valueInputOption=USER_ENTERED")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Create the body
+        let body: [String: Any] = [
+            "values": [[date, time, volume, formulaType]]
+        ]
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        
+        // Make the request
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw SheetsServiceError.invalidResponse
+        }
+        
+        if httpResponse.statusCode != 200 {
+            if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let error = errorData["error"] as? [String: Any],
+               let message = error["message"] as? String {
+                throw SheetsServiceError.apiError(message)
+            }
+            throw SheetsServiceError.httpError(httpResponse.statusCode)
+        }
+    }
+    
+    func fetchTodayTotal() async throws -> Int {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            throw SheetsServiceError.notSignedIn
+        }
+        
+        // Refresh token if needed
+        do {
+            try await user.refreshTokensIfNeeded()
+        } catch {
+            throw SheetsServiceError.authenticationError(error)
+        }
+        
+        let accessToken = user.accessToken.tokenString
+        
+        // Get today's date in the format used by the spreadsheet
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "M/d/yyyy"
+        let todayString = dateFormatter.string(from: Date())
+        
+        // Fetch all data from the sheet
+        let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range)")!
+        
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw SheetsServiceError.invalidResponse
+        }
+        
+        if httpResponse.statusCode != 200 {
+            throw SheetsServiceError.httpError(httpResponse.statusCode)
+        }
+        
+        // Parse the response
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let values = json["values"] as? [[String]] else {
+            return 0 // No data in sheet
+        }
+        
+        // Sum up today's volumes
+        var totalVolume = 0
+        for row in values {
+            // Skip header row and check if we have enough columns
+            if row.count >= 3,
+               row[0] == todayString,  // Date matches today
+               let volume = Int(row[2]) {  // Volume is in column C (index 2)
+                totalVolume += volume
+            }
+        }
+        
+        return totalVolume
+    }
+    
+    func createNewFeedTrackingSheet(title: String = "Feed Tracking") async throws -> String {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            throw SheetsServiceError.notSignedIn
+        }
+        
+        // Refresh token if needed
+        do {
+            try await user.refreshTokensIfNeeded()
+        } catch {
+            throw SheetsServiceError.authenticationError(error)
+        }
+        
+        let accessToken = user.accessToken.tokenString
+        
+        // Create new spreadsheet with template
+        let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Create spreadsheet body with headers and sample data
+        let spreadsheetBody: [String: Any] = [
+            "properties": [
+                "title": title
+            ],
+            "sheets": [
+                [
+                    "properties": [
+                        "title": "Feed Log"
+                    ],
+                    "data": [
+                        [
+                            "startRow": 0,
+                            "startColumn": 0,
+                            "rowData": [
+                                [
+                                    "values": [
+                                        ["userEnteredValue": ["stringValue": "Date"]],
+                                        ["userEnteredValue": ["stringValue": "Time"]],
+                                        ["userEnteredValue": ["stringValue": "Volume (mL)"]],
+                                        ["userEnteredValue": ["stringValue": "Formula Type"]]
+                                    ]
+                                ],
+                                [
+                                    "values": [
+                                        ["userEnteredValue": ["stringValue": "6/19/2025"]],
+                                        ["userEnteredValue": ["stringValue": "09:30"]],
+                                        ["userEnteredValue": ["numberValue": 120]],
+                                        ["userEnteredValue": ["stringValue": "Breast milk"]]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: spreadsheetBody)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw SheetsServiceError.invalidResponse
+        }
+        
+        if httpResponse.statusCode != 200 {
+            if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let error = errorData["error"] as? [String: Any],
+               let message = error["message"] as? String {
+                throw SheetsServiceError.apiError(message)
+            }
+            throw SheetsServiceError.httpError(httpResponse.statusCode)
+        }
+        
+        // Parse response to get spreadsheet ID
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let spreadsheetId = json["spreadsheetId"] as? String else {
+            throw SheetsServiceError.invalidResponse
+        }
+        
+        return spreadsheetId
+    }
+    
+    func fetchUserSpreadsheets() async throws -> [SpreadsheetInfo] {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            throw SheetsServiceError.notSignedIn
+        }
+        
+        // Refresh token if needed
+        do {
+            try await user.refreshTokensIfNeeded()
+        } catch {
+            throw SheetsServiceError.authenticationError(error)
+        }
+        
+        let accessToken = user.accessToken.tokenString
+        
+        // Use Google Drive API to list spreadsheets
+        let urlString = "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc"
+        guard let url = URL(string: urlString) else {
+            throw SheetsServiceError.invalidResponse
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw SheetsServiceError.invalidResponse
+        }
+        
+        if httpResponse.statusCode != 200 {
+            throw SheetsServiceError.httpError(httpResponse.statusCode)
+        }
+        
+        // Parse the response
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let files = json["files"] as? [[String: Any]] else {
+            return []
+        }
+        
+        // Convert to SpreadsheetInfo objects
+        return files.compactMap { file in
+            guard let id = file["id"] as? String,
+                  let name = file["name"] as? String else {
+                return nil
+            }
+            
+            let modifiedTime = file["modifiedTime"] as? String
+            return SpreadsheetInfo(id: id, name: name, modifiedTime: modifiedTime)
+        }
+    }
+}
+
+struct SpreadsheetInfo: Identifiable {
+    let id: String
+    let name: String
+    let modifiedTime: String?
+    
+    var displayName: String {
+        return name
+    }
+    
+    var lastModified: String {
+        guard let modifiedTime = modifiedTime else { 
+            return "" 
+        }
+        
+        // Try ISO8601 formatter with fractional seconds
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: modifiedTime) {
+            let relativeFormatter = RelativeDateTimeFormatter()
+            relativeFormatter.unitsStyle = .abbreviated
+            return relativeFormatter.localizedString(for: date, relativeTo: Date())
+        }
+        
+        // Fallback: try without fractional seconds
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: modifiedTime) {
+            let relativeFormatter = RelativeDateTimeFormatter()
+            relativeFormatter.unitsStyle = .abbreviated
+            return relativeFormatter.localizedString(for: date, relativeTo: Date())
+        }
+        
+        return ""
+    }
+}
+
+enum SheetsServiceError: LocalizedError {
+    case notSignedIn
+    case noAccessToken
+    case authenticationError(Error)
+    case invalidResponse
+    case httpError(Int)
+    case apiError(String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .notSignedIn:
+            return "Please sign in to Google"
+        case .noAccessToken:
+            return "Unable to get access token"
+        case .authenticationError(let error):
+            return "Authentication failed: \(error.localizedDescription)"
+        case .invalidResponse:
+            return "Invalid response from server"
+        case .httpError(let code):
+            return "HTTP error: \(code)"
+        case .apiError(let message):
+            return "API error: \(message)"
+        }
+    }
+}
