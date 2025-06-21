@@ -15,16 +15,16 @@ The FeedTracker project uses a secure workflow that:
 ### Initial Setup
 ```bash
 # Run the setup script
-./setup_dev_environment.sh
+./utils/setup_dev_environment.sh
 
 # Install automatic git hooks (RECOMMENDED)
-./install_git_hooks.sh
+./utils/install_git_hooks.sh
 
 # Edit your local configuration
 nano .env.local
 
 # Apply development configuration
-./restore_sensitive_config.sh
+./utils/restore_sensitive_config.sh
 ```
 
 ### Your .env.local should look like:
@@ -48,7 +48,7 @@ The hooks automatically clean/restore sensitive data!
 **Option 2: Manual**
 If you prefer manual control:
 ```bash
-./clean_for_commit.sh "Your commit message"
+./utils/clean_for_commit.sh "Your commit message"
 ```
 
 Both methods:
@@ -62,12 +62,12 @@ Both methods:
 
 **Restore development config:**
 ```bash
-./restore_sensitive_config.sh
+./utils/restore_sensitive_config.sh
 ```
 
 **Backup current sensitive values:**
 ```bash
-./backup_sensitive_config.sh
+./utils/backup_sensitive_config.sh
 ```
 
 ## 📁 File Structure
@@ -75,10 +75,12 @@ Both methods:
 ```
 FeedTracker/
 ├── .env.local                     # Your sensitive config (git-ignored)
-├── backup_sensitive_config.sh     # Extract current sensitive values
-├── restore_sensitive_config.sh    # Apply values from .env.local
-├── clean_for_commit.sh            # Safe commit workflow
-├── setup_dev_environment.sh       # Initial setup
+├── utils/                          # Utility scripts directory
+│   ├── backup_sensitive_config.sh     # Extract current sensitive values
+│   ├── restore_sensitive_config.sh    # Apply values from .env.local
+│   ├── clean_for_commit.sh            # Safe commit workflow
+│   ├── setup_dev_environment.sh       # Initial setup
+│   └── install_git_hooks.sh           # Git hook installation
 └── SECURE_WORKFLOW.md            # This documentation
 ```
 
@@ -111,7 +113,7 @@ If you accidentally commit sensitive data:
    ```
 3. **Clean and recommit:**
    ```bash
-   ./clean_for_commit.sh "Fixed: removed sensitive data"
+   ./utils/clean_for_commit.sh "Fixed: removed sensitive data"
    ```
 
 If already pushed to GitHub:
@@ -122,9 +124,9 @@ git push --force-with-lease origin main
 
 ## ✅ Best Practices
 
-1. **Never use `git commit` directly** - Always use `./clean_for_commit.sh`
+1. **Never use `git commit` directly** - Always use `./utils/clean_for_commit.sh`
 2. **Keep .env.local updated** with your current development values
-3. **Run `./restore_sensitive_config.sh`** after pulling changes
+3. **Run `./utils/restore_sensitive_config.sh`** after pulling changes
 4. **Check commit diffs** before pushing to verify cleanliness
 5. **Document new sensitive config** in this workflow
 
