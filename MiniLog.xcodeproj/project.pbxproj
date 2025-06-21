@@ -84,6 +84,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 452657C62E024FC800A82D85 /* Build configuration list for PBXNativeTarget "MiniLog" */;
 			buildPhases = (
+				454476D22E067C48002D27F8 /* Run Script (Auto-increment Build Number) */,
 				452657B72E024FC700A82D85 /* Sources */,
 				452657B82E024FC700A82D85 /* Frameworks */,
 				452657B92E024FC700A82D85 /* Resources */,
@@ -154,6 +155,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		454476D22E067C48002D27F8 /* Run Script (Auto-increment Build Number) */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script (Auto-increment Build Number)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\n  # Auto-increment build number script\n  # This script increments the build number in Info.plist before each build\n\n  INFO_PLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n  BUILD_NUMBER=$(defaults read \"$INFO_PLIST\" CFBundleVersion 2>/dev/null || echo \"1\")\n\n  # Increment the build number\n  NEW_BUILD_NUMBER=$((BUILD_NUMBER + 1))\n\n  # Update Info.plist\n  defaults write \"$INFO_PLIST\" CFBundleVersion \"$NEW_BUILD_NUMBER\"\n\n  echo \"Build number incremented from $BUILD_NUMBER to $NEW_BUILD_NUMBER\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		452657B72E024FC700A82D85 /* Sources */ = {
@@ -293,7 +315,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 111;
 				DEVELOPMENT_TEAM = NPH4HV92MX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -322,7 +344,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 111;
 				DEVELOPMENT_TEAM = NPH4HV92MX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
