@@ -38,8 +38,8 @@ else
 fi
 
 if [ -f "$INFO_PLIST_FILE" ]; then
-    # Extract current OAuth client ID from Info.plist
-    CURRENT_OAUTH_ID=$(grep -A 1 "CFBundleURLSchemes" "$INFO_PLIST_FILE" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | head -1)
+    # Extract current OAuth client ID from Info.plist (handles both formats)
+    CURRENT_OAUTH_ID=$(grep -A 2 "CFBundleURLSchemes" "$INFO_PLIST_FILE" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | head -1)
     
     if [ -n "$CURRENT_OAUTH_ID" ] && [ "$CURRENT_OAUTH_ID" != "YOUR_OAUTH_CLIENT_ID_HERE" ]; then
         echo "OAUTH_CLIENT_ID=$CURRENT_OAUTH_ID" >> "$BACKUP_FILE"
@@ -58,8 +58,9 @@ echo "2️⃣ Cleaning sensitive data..."
 sed -i '' 's/@AppStorage("spreadsheetId") private var spreadsheetId = "[^"]*"/@AppStorage("spreadsheetId") private var spreadsheetId = ""/' "$SETTINGS_FILE"
 echo "✅ Spreadsheet ID cleaned (set to empty string)"
 
-# Clean OAuth client ID in Info.plist
+# Clean OAuth client ID in Info.plist (handles both old and new formats)
 sed -i '' 's/<string>com\.googleusercontent\.apps\.[^<]*<\/string>/<string>YOUR_OAUTH_CLIENT_ID_HERE<\/string>/' "$INFO_PLIST_FILE"
+sed -i '' 's/<string>[0-9][0-9]*-[a-zA-Z0-9]*\.apps\.googleusercontent\.com<\/string>/<string>YOUR_OAUTH_CLIENT_ID_HERE<\/string>/' "$INFO_PLIST_FILE"
 echo "✅ OAuth client ID cleaned (set to placeholder)"
 
 # Step 3: Show what will be committed
