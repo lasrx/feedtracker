@@ -19,7 +19,11 @@ struct PumpingView: View {
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     
-    let quickVolumes = ["20", "40", "60", "80"]
+    @AppStorage("pumpingQuickVolumes") private var pumpingQuickVolumesData = "130,140,150,170"
+    
+    var quickVolumes: [String] {
+        return pumpingQuickVolumesData.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+    }
     
     // Dark mode aware colors
     @Environment(\.colorScheme) var colorScheme
@@ -172,6 +176,39 @@ struct PumpingView: View {
                     .accentColor(.purple)
                 }
                 
+                Section(header: Text("Quick Actions")) {
+                    // Common volume buttons for quick entry
+                    VStack(spacing: 8) {
+                        Text("Quick Volume Selection (mL)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        HStack(spacing: 8) {
+                            ForEach(quickVolumes, id: \.self) { amount in
+                                Button(action: {
+                                    volume = amount
+                                    // Haptic feedback
+                                    if hapticFeedbackEnabled {
+                                        let impact = UIImpactFeedbackGenerator(style: .light)
+                                        impact.impactOccurred()
+                                    }
+                                }) {
+                                    Text("\(amount)")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .frame(width: 50, height: 40)
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(.purple)
+                            }
+                        }
+                        
+                        Text("Tip: Swipe up/down on volume field to adjust")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 2)
+                }
+                
             }
             .navigationTitle("Pumping")
             .navigationBarTitleDisplayMode(.inline)
@@ -246,7 +283,7 @@ struct PumpingView: View {
         let dateString = dateFormatter.string(from: selectedDate)
         
         let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
+        timeFormatter.dateFormat = "h:mm a"  // 12-hour format with AM/PM
         let timeString = timeFormatter.string(from: selectedTime)
         
         Task {

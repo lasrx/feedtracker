@@ -28,7 +28,11 @@ struct ContentView: View {
     
     // Default formula types
     private let defaultFormulaTypes = ["Breast milk", "Similac 360", "Emfamil Neuropro"]
-    let quickVolumes = ["40", "60", "130", "150"]
+    @AppStorage("feedQuickVolumes") private var feedQuickVolumesData = "40,60,130,150"
+    
+    var quickVolumes: [String] {
+        return feedQuickVolumesData.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+    }
     
     var formulaTypes: [String] {
         if formulaTypesData.isEmpty {
@@ -66,7 +70,7 @@ struct ContentView: View {
                 // Today's Summary Card
                 Section {
                     VStack(alignment: .leading, spacing: 4) {
-                        Label("Today's Total", systemImage: "chart.bar.fill")
+                        Label("Today's Feed Total", systemImage: "chart.bar.fill")
                             .font(.headline)
                         
                         HStack(alignment: .bottom) {
@@ -205,7 +209,7 @@ struct ContentView: View {
                 Section(header: Text("Quick Actions")) {
                     // Common volume buttons for quick entry
                     VStack(spacing: 8) {
-                        Text("Quick Volume Selection")
+                        Text("Quick Volume Selection (mL)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
@@ -220,9 +224,9 @@ struct ContentView: View {
                                         impact.impactOccurred()
                                     }
                                 }) {
-                                    Text("\(amount) mL")
-                                        .frame(maxWidth: .infinity, minHeight: 44)
-                                        .padding(.vertical, 8)
+                                    Text("\(amount)")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .frame(width: 50, height: 40)
                                 }
                                 .buttonStyle(.bordered)
                             }
@@ -237,9 +241,9 @@ struct ContentView: View {
                                         impact.impactOccurred()
                                     }
                                 }) {
-                                    Text("\(lastVolume) mL")
-                                        .frame(maxWidth: .infinity, minHeight: 44)
-                                        .padding(.vertical, 8)
+                                    Text("\(lastVolume)")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .frame(width: 50, height: 40)
                                 }
                                 .buttonStyle(.bordered)
                                 .tint(.orange)
@@ -367,7 +371,7 @@ struct ContentView: View {
         let dateString = dateFormatter.string(from: selectedDate)
         
         let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
+        timeFormatter.dateFormat = "h:mm a"  // 12-hour format with AM/PM
         let timeString = timeFormatter.string(from: selectedTime)
         
         Task {

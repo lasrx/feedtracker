@@ -6,6 +6,8 @@ struct SettingsView: View {
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("formulaTypes") private var formulaTypesData = ""
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
+    @AppStorage("feedQuickVolumes") private var feedQuickVolumesData = "40,60,130,150"
+    @AppStorage("pumpingQuickVolumes") private var pumpingQuickVolumesData = "130,140,150,170"
     
     @State private var showingSpreadsheetIdAlert = false
     @State private var tempSpreadsheetId = ""
@@ -15,6 +17,10 @@ struct SettingsView: View {
     @State private var showingCreateSheetAlert = false
     @State private var newSheetTitle = "Feed Tracking"
     @State private var isCreatingSheet = false
+    @State private var showingFeedQuickVolumesAlert = false
+    @State private var tempFeedQuickVolumes = ""
+    @State private var showingPumpingQuickVolumesAlert = false
+    @State private var tempPumpingQuickVolumes = ""
     
     // Default formula types
     private let defaultFormulaTypes = ["Breast milk", "Similac 360", "Emfamil Neuropro"]
@@ -218,6 +224,42 @@ struct SettingsView: View {
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
+                    
+                    // Feed Quick Volumes
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("Feed Quick Volumes")
+                            Spacer()
+                            Button("Edit") {
+                                tempFeedQuickVolumes = feedQuickVolumesData
+                                showingFeedQuickVolumesAlert = true
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                        Text(feedQuickVolumesData.replacingOccurrences(of: ",", with: ", ") + " mL")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    // Pumping Quick Volumes
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("Pumping Quick Volumes")
+                            Spacer()
+                            Button("Edit") {
+                                tempPumpingQuickVolumes = pumpingQuickVolumesData
+                                showingPumpingQuickVolumesAlert = true
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                        Text(pumpingQuickVolumesData.replacingOccurrences(of: ",", with: ", ") + " mL")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
                 }
                 
                 // App Info
@@ -273,6 +315,30 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will create a new Google Sheet with the proper column headers for feed tracking.")
+            }
+            .alert("Edit Feed Quick Volumes", isPresented: $showingFeedQuickVolumesAlert) {
+                TextField("Feed Quick Volumes", text: $tempFeedQuickVolumes)
+                Button("Cancel", role: .cancel) { }
+                Button("Save") {
+                    feedQuickVolumesData = tempFeedQuickVolumes
+                }
+                Button("Reset to Default", role: .destructive) {
+                    feedQuickVolumesData = "40,60,130,150"
+                }
+            } message: {
+                Text("Enter 4 volume amounts separated by commas (e.g., 40,60,130,150)")
+            }
+            .alert("Edit Pumping Quick Volumes", isPresented: $showingPumpingQuickVolumesAlert) {
+                TextField("Pumping Quick Volumes", text: $tempPumpingQuickVolumes)
+                Button("Cancel", role: .cancel) { }
+                Button("Save") {
+                    pumpingQuickVolumesData = tempPumpingQuickVolumes
+                }
+                Button("Reset to Default", role: .destructive) {
+                    pumpingQuickVolumesData = "130,140,150,170"
+                }
+            } message: {
+                Text("Enter 4 volume amounts separated by commas (e.g., 130,140,150,170)")
             }
         }
     }

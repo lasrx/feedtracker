@@ -153,9 +153,14 @@ struct PumpingHistoryView: View {
     
     private var timeSinceLastSession: String {
         guard let lastSession = todayPumpingSessions.first else { return "—" }
+        let sessionDate = lastSession.fullDate
+        // If date parsing failed (Date.distantPast), show "—"
+        if sessionDate == Date.distantPast {
+            return "—"
+        }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: lastSession.fullDate, relativeTo: Date())
+        return formatter.localizedString(for: sessionDate, relativeTo: Date())
     }
     
     private var totalSessions: String {

@@ -148,9 +148,14 @@ struct FeedHistoryView: View {
     
     private var timeSinceLastFeed: String {
         guard let lastFeed = todayFeeds.first else { return "—" }
+        let feedDate = lastFeed.fullDate
+        // If date parsing failed (Date.distantPast), show "—"
+        if feedDate == Date.distantPast {
+            return "—"
+        }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: lastFeed.fullDate, relativeTo: Date())
+        return formatter.localizedString(for: feedDate, relativeTo: Date())
     }
     
     private var mostCommonFormula: String {

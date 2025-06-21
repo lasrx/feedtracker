@@ -11,8 +11,15 @@ struct FeedEntry: Identifiable {
     
     var fullDate: Date {
         let formatter = DateFormatter()
-        formatter.dateFormat = "M/d/yyyy HH:mm"
-        return formatter.date(from: "\(date) \(time)") ?? Date()
+        formatter.dateFormat = "M/d/yyyy h:mm a"  // 12-hour format with AM/PM
+        let combinedString = "\(date) \(time)"
+        if let parsedDate = formatter.date(from: combinedString) {
+            return parsedDate
+        } else {
+            print("FeedEntry: Failed to parse date '\(combinedString)' with format 'M/d/yyyy h:mm a'")
+            // Return a very old date instead of current date to avoid "0s" issue
+            return Date.distantPast
+        }
     }
 }
 
@@ -24,8 +31,15 @@ struct PumpingEntry: Identifiable {
     
     var fullDate: Date {
         let formatter = DateFormatter()
-        formatter.dateFormat = "M/d/yyyy HH:mm"
-        return formatter.date(from: "\(date) \(time)") ?? Date()
+        formatter.dateFormat = "M/d/yyyy h:mm a"  // 12-hour format with AM/PM
+        let combinedString = "\(date) \(time)"
+        if let parsedDate = formatter.date(from: combinedString) {
+            return parsedDate
+        } else {
+            print("PumpingEntry: Failed to parse date '\(combinedString)' with format 'M/d/yyyy h:mm a'")
+            // Return a very old date instead of current date to avoid "0s" issue
+            return Date.distantPast
+        }
     }
 }
 
