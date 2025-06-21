@@ -11,7 +11,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.410991883412-cg79m8597dmr90piuq2uj8ba6kfl9f36</string>
+				<string>YOUR_OAUTH_CLIENT_ID_HERE</string>
 			</array>
 		</dict>
 	</array>
