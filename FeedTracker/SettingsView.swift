@@ -171,7 +171,7 @@ struct SettingsView: View {
                             Text("• \"Track 120 with MiniLog\"")
                                 .font(.caption)
                                 .foregroundColor(.primary)
-                            Text("• \"Log feed 80 in MiniLog\"")
+                            Text("• \"Log feed 980 in MiniLog\"")
                                 .font(.caption)
                                 .foregroundColor(.primary)
                         }
