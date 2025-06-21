@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		452657CB2E0288DE00A82D85 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 452657CA2E0288DE00A82D85 /* GoogleSignIn */; };
 		452657CD2E0288DE00A82D85 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 452657CC2E0288DE00A82D85 /* GoogleSignInSwift */; };
+		454476D42E06899A002D27F8 /* clean_for_commit.sh in Resources */ = {isa = PBXBuildFile; fileRef = 454476D32E06899A002D27F8 /* clean_for_commit.sh */; };
 		456AB5552E051BD400DD53FA /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 456AB5512E051BD400DD53FA /* CLAUDE.md */; };
 		456AB5562E051BD400DD53FA /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 456AB5532E051BD400DD53FA /* README.md */; };
 		456AB5572E051BD400DD53FA /* Privacy.md in Resources */ = {isa = PBXBuildFile; fileRef = 456AB5522E051BD400DD53FA /* Privacy.md */; };
@@ -17,6 +18,7 @@
 
 /* Begin PBXFileReference section */
 		452657BB2E024FC700A82D85 /* MiniLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MiniLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		454476D32E06899A002D27F8 /* clean_for_commit.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clean_for_commit.sh; sourceTree = "<group>"; };
 		456AB5512E051BD400DD53FA /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 		456AB5522E051BD400DD53FA /* Privacy.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Privacy.md; sourceTree = "<group>"; };
 		456AB5532E051BD400DD53FA /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -60,6 +62,7 @@
 		452657B22E024FC700A82D85 = {
 			isa = PBXGroup;
 			children = (
+				454476D32E06899A002D27F8 /* clean_for_commit.sh */,
 				456AB5512E051BD400DD53FA /* CLAUDE.md */,
 				456AB5522E051BD400DD53FA /* Privacy.md */,
 				456AB5532E051BD400DD53FA /* README.md */,
@@ -151,6 +154,7 @@
 				456AB5562E051BD400DD53FA /* README.md in Resources */,
 				456AB5572E051BD400DD53FA /* Privacy.md in Resources */,
 				456AB5582E051BD400DD53FA /* SETUP.md in Resources */,
+				454476D42E06899A002D27F8 /* clean_for_commit.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -189,7 +189,7 @@ feedtracker/
 
 ### Prerequisites
 - Xcode 14+
-- iOS 15+ deployment target  
+- iOS 18+ deployment target  
 - Google Cloud Console account with APIs enabled
 - Your own OAuth 2.0 credentials
 

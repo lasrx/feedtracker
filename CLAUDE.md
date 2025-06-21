@@ -68,7 +68,7 @@ The app uses Swift Package Manager with these dependencies:
 
 ### Development Setup
 - **Xcode**: 14+ required
-- **iOS Target**: 15+ deployment target
+- **iOS Target**: 18+ deployment target
 - **Bundle ID**: Must match Google Cloud Console OAuth configuration
 - **Test Users**: Must be added in Google Cloud Console during development
 
@@ -132,6 +132,28 @@ The app uses Swift Package Manager with these dependencies:
 - **VolumeEntity** for structured parameter handling
 - **Auto-donation** after successful feeds to improve recognition
 - **Consent-based** - Users control Siri access via iOS Settings
+
+## ⚠️ SECURITY - SENSITIVE FILES
+
+**CRITICAL**: The following files contain sensitive data and must NEVER be committed directly:
+
+### Sensitive Files:
+- **Info.plist** - Contains OAuth client ID (auto-protected by security scripts)
+- **SettingsView.swift** - Contains spreadsheet ID (auto-protected by security scripts)  
+- **GoogleService-Info.plist** - OAuth secrets (git-ignored)
+- **.env.local** - Development config (git-ignored)
+
+### Security Protocol:
+- **NEVER use `git commit` directly** on files with sensitive data
+- **ALWAYS use `../clean_for_commit.sh "message"`** for safe commits
+- **Info.plist and SettingsView.swift** are automatically cleaned/restored by security scripts
+- **Check `git status`** before commits - sensitive files should show as modified but not be staged
+
+### Emergency Recovery:
+If sensitive data is accidentally committed:
+1. `git reset --soft HEAD~1` (before push)
+2. `../clean_for_commit.sh "Fixed: removed sensitive data"`
+3. Use `git push --force-with-lease` if already pushed (CAREFUL!)
 
 ## Current Limitations
 

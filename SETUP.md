@@ -5,7 +5,7 @@ This guide walks you through setting up the MiniLog app for development or perso
 ## Prerequisites
 
 - Xcode 14+
-- iOS 15+ deployment target
+- iOS 18+ deployment target
 - Google Cloud Console account
 
 ## Required Configuration Files
@@ -84,4 +84,11 @@ The project includes security scripts that automatically clean sensitive data be
 
 ## License
 
-[Choose appropriate license for your use case]
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+### What this means:
+- ✅ **Free to use** - Use for personal or commercial projects
+- ✅ **Attribution required** - Must credit original work
+- ✅ **Patent protection** - Contributors grant patent rights
+- ✅ **Modification allowed** - Can modify and distribute changes
+- ✅ **Private use** - Can use privately without sharing changes
