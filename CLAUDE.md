@@ -17,10 +17,16 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 
 ### Key Components
 - **FeedTrackerApp.swift**: App entry point, configures Google Sign-In and Siri Shortcuts
-- **ContentView.swift**: Main UI with precision drag slider, advanced haptic feedback, auto-refresh, and data display
-- **SettingsView.swift**: Configuration UI for spreadsheet selection, haptic preferences, daily goals, and formula types
+- **HorizontalNavigationView.swift**: Main UI with four-pane horizontal swipe horizontal navigation
+- **ContentView.swift**: Legacy feed logging view (now FeedLoggingView within HorizontalNavigationView)
+- **FeedHistoryView.swift**: Left pane - Today's feed overview with 7-day analytics
+- **PumpingView.swift**: Right pane - Pumping session logger with customizable quick volumes
+- **PumpingHistoryView.swift**: Far right pane - Pumping overview with session list and weekly insights
+- **WeeklySummaryView.swift**: Reusable 7-day trend analysis component for both feed and pumping data
+- **SettingsView.swift**: Configuration UI for spreadsheet selection, haptic preferences, daily goals, formula types, and Quick Volume customization
 - **SpreadsheetPickerView.swift**: Google Drive API-powered spreadsheet browser with bottom-aligned selection
-- **GoogleSheetsService.swift**: Google Sheets/Drive API integration with OAuth 2.0
+- **GoogleSheetsService.swift**: Google Sheets/Drive API integration with OAuth 2.0, supports both Feed Log and Pumping sheets
+- **Models.swift**: Data models (FeedEntry, PumpingEntry, DailyTotal) with proper 12-hour time parsing
 - **LogFeedIntent.swift**: Siri Shortcuts integration for voice logging (iOS 16+)
 
 ### Data Flow
@@ -33,7 +39,7 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 
 ### Google Sheets Integration
 - **Spreadsheet ID**: Configurable via Settings (stored in UserDefaults)
-- **Column Structure**: A=Date (M/d/yyyy), B=Time (HH:mm), C=Volume (numeric), D=Formula Type
+- **Column Structure**: A=Date (M/d/yyyy), B=Time (h:mm a), C=Volume (numeric), D=Formula Type (Feed Log); A=Date, B=Time, C=Volume (Pumping sheet)
 - **API Scope**: `https://www.googleapis.com/auth/spreadsheets` and `https://www.googleapis.com/auth/drive.file`
 - **Authentication**: OAuth 2.0 with automatic token refresh
 
@@ -71,7 +77,7 @@ The app uses Swift Package Manager with these dependencies:
 ### UI/UX Features
 - **Haptic Feedback**: Extensive use throughout app for tactile confirmation
 - **Drag Gesture**: Volume adjustment via vertical swipe on number field
-- **Quick Buttons**: Preset volume buttons (40, 60, 130, 150 mL) plus dynamic "Last" button
+- **Customizable Quick Buttons**: User-configurable volume buttons for Feed (default: 40,60,130,150 mL) and Pumping (default: 130,140,150,170 mL) plus dynamic "Last" button
 - **Pull-to-Refresh**: Updates today's total from spreadsheet
 - **Dark Mode**: Full support via SwiftUI environment
 
@@ -87,9 +93,19 @@ The app uses Swift Package Manager with these dependencies:
 
 ## Key Features Implemented
 
-- **Enhanced Settings Page**: Configurable spreadsheet ID, haptic feedback toggle, daily goals, formula types
+### Core Four-Pane Navigation
+- **Four-Pane Interface**: Horizontal swipe navigation between four specialized panes
+- **Feed Overview** (Left): Today's feeding summary with 7-day trend analysis and session list
+- **Feed Logging** (Center): Main entry form with drag slider and customizable quick volumes
+- **Pumping Logger** (Right): Dedicated pumping session tracking with separate volume presets
+- **Pumping Overview** (Far Right): Pumping statistics, session history, and weekly insights
+
+### Advanced Features
+- **Enhanced Settings Page**: Configurable spreadsheet ID, haptic feedback toggle, daily goals, formula types, and Quick Volume customization
 - **Precision Drag Slider**: 3 pixels per 1mL sensitivity optimized for feeding volumes (0-200mL range)
 - **Advanced Haptic System**: Smart feedback with light clicks (5mL) and medium clicks (25mL)
+- **Customizable Quick Volumes**: User-configurable preset buttons via Settings for both Feed and Pumping workflows
+- **Accurate Timing Displays**: Fixed "Since Last" calculations with proper 12-hour AM/PM date parsing
 - **Siri Shortcuts**: Natural voice logging with phrases like "Log 100 to MiniLog"
 - **Progress Tracking**: Visual progress bar toward daily volume goal
 - **Auto-refresh**: Interface resets after 1+ hour absence, today's total updates from spreadsheet data

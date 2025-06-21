@@ -36,7 +36,7 @@ Update the OAuth URL scheme in `Info.plist`:
 </array>
 ```
 
-Replace `YOUR_CLIENT_ID_HERE` with your actual client ID from GoogleService-Info.plist.
+Replace `YOUR_OAUTH_CLIENT_ID_HERE` with your actual client ID from GoogleService-Info.plist.
 
 ### 3. Bundle Identifier
 
@@ -53,10 +53,11 @@ Update the bundle identifier in your Xcode project settings to match your Apple 
 ⚠️ **IMPORTANT**: The following files contain sensitive information and should NEVER be committed to public repositories:
 
 - `GoogleService-Info.plist` - Contains OAuth secrets
+- `Info.plist` - Contains OAuth client ID (automatically protected by security scripts)
 - Any `.xcconfig` files with API keys
 - Provisioning profiles (`.mobileprovision`, `.provisionprofile`)
 
-The `.gitignore` file is pre-configured to protect these files.
+The project includes security scripts that automatically clean sensitive data before commits. See `SECURE_WORKFLOW.md` for details.
 
 ## Troubleshooting
 

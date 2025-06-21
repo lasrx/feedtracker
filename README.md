@@ -7,13 +7,13 @@ A SwiftUI-based iOS application for tracking baby feeding data with Google Sheet
 MiniLog is designed to help parents log baby feeding information quickly and efficiently. The app uses Google Sheets as a backend database, enabling multi-device synchronization and easy data analysis.
 
 ### Key Features Built
-- ✅ Quick volume entry with preset buttons (40, 60, 130, 150 mL)
+- ✅ **Customizable Quick Volume buttons** - User-configurable preset buttons for both Feed and Pumping
 - ✅ Precision drag-to-adjust volume slider with optimized sensitivity (3 pixels per 1mL)
 - ✅ Advanced haptic feedback system with configurable intensity levels
 - ✅ Formula type selection (Breast milk, Similac 360, Emfamil Neuropro)
 - ✅ Google Sign-In integration
 - ✅ Real-time sync with Google Sheets
-- ✅ Today's total volume tracking with progress bar
+- ✅ Today's Feed Total tracking with progress bar and goal visualization
 - ✅ Last feed time display
 - ✅ Dark mode support
 - ✅ Comprehensive haptic feedback with settings toggle
@@ -24,11 +24,13 @@ MiniLog is designed to help parents log baby feeding information quickly and eff
 - ✅ Custom formula types
 - ✅ Auto-refresh interface when returning to app after extended absence (1+ hours)
 - ✅ Smart haptic feedback (5mL light clicks, 25mL medium clicks)
-- ✅ **Snapchat-style horizontal navigation** with four-pane interface
+- ✅ **horizontal swipe horizontal navigation** with four-pane interface
 - ✅ **Feed Overview** - Today's feeding summary with statistics and 7-day trend analysis
 - ✅ **Pumping logger** - Dedicated pumping session tracking
 - ✅ **Pumping Overview** - Today's pumping summary with session list and weekly insights
 - ✅ **7-day historical comparison** - Visual charts and analytics for pattern recognition
+- ✅ **Accurate timing displays** - Fixed "Since Last" calculations with proper 12-hour AM/PM parsing
+- ✅ **Settings customization** - Configure Quick Volume values for Feed (default: 40,60,130,150) and Pumping (default: 130,140,150,170)
 
 ## Technical Architecture
 
@@ -51,7 +53,7 @@ feedtracker/
 ├── MiniLog.xcodeproj/         # Xcode project configuration
 └── FeedTracker/               # Source code directory
     ├── FeedTrackerApp.swift           # App entry point, Google Sign-In & Siri config
-    ├── HorizontalNavigationView.swift # Snapchat-style four-pane navigation container
+    ├── HorizontalNavigationView.swift # horizontal swipe four-pane navigation container
     ├── ContentView.swift              # Legacy main UI (now FeedLoggingView)
     ├── FeedHistoryView.swift          # Left pane: Feed overview with 7-day analytics
     ├── PumpingView.swift              # Right pane: Pumping session logger
@@ -71,13 +73,13 @@ feedtracker/
 ### Data Model
 **Feed Log Sheet:**
 - **A**: Date (M/d/yyyy format)
-- **B**: Time (HH:mm format)  
+- **B**: Time (h:mm a format - 12-hour with AM/PM)  
 - **C**: Volume (numeric only, no units)
 - **D**: Formula Type (text)
 
 **Pumping Sheet:**
 - **A**: Date (M/d/yyyy format)
-- **B**: Time (HH:mm format)  
+- **B**: Time (h:mm a format - 12-hour with AM/PM)  
 - **C**: Volume (numeric only, no units)
 
 ## Current Implementation Status
@@ -117,7 +119,7 @@ feedtracker/
    - Enhanced Settings page with haptic preferences and UI controls
 
 ### Latest Release: Four-Pane Navigation with 7-Day Analytics
-- **🔄 Snapchat-Style Navigation**: Revolutionary four-pane horizontal swipe interface for intuitive data access
+- **🔄 Four-Pane Navigation**: Revolutionary horizontal swipe interface for intuitive data access
 - **📊 Feed Overview**: Left pane with today's feeding summary, statistics, chronological list, and 7-day trend analysis
 - **🤱 Pumping Integration**: Dedicated pumping logger with separate sheet tracking and volume optimization  
 - **📈 Pumping Overview**: Far-right pane with today's sessions, statistics, and weekly performance insights
@@ -127,7 +129,7 @@ feedtracker/
 - **⚡ Performance Optimizations**: Concurrent data loading and efficient chart rendering for smooth navigation
 
 ### Previous Improvements
-- **Precision Drag Slider**: Optimized sensitivity at 2.5 pixels per 1mL for faster, more accurate volume adjustments
+- **Precision Drag Slider**: Optimized sensitivity at 3 pixels per 1mL for faster, more accurate volume adjustments
 - **Advanced Haptic Feedback**: Smart haptic system with light clicks every 5mL and medium clicks every 25mL
 - **Enhanced Settings**: New haptic feedback toggle with descriptive explanation for user preference control
 - **Auto-Refresh System**: Interface automatically refreshes after 1+ hour absence for fresh data entry
