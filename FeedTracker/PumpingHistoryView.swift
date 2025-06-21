@@ -109,7 +109,7 @@ struct PumpingHistoryView: View {
                 } else if todayPumpingSessions.isEmpty {
                     Spacer()
                     VStack(spacing: 16) {
-                        Image(systemName: "drop.triangle.circle")
+                        Image(systemName: "drop.triangle")
                             .font(.system(size: 60))
                             .foregroundColor(.purple.opacity(0.6))
                         Text("No pumping sessions today")
