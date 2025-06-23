@@ -1,4 +1,4 @@
-name: Security Check
+name: Secrets Scanner
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  security-scan:
+  secrets-scan:
     runs-on: ubuntu-latest
     
     steps:
@@ -74,8 +74,11 @@ jobs:
         SECRETS_FOUND=false
         
         for pattern in "${PATTERNS[@]}"; do
-          if grep -r -E "$pattern" . --exclude-dir=.git --exclude-dir=node_modules --exclude=".github/workflows/security-check.yml" 2>/dev/null; then
+          # Skip scanning this security workflow file itself
+          SCAN_RESULTS=$(grep -r -E "$pattern" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null | grep -v "security-check.yml")
+          if [ -n "$SCAN_RESULTS" ]; then
             echo "❌ CRITICAL: API key or secret pattern detected: $pattern"
+            echo "$SCAN_RESULTS"
             SECRETS_FOUND=true
           fi
         done
@@ -145,10 +148,10 @@ jobs:
         
         echo "✅ No exposed real values found"
     
-    - name: Security scan summary
+    - name: Secrets scan summary
       run: |
         echo ""
-        echo "🛡️ Security scan completed successfully"
+        echo "🛡️ Secrets scan completed successfully"
         echo "✅ Repository is safe for public distribution"
         echo ""
         echo "🔒 Protected against:"
