@@ -375,3 +375,5 @@ The Apache 2.0 license ensures proper attribution while enabling open collaborat
 ---
 
 *Built with ❤️ for tired parents everywhere*
+
+<!-- Trigger security workflow for branch protection setup -->
