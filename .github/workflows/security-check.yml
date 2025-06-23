@@ -78,7 +78,7 @@ jobs:
           SCAN_RESULTS=$(grep -r -E "$pattern" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null | grep -v "security-check.yml")
           if [ -n "$SCAN_RESULTS" ]; then
             echo "❌ CRITICAL: API key or secret pattern detected: $pattern"
-            echo "$SCAN_RESULTS"
+            echo "   Details: $SCAN_RESULTS"
             SECRETS_FOUND=true
           fi
         done
