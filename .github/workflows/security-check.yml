@@ -18,9 +18,14 @@ jobs:
       run: |
         echo "🔍 Scanning for forbidden file patterns..."
         
-        # Check for environment files
-        if find . -name "*.env*" -not -path "./.git/*" -not -name ".env.example"; then
+        # Check for environment files (allow templates and examples)
+        if find . -name "*.env*" -not -path "./.git/*" \
+            -not -name ".env.example" \
+            -not -name ".env.local.template" \
+            -not -name "*.env.template" \
+            -not -name "*.env.example"; then
           echo "❌ Environment files detected - these should never be committed"
+          echo "   Allowed: .env.example, .env.local.template, *.env.template, *.env.example"
           exit 1
         fi
         
