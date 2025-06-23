@@ -19,25 +19,32 @@ jobs:
         echo "🔍 Scanning for forbidden file patterns..."
         
         # Check for environment files (allow templates and examples)
-        if find . -name "*.env*" -not -path "./.git/*" \
+        FOUND_ENV_FILES=$(find . -name "*.env*" -not -path "./.git/*" \
             -not -name ".env.example" \
             -not -name ".env.local.template" \
             -not -name "*.env.template" \
-            -not -name "*.env.example"; then
+            -not -name "*.env.example")
+        
+        if [ -n "$FOUND_ENV_FILES" ]; then
           echo "❌ Environment files detected - these should never be committed"
+          echo "   Found: $FOUND_ENV_FILES"
           echo "   Allowed: .env.example, .env.local.template, *.env.template, *.env.example"
           exit 1
         fi
         
         # Check for Google service files
-        if find . -name "GoogleService-Info.plist" -not -path "./.git/*"; then
+        FOUND_GOOGLE_FILES=$(find . -name "GoogleService-Info.plist" -not -path "./.git/*")
+        if [ -n "$FOUND_GOOGLE_FILES" ]; then
           echo "❌ GoogleService-Info.plist detected - contains OAuth secrets"
+          echo "   Found: $FOUND_GOOGLE_FILES"
           exit 1
         fi
         
         # Check for other sensitive files
-        if find . \( -name "secrets.*" -o -name "credentials.*" -o -name "*.key" \) -not -path "./.git/*"; then
+        FOUND_SENSITIVE_FILES=$(find . \( -name "secrets.*" -o -name "credentials.*" -o -name "*.key" \) -not -path "./.git/*")
+        if [ -n "$FOUND_SENSITIVE_FILES" ]; then
           echo "❌ Sensitive files detected"
+          echo "   Found: $FOUND_SENSITIVE_FILES"
           exit 1
         fi
         
