@@ -5,17 +5,24 @@ class GoogleSheetsService: ObservableObject {
     @Published var isSignedIn = false
     @Published var userEmail: String?
     @Published var error: Error?
+    @Published var currentSpreadsheetId: String = ""
     
     private var spreadsheetId = "" // Will be set from UserDefaults or Settings
-    private let range = "A:D" // Date, Time, Volume (mL), Formula Type
-    private let pumpingRange = "Pumping!A:C" // Date, Time, Volume (mL) for pumping sheet
-    private let scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
+    private let range = FeedConstants.GoogleSheets.feedRange
+    private let pumpingRange = FeedConstants.GoogleSheets.pumpingRange
+    private let scopes = FeedConstants.GoogleSheets.scopes
+    
+    // UserDefaults observation for active spreadsheet selection bug fix
     
     init() {
         // Load spreadsheet ID from UserDefaults
-        if let savedSpreadsheetId = UserDefaults.standard.string(forKey: "spreadsheetId") {
+        if let savedSpreadsheetId = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetId) {
             self.spreadsheetId = savedSpreadsheetId
+            self.currentSpreadsheetId = savedSpreadsheetId
         }
+        
+        // Set up UserDefaults observation to fix active spreadsheet selection bug
+        setupSpreadsheetIdObservation()
         
         // Check if already signed in
         GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, error in
@@ -26,9 +33,35 @@ class GoogleSheetsService: ObservableObject {
         }
     }
     
+    deinit {
+        // Remove NotificationCenter observer
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: - UserDefaults Observation Setup
+    
+    /// Sets up observation of UserDefaults changes for spreadsheet ID
+    /// This fixes the bug where changing the active spreadsheet doesn't update the service
+    private func setupSpreadsheetIdObservation() {
+        // Use NotificationCenter to observe UserDefaults changes
+        NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            if let newId = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetId),
+               newId != self?.spreadsheetId {
+                self?.spreadsheetId = newId
+                self?.currentSpreadsheetId = newId
+                print("GoogleSheetsService: Updated spreadsheet ID to \(newId)")
+            }
+        }
+    }
+    
     func updateSpreadsheetId(_ newId: String) {
         spreadsheetId = newId
-        UserDefaults.standard.set(newId, forKey: "spreadsheetId")
+        currentSpreadsheetId = newId
+        UserDefaults.standard.set(newId, forKey: FeedConstants.UserDefaultsKeys.spreadsheetId)
     }
     
     func signIn() {

@@ -7,30 +7,31 @@ A SwiftUI-based iOS application for tracking baby feeding data with Google Sheet
 MiniLog is designed to help parents log baby feeding information quickly and efficiently. The app uses Google Sheets as a backend database, enabling multi-device synchronization and easy data analysis.
 
 ### Key Features Built
+- ✅ **Comprehensive waste tracking** - Advanced milk waste tracking with 2-hour expiration awareness
 - ✅ **Customizable Quick Volume buttons** - User-configurable preset buttons for both Feed and Pumping
-- ✅ Precision drag-to-adjust volume slider with optimized sensitivity (3 pixels per 1mL)
-- ✅ Advanced haptic feedback system with configurable intensity levels
+- ✅ **5mL precision slider** - Optimized drag gesture with 5mL increments for faster volume adjustment
+- ✅ **Enhanced haptic feedback** - Smart haptic system with generator preparation and custom intensity
 - ✅ Formula type selection (Breast milk, Similac 360, Emfamil Neuropro)
-- ✅ Google Sign-In integration
-- ✅ Real-time sync with Google Sheets
+- ✅ Google Sign-In integration with full Drive scope for shared spreadsheet access
+- ✅ Real-time sync with Google Sheets (5-column data model with waste tracking)
 - ✅ Today's Feed Total tracking with progress bar and goal visualization
 - ✅ Last feed time display
 - ✅ Dark mode support
 - ✅ Comprehensive haptic feedback with settings toggle
-- ✅ Settings page with configurable options including haptic preferences
+- ✅ Settings page with configurable options including haptic preferences and advanced features toggle
 - ✅ Mobile-optimized spreadsheet picker with bottom-aligned selection
 - ✅ Siri Shortcuts with natural voice commands (no "mL" pronunciation issues)
 - ✅ Configurable daily volume goals
 - ✅ Custom formula types
 - ✅ Auto-refresh interface when returning to app after extended absence (1+ hours)
-- ✅ Smart haptic feedback (5mL light clicks, 25mL medium clicks)
 - ✅ **horizontal swipe horizontal navigation** with four-pane interface
-- ✅ **Feed Overview** - Today's feeding summary with statistics and 7-day trend analysis
+- ✅ **Feed Overview** - Today's feeding summary with statistics, waste metrics, and 7-day trend analysis
 - ✅ **Pumping logger** - Dedicated pumping session tracking
 - ✅ **Pumping Overview** - Today's pumping summary with session list and weekly insights
 - ✅ **7-day historical comparison** - Visual charts and analytics for pattern recognition
 - ✅ **Accurate timing displays** - Fixed "Since Last" calculations with proper 12-hour AM/PM parsing
 - ✅ **Settings customization** - Configure Quick Volume values for Feed (default: 40,60,130,150) and Pumping (default: 130,140,150,170)
+- ✅ **Space-optimized UI** - Compact waste tracking toggle integrated with volume input for clean interface
 
 ## Technical Architecture
 
@@ -74,8 +75,9 @@ feedtracker/
 **Feed Log Sheet:**
 - **A**: Date (M/d/yyyy format)
 - **B**: Time (h:mm a format - 12-hour with AM/PM)  
-- **C**: Volume (numeric only, no units)
+- **C**: Volume (numeric - positive for feeds, negative for waste entries)
 - **D**: Formula Type (text)
+- **E**: Waste Amount (numeric - positive value for actual waste amount)
 
 **Pumping Sheet:**
 - **A**: Date (M/d/yyyy format)
@@ -118,22 +120,23 @@ feedtracker/
    - Auto-refresh interface after returning from 1+ hour absence
    - Enhanced Settings page with haptic preferences and UI controls
 
-### Latest Release: Four-Pane Navigation with 7-Day Analytics
-- **🔄 Four-Pane Navigation**: Revolutionary horizontal swipe interface for intuitive data access
-- **📊 Feed Overview**: Left pane with today's feeding summary, statistics, chronological list, and 7-day trend analysis
-- **🤱 Pumping Integration**: Dedicated pumping logger with separate sheet tracking and volume optimization  
-- **📈 Pumping Overview**: Far-right pane with today's sessions, statistics, and weekly performance insights
-- **📉 7-Day Historical Comparison**: Visual bar charts showing weekly patterns with trend analysis and performance indicators
-- **🎯 Smart Analytics**: Weekly averages, best day identification, and today vs. historical performance comparisons
-- **🔄 Unified Data Management**: Shared authentication state across all views with automatic data refresh
-- **⚡ Performance Optimizations**: Concurrent data loading and efficient chart rendering for smooth navigation
+### Latest Release: Major Architectural Refactor & Haptic System Overhaul
+- **🏗️ Massive Code Cleanup**: Eliminated 917 lines of duplication - reduced ContentView from 987 to 70 lines (92.9% reduction)
+- **🎯 Shared Component Architecture**: Created 4 new files (`FeedEntryForm`, `FeedEntryViewModel`, `FeedConstants`, enhanced `HapticHelper`)
+- **🔧 Fixed Active Spreadsheet Bug**: Resolved force-close requirement when selecting new sheets via UserDefaults observation
+- **🎵 Overhauled Haptic System**: Multi-tier fallback system (UIImpactFeedbackGenerator → UINotificationFeedbackGenerator → AudioToolbox)
+- **📱 Subtler Haptic Feedback**: Reduced intensity levels (0.7/0.5/0.3) based on user feedback and removed navigation haptics
+- **🛡️ Enhanced Security**: Resolved accidental .env.local leak through improved git workflow and documentation
+- **📚 Complete Documentation**: Comprehensive CLAUDE.md with architectural patterns and development context
 
-### Previous Improvements
-- **Precision Drag Slider**: Optimized sensitivity at 3 pixels per 1mL for faster, more accurate volume adjustments
-- **Advanced Haptic Feedback**: Smart haptic system with light clicks every 5mL and medium clicks every 25mL
-- **Enhanced Settings**: New haptic feedback toggle with descriptive explanation for user preference control
-- **Auto-Refresh System**: Interface automatically refreshes after 1+ hour absence for fresh data entry
-- **Siri Integration Refinements**: Removed pronunciation issues and simplified voice commands
+### Previous Improvements (Pre-Refactor)
+- **🗑️ Advanced Waste Tracking**: Complete milk waste tracking system with 2-hour expiration awareness
+- **⚡ 5mL Precision Slider**: Optimized volume adjustment with 5mL increments for faster, more practical input
+- **📱 Space-Optimized UI**: Compact Feed/Waste toggle integrated directly on volume line for cleaner interface
+- **📊 Waste Analytics**: Feed Overview displays waste metrics and statistics when advanced features enabled
+- **🔧 Settings Integration**: Advanced features toggle in Settings to keep interface clean for basic users
+- **📈 Full Data Model**: 5-column Google Sheets integration supporting comprehensive feeding and waste data
+- **🎨 Accessibility Optimized**: Shortened "Wasted" label prevents text overflow with magnification enabled
 
 ## TODO / Roadmap
 
@@ -313,6 +316,40 @@ The project uses Swift Package Manager with these dependencies (automatically re
 - **Data retention policies** - Configurable retention with automatic cleanup
 - **Audit logging** - CloudTrail for all data access and modifications
 - **Privacy controls** - User data export, deletion, and consent management
+
+## For AI Development Assistance
+
+### **Post-Refactoring Architecture (2024)**
+This codebase underwent major architectural improvements in December 2024:
+
+**Before**: 987-line ContentView with 80% code duplication  
+**After**: Clean 70-line views using shared components
+
+### **Key Patterns for AI Assistance**
+```swift
+// When modifying feed entry behavior:
+FeedEntryViewModel.swift  // Business logic
+FeedEntryForm.swift      // UI components  
+FeedConstants.swift      // Configuration values
+
+// Architecture understanding:
+ContentView: @StateObject sheetsService     // Owns the service
+FeedLoggingView: @ObservedObject sheetsService // Receives the service
+```
+
+### **Common Tasks**
+- **Adding UI elements**: Edit `FeedEntryForm.swift` (affects both views)
+- **Adding business logic**: Edit `FeedEntryViewModel.swift`
+- **Modifying constants**: Edit `FeedConstants.swift` (no more magic numbers)
+- **Navigation changes**: Check `HorizontalNavigationView.swift` for 4-pane setup
+
+### **Critical Files**
+- `CLAUDE.md` - Comprehensive development context for AI assistance
+- `FeedConstants.swift` - All configuration values and magic numbers
+- `FeedEntryForm.swift` - Shared UI component (245 lines)
+- `FeedEntryViewModel.swift` - Shared business logic (200+ lines)
+
+See `CLAUDE.md` for complete development context and patterns.
 
 ## Contributing
 
