@@ -6,32 +6,16 @@ A SwiftUI-based iOS application for tracking baby feeding data with Google Sheet
 
 MiniLog is designed to help parents log baby feeding information quickly and efficiently. The app uses Google Sheets as a backend database, enabling multi-device synchronization and easy data analysis.
 
-### Key Features Built
-- ✅ **Comprehensive waste tracking** - Advanced milk waste tracking with 2-hour expiration awareness
-- ✅ **Customizable Quick Volume buttons** - User-configurable preset buttons for both Feed and Pumping
-- ✅ **5mL precision slider** - Optimized drag gesture with 5mL increments for faster volume adjustment
-- ✅ **Enhanced haptic feedback** - Smart haptic system with generator preparation and custom intensity
-- ✅ Formula type selection (Breast milk, Similac 360, Emfamil Neuropro)
-- ✅ Google Sign-In integration with full Drive scope for shared spreadsheet access
-- ✅ Real-time sync with Google Sheets (5-column data model with waste tracking)
-- ✅ Today's Feed Total tracking with progress bar and goal visualization
-- ✅ Last feed time display
-- ✅ Dark mode support
-- ✅ Comprehensive haptic feedback with settings toggle
-- ✅ Settings page with configurable options including haptic preferences and advanced features toggle
-- ✅ Mobile-optimized spreadsheet picker with bottom-aligned selection
-- ✅ Siri Shortcuts with natural voice commands (no "mL" pronunciation issues)
-- ✅ Configurable daily volume goals
-- ✅ Custom formula types
-- ✅ Auto-refresh interface when returning to app after extended absence (1+ hours)
-- ✅ **horizontal swipe horizontal navigation** with four-pane interface
-- ✅ **Feed Overview** - Today's feeding summary with statistics, waste metrics, and 7-day trend analysis
-- ✅ **Pumping logger** - Dedicated pumping session tracking
-- ✅ **Pumping Overview** - Today's pumping summary with session list and weekly insights
-- ✅ **7-day historical comparison** - Visual charts and analytics for pattern recognition
-- ✅ **Accurate timing displays** - Fixed "Since Last" calculations with proper 12-hour AM/PM parsing
-- ✅ **Settings customization** - Configure Quick Volume values for Feed (default: 40,60,130,150) and Pumping (default: 130,140,150,170)
-- ✅ **Space-optimized UI** - Compact waste tracking toggle integrated with volume input for clean interface
+### Core Features
+- 🍼 **Smart Feed Tracking** - Quick volume entry, drag gestures, customizable presets
+- 📊 **Multi-View Dashboard** - Four-pane swipe navigation (Feed entry, History, Pumping, Analytics)
+- 🗂️ **Google Sheets Integration** - Real-time sync, automatic backups, multi-device access
+- 🔊 **Enhanced Haptic Feedback** - Multi-tier system with device compatibility fallbacks
+- 🗑️ **Waste Tracking** - Advanced milk waste monitoring with 2-hour expiration awareness
+- 📱 **Siri Integration** - Natural voice commands ("Log 100 to MiniLog")
+- ⚙️ **Highly Configurable** - Custom volumes, formula types, daily goals, haptic preferences
+- 📈 **Analytics & Insights** - 7-day trends, daily totals, pattern recognition
+- 🔒 **Enterprise-Grade Security** - Multi-layer protection against credential leaks
 
 ## Technical Architecture
 
@@ -48,27 +32,41 @@ feedtracker/
 ├── README.md                   # Project overview and setup guide
 ├── SETUP.md                    # Detailed configuration instructions  
 ├── CLAUDE.md                   # Developer documentation
+├── SECURITY.md                 # Security guidelines and incident response
 ├── Privacy.md                  # Privacy policy and data handling
 ├── LICENSE                     # Apache 2.0 license
-├── .gitignore                  # Git exclusions for sensitive files
-├── MiniLog.xcodeproj/         # Xcode project configuration
+├── .github/workflows/          # GitHub Actions security enforcement
+├── scripts/                    # Security audit and development tools
 └── FeedTracker/               # Source code directory
-    ├── FeedTrackerApp.swift           # App entry point, Google Sign-In & Siri config
-    ├── HorizontalNavigationView.swift # horizontal swipe four-pane navigation container
-    ├── ContentView.swift              # Legacy main UI (now FeedLoggingView)
-    ├── FeedHistoryView.swift          # Left pane: Feed overview with 7-day analytics
-    ├── PumpingView.swift              # Right pane: Pumping session logger
-    ├── PumpingHistoryView.swift       # Far right: Pumping overview with weekly insights
-    ├── WeeklySummaryView.swift        # Reusable 7-day trend analysis component
-    ├── SettingsView.swift             # Settings page with haptic preferences
-    ├── SpreadsheetPickerView.swift    # Mobile-optimized spreadsheet browser  
-    ├── GoogleSheetsService.swift      # Google Sheets/Drive API integration
-    ├── Models.swift                   # Data models (FeedEntry, PumpingEntry, DailyTotal)
-    ├── Utilities.swift                # Shared utilities (RelativeTimeFormatter)
-    ├── LogFeedIntent.swift            # Siri Shortcuts integration (iOS 16+)
-    ├── Info.plist                     # App configuration (OAuth URL schemes)
-    ├── Assets.xcassets/               # App icons and visual assets
-    └── GoogleService-Info.plist       # OAuth credentials (git-ignored)
+    ├── FeedTrackerApp.swift           # App entry point & configuration
+    ├── HorizontalNavigationView.swift # Four-pane swipe navigation
+    ├── ContentView.swift              # Main feed entry (70 lines - 92% reduction!)
+    ├── FeedLoggingView.swift          # Secondary feed entry interface
+    │
+    ├── 🎯 Shared Components (NEW)
+    ├── FeedEntryForm.swift            # Shared UI component (245 lines)
+    ├── FeedEntryViewModel.swift       # Shared business logic (200+ lines)
+    ├── FeedConstants.swift            # Centralized constants (50 lines)
+    ├── HapticHelper.swift             # Multi-tier haptic system (200+ lines)
+    │
+    ├── 📊 Views & Features
+    ├── FeedHistoryView.swift          # Feed analytics with 7-day trends
+    ├── PumpingView.swift              # Pumping session logger
+    ├── PumpingHistoryView.swift       # Pumping analytics & insights
+    ├── WeeklySummaryView.swift        # Reusable trend analysis
+    ├── SettingsView.swift             # App configuration
+    ├── SpreadsheetPickerView.swift    # Google Sheets browser
+    │
+    ├── 🔧 Services & Models
+    ├── GoogleSheetsService.swift      # API integration with UserDefaults sync
+    ├── Models.swift                   # Data models
+    ├── Utilities.swift                # Shared utilities
+    ├── LogFeedIntent.swift            # Siri Shortcuts (iOS 16+)
+    │
+    └── 📱 Configuration
+        ├── Info.plist                # App configuration
+        ├── Assets.xcassets/           # App icons and assets
+        └── GoogleService-Info.plist   # OAuth credentials (git-ignored)
 ```
 
 ### Data Model
@@ -83,6 +81,17 @@ feedtracker/
 - **A**: Date (M/d/yyyy format)
 - **B**: Time (h:mm a format - 12-hour with AM/PM)  
 - **C**: Volume (numeric only, no units)
+
+### Security Architecture
+The app implements enterprise-grade security to protect sensitive OAuth credentials and API keys:
+
+- **🛡️ GitHub Actions Security Scanning** - Server-side enforcement that cannot be bypassed
+- **🔒 Multi-Layer Pre-Commit Protection** - Local hooks with pattern detection and content scanning
+- **📋 Enhanced .gitignore** - Comprehensive patterns for all sensitive file types  
+- **🔍 Security Audit Tools** - Regular monitoring and incident response capabilities
+- **📚 Complete Documentation** - Security guidelines and incident response procedures
+
+All commits are automatically scanned for API keys, OAuth credentials, and sensitive files before being allowed into the repository.
 
 ## Current Implementation Status
 
@@ -120,14 +129,23 @@ feedtracker/
    - Auto-refresh interface after returning from 1+ hour absence
    - Enhanced Settings page with haptic preferences and UI controls
 
-### Latest Release: Major Architectural Refactor & Haptic System Overhaul
-- **🏗️ Massive Code Cleanup**: Eliminated 917 lines of duplication - reduced ContentView from 987 to 70 lines (92.9% reduction)
-- **🎯 Shared Component Architecture**: Created 4 new files (`FeedEntryForm`, `FeedEntryViewModel`, `FeedConstants`, enhanced `HapticHelper`)
-- **🔧 Fixed Active Spreadsheet Bug**: Resolved force-close requirement when selecting new sheets via UserDefaults observation
-- **🎵 Overhauled Haptic System**: Multi-tier fallback system (UIImpactFeedbackGenerator → UINotificationFeedbackGenerator → AudioToolbox)
-- **📱 Subtler Haptic Feedback**: Reduced intensity levels (0.7/0.5/0.3) based on user feedback and removed navigation haptics
-- **🛡️ Enhanced Security**: Resolved accidental .env.local leak through improved git workflow and documentation
-- **📚 Complete Documentation**: Comprehensive CLAUDE.md with architectural patterns and development context
+### Latest Release: Architectural Refactor & Security Overhaul
+
+#### 🏗️ Massive Code Reduction
+- **917 lines eliminated** - Removed all code duplication through shared components
+- **ContentView: 987 → 70 lines** (92.9% reduction)
+- **Created 4 new shared files** - `FeedEntryForm`, `FeedEntryViewModel`, `FeedConstants`, `HapticHelper`
+
+#### 🔒 Enterprise Security System  
+- **GitHub Actions enforcement** - Server-side security scanning on every commit
+- **Multi-layer protection** - Pre-commit hooks, content scanning, pattern detection
+- **Comprehensive .gitignore** - Blocks all sensitive file types automatically
+- **Security audit tools** - Regular monitoring and incident response
+
+#### 🎵 Enhanced User Experience
+- **Multi-tier haptic system** - Fallback compatibility across all iOS devices
+- **Subtler feedback** - Refined intensities (0.7/0.5/0.3) based on user testing
+- **Fixed spreadsheet bug** - No more force-close required for sheet selection
 
 ### Previous Improvements (Pre-Refactor)
 - **🗑️ Advanced Waste Tracking**: Complete milk waste tracking system with 2-hour expiration awareness
@@ -316,40 +334,6 @@ The project uses Swift Package Manager with these dependencies (automatically re
 - **Data retention policies** - Configurable retention with automatic cleanup
 - **Audit logging** - CloudTrail for all data access and modifications
 - **Privacy controls** - User data export, deletion, and consent management
-
-## For AI Development Assistance
-
-### **Post-Refactoring Architecture (2024)**
-This codebase underwent major architectural improvements in December 2024:
-
-**Before**: 987-line ContentView with 80% code duplication  
-**After**: Clean 70-line views using shared components
-
-### **Key Patterns for AI Assistance**
-```swift
-// When modifying feed entry behavior:
-FeedEntryViewModel.swift  // Business logic
-FeedEntryForm.swift      // UI components  
-FeedConstants.swift      // Configuration values
-
-// Architecture understanding:
-ContentView: @StateObject sheetsService     // Owns the service
-FeedLoggingView: @ObservedObject sheetsService // Receives the service
-```
-
-### **Common Tasks**
-- **Adding UI elements**: Edit `FeedEntryForm.swift` (affects both views)
-- **Adding business logic**: Edit `FeedEntryViewModel.swift`
-- **Modifying constants**: Edit `FeedConstants.swift` (no more magic numbers)
-- **Navigation changes**: Check `HorizontalNavigationView.swift` for 4-pane setup
-
-### **Critical Files**
-- `CLAUDE.md` - Comprehensive development context for AI assistance
-- `FeedConstants.swift` - All configuration values and magic numbers
-- `FeedEntryForm.swift` - Shared UI component (245 lines)
-- `FeedEntryViewModel.swift` - Shared business logic (200+ lines)
-
-See `CLAUDE.md` for complete development context and patterns.
 
 ## Contributing
 

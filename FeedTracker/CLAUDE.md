@@ -1,252 +1,155 @@
 # Claude Code Assistant Instructions
 
 ## Project Overview
-
 MiniLog is an iOS SwiftUI app for tracking baby feeding with Google Sheets integration, haptic feedback, and multi-view navigation.
 
-## Architecture Summary
+## Architecture Summary (Post-Refactor June 2025)
 - **MVVM Pattern**: Views use `@StateObject` for service ownership and `@ObservedObject` for dependency injection
 - **Shared Components**: Eliminated 917 lines of duplication through architectural refactor
 - **Google Sheets Integration**: Real-time sync with spreadsheet data
 - **Multi-Tier Haptic System**: Modern haptics with AudioToolbox fallback
+- **Enterprise Security**: GitHub Actions enforcement and multi-layer protection
 
-## Architectural Improvements Summary
+## Key Components
 
-### Code Reduction
-- **ContentView.swift**: Reduced from 987 lines to 70 lines (92% reduction)
-- **Total Duplication Eliminated**: 917 lines
-- **New Shared Components**: 4 major files created
-- **Improved Files**: 4 existing files enhanced
+### Core Views
+- `ContentView.swift` (70 lines) - Main entry point, owns GoogleSheetsService
+- `FeedLoggingView.swift` - Feed tracking interface in navigation view
+- `HorizontalNavigationView.swift` - 4-panel swipe navigation system
+- `SettingsView.swift` - App configuration and Google account management
 
-### Key Architectural Changes
+### Shared Architecture (NEW - June 2025)
+- `FeedEntryForm.swift` (245 lines) - Shared UI component for feed entry
+- `FeedEntryViewModel.swift` (200+ lines) - Centralized business logic
+- `FeedConstants.swift` (50 lines) - App-wide constants and configuration
+- `HapticHelper.swift` (100+ lines) - Multi-fallback haptic system
 
-1. **Component-Based Architecture**: Extracted shared UI and business logic into reusable components
-2. **Centralized Constants**: All magic numbers and strings moved to a dedicated constants file
-3. **Multi-Tier Haptic System**: Implemented sophisticated haptic feedback with fallback support
-4. **UserDefaults Observation**: Fixed active spreadsheet selection bug through reactive updates
-5. **Consistent Code Style**: Standardized formatting and documentation across all files
+### Services
+- `GoogleSheetsService.swift` - API integration with UserDefaults observation
+- `HapticHelper.swift` - Cross-device haptic compatibility
 
-## New Files Created
+## Recent Major Changes (June 2025)
 
-### 1. FeedConstants.swift (50 lines)
-**Purpose**: Centralized constants to eliminate magic numbers and improve maintainability
+### Architectural Refactor
+- **Eliminated 917 lines of duplication** between ContentView and FeedLoggingView
+- **Created shared component architecture** with 4 new files
+- **Reduced ContentView from 987 to 70 lines** (92.9% reduction)
+- **Fixed active spreadsheet selection bug** via UserDefaults observation
+- **Overhauled haptic system** with multi-tier fallback
 
-**Key Features**:
-- Default values for app settings
-- UI dimension constants
-- Drag gesture parameters
-- Haptic feedback constants
-- Animation timing values
-- UserDefaults keys
-- Date format strings
-- Google Sheets API constants
+### Component Extraction
+```swift
+// Before: 987 lines of duplicated code
+// After: 70-line ContentView + shared components
 
-**Benefits**:
-- Single source of truth for all constants
-- Easy to modify app-wide behaviors
-- Improved code readability
-- Reduced potential for inconsistencies
+struct ContentView: View {
+    @StateObject private var sheetsService = GoogleSheetsService()
+    @StateObject private var viewModel = FeedEntryViewModel()
+    
+    var body: some View {
+        NavigationView {
+            FeedEntryForm(viewModel: viewModel, sheetsService: sheetsService)
+        }
+    }
+}
+```
 
-### 2. HapticHelper.swift (200+ lines)
-**Purpose**: Multi-tier haptic system with graceful fallback capabilities
+### Haptic System Overhaul
+- **Multi-tier fallback**: UIImpactFeedbackGenerator → UINotificationFeedbackGenerator → AudioToolbox
+- **Device compatibility**: Handles iOS settings and hardware variations
+- **Subtler feedback**: Reduced intensities (0.7/0.5/0.3 vs 1.0/0.8)
+- **Removed navigation haptics**: User feedback "felt out of place"
 
-**Key Features**:
-- Subtle haptic intensities (0.7/0.5/0.3)
-- iOS version compatibility checks
-- Device capability detection
-- Cached generators for performance
-- Convenience methods for common scenarios
-- Volume drag-specific haptic patterns
+## Development Commands
 
-**Benefits**:
-- Consistent haptic experience across the app
-- Optimized performance through generator caching
-- Graceful degradation on older devices
-- Reduced code duplication for haptic calls
+### Testing & Building
+```bash
+# Run tests (if available)
+xcodebuild test -scheme FeedTracker -destination 'platform=iOS Simulator,name=iPhone 15'
 
-### 3. FeedEntryViewModel.swift (200+ lines)
-**Purpose**: Shared business logic for feed entry operations
+# Build for release
+xcodebuild archive -scheme FeedTracker -archivePath build/FeedTracker.xcarchive
 
-**Key Features**:
-- Complete state management for feed entry forms
-- Async data loading methods
-- Form validation logic
-- Drag gesture handling
-- Quick volume selection
-- Siri intent integration
-- Background/foreground state management
+# Security audit
+../scripts/security-check.sh
+```
 
-**Benefits**:
-- Eliminates business logic duplication
-- Centralized state management
-- Testable architecture
-- Consistent behavior across views
+### Git Workflow
+```bash
+# Increment build and commit
+./increment_build.sh && git add . && git commit -m "Your message"
 
-### 4. FeedEntryForm.swift (245 lines)
-**Purpose**: Shared UI component for feed entry forms
+# Push to main (requires PR due to branch protection)
+git checkout -b feature-branch
+git push origin feature-branch
+# Create PR on GitHub
+```
 
-**Key Features**:
-- Complete form UI implementation
-- Sign-in prompts
-- Today's summary display
-- Interactive volume input with drag gestures
-- Quick action buttons
-- Settings integration
-- Alert handling
+## Development Patterns
 
-**Benefits**:
-- Eliminates UI code duplication
-- Consistent user experience
-- Maintainable component architecture
-- Reusable across different contexts
+### Architecture Overview
+**Before**: 987-line ContentView with 80% code duplication  
+**After**: Clean 70-line views using shared components
 
-## Updated Files
+### Key Patterns
+```swift
+// When modifying feed entry behavior:
+FeedEntryViewModel.swift  // Business logic
+FeedEntryForm.swift      // UI components  
+FeedConstants.swift      // Configuration values
 
-### 1. ContentView.swift
-**Changes**:
-- Reduced from 987 lines to 70 lines
-- Now uses shared FeedEntryForm component
-- Simplified dependency management
-- Removed all duplicated code
+// Architecture understanding:
+ContentView: @StateObject sheetsService     // Owns the service
+FeedLoggingView: @ObservedObject sheetsService // Receives the service
+```
 
-**Benefits**:
-- Dramatically simplified main view
-- Easier to understand and maintain
-- Faster development iteration
-- Reduced potential for bugs
+### Common Development Tasks
+- **Adding UI elements**: Edit `FeedEntryForm.swift` (affects both views)
+- **Adding business logic**: Edit `FeedEntryViewModel.swift`
+- **Modifying constants**: Edit `FeedConstants.swift` (no more magic numbers)
+- **Navigation changes**: Check `HorizontalNavigationView.swift` for 4-pane setup
 
-### 2. FeedLoggingView.swift
-**Changes**:
-- Replaced entire implementation with shared components
-- Reduced from ~540 lines to ~25 lines
-- Uses FeedEntryViewModel and FeedEntryForm
-- Eliminated all code duplication
+### Critical Files for Development
+- `FeedConstants.swift` - All configuration values and magic numbers
+- `FeedEntryForm.swift` - Shared UI component (245 lines)
+- `FeedEntryViewModel.swift` - Shared business logic (200+ lines)
+- `HapticHelper.swift` - Multi-tier haptic system
+- `GoogleSheetsService.swift` - API integration with UserDefaults observation
 
-**Benefits**:
-- Consistent with ContentView behavior
-- Automatic updates when shared components improve
-- Reduced maintenance burden
+## Security Guidelines
 
-### 3. GoogleSheetsService.swift
-**Changes**:
-- Added UserDefaults observation system
-- Enhanced spreadsheet ID management
-- Fixed active spreadsheet selection bug
-- Improved error handling and logging
+### Critical Security Measures
+⚠️ **NEVER commit sensitive files** - .env.local, GoogleService-Info.plist, API keys
 
-**Benefits**:
-- Reactive updates to spreadsheet changes
-- More robust state management
-- Better user experience when switching spreadsheets
+### GitHub Actions Protection
+- **Server-side enforcement** - Cannot be bypassed by local tools
+- **Multi-layer scanning** - Files, content, patterns, configuration
+- **Automatic blocking** - Commits rejected if sensitive data detected
+- **Branch protection** - All changes must pass security scan
 
-### 4. HorizontalNavigationView.swift
-**Changes**:
-- Removed navigation haptics per user feedback
-- Updated to use centralized constants
-- Improved animation consistency
-- Enhanced page indicator styling
+### Security Workflow
+```bash
+# MANDATORY: Security check before any commit
+../scripts/security-check.sh
 
-**Benefits**:
-- Better user experience without excessive haptics
-- Consistent styling with app-wide standards
-- More maintainable animation parameters
+# Stage specific files only (never git add .)
+git add SpecificFile.swift
 
-## Technical Implementation Details
+# Verify staged files
+git diff --cached --name-only
 
-### Haptic System Design
-
-The new HapticHelper implements a sophisticated multi-tier system:
-
-1. **Intensity Levels**: Three custom intensities (0.3, 0.5, 0.7) plus system default
-2. **Fallback Strategy**: Gracefully handles older iOS versions and unsupported devices
-3. **Performance Optimization**: Cached generators reduce latency
-4. **Context-Specific Methods**: Specialized haptics for different use cases
-
-### Architecture Patterns
-
-1. **MVVM Pattern**: Clear separation between View, ViewModel, and Model layers
-2. **Component Composition**: Large views broken down into smaller, reusable components
-3. **Dependency Injection**: Services passed as dependencies rather than created internally
-4. **Observer Pattern**: UserDefaults changes automatically propagate through the system
-
-### Code Quality Improvements
-
-1. **Documentation**: Comprehensive inline documentation with MARK comments
-2. **Error Handling**: Improved error messages and user feedback
-3. **Type Safety**: Centralized constants reduce string literal errors
-4. **Maintainability**: Clear separation of concerns and single responsibility principle
-
-## Performance Improvements
-
-### Memory Management
-- Proper cleanup of observers and generators
-- Optimized haptic generator caching
-- Reduced object allocation through reuse
-
-### User Experience
-- Faster app startup through reduced code complexity
-- More responsive interactions through optimized haptics
-- Consistent behavior across all feed entry points
-
-### Development Experience
-- Faster build times due to reduced code duplication
-- Easier debugging with centralized logic
-- Simplified testing with isolated components
-
-## Future Architectural Considerations
-
-### Scalability
-- Component architecture supports easy addition of new features
-- Centralized constants make app-wide changes trivial
-- Shared business logic reduces implementation effort for new views
-
-### Maintainability
-- Clear separation of concerns
-- Comprehensive documentation
-- Consistent coding patterns throughout
-
-### Testing Strategy
-- ViewModel logic can be unit tested independently
-- UI components can be tested in isolation
-- Haptic system can be mocked for testing
-
-## Migration Benefits
-
-### Developer Benefits
-1. **Reduced Cognitive Load**: Less code to understand and maintain
-2. **Faster Feature Development**: Reusable components accelerate new feature creation
-3. **Fewer Bugs**: Centralized logic reduces potential for inconsistencies
-4. **Better Code Reviews**: Smaller, focused files are easier to review
-
-### User Benefits
-1. **Consistent Experience**: Identical behavior across all feed entry points
-2. **Better Performance**: Optimized haptics and reduced memory usage
-3. **Enhanced Reliability**: Fewer edge cases and better error handling
-4. **Future-Proof**: Architecture supports continued enhancement
-
-## Code Metrics
-
-### Before Refactor
-- Total Lines of Code: ~2,500
-- Code Duplication: 917 lines
-- Main View Complexity: 987 lines
-- Magic Numbers: 50+
-- Haptic Implementations: 15+ scattered calls
-
-### After Refactor
-- Total Lines of Code: ~1,600 (36% reduction)
-- Code Duplication: 0 lines
-- Main View Complexity: 70 lines (93% reduction)
-- Magic Numbers: 0 (all centralized)
-- Haptic Implementations: 1 centralized system
+# Commit (blocked if security issues found)
+git commit -m "description"
+```
 
 ## Current Status
-- ✅ Major architectural refactor completed
-- ✅ All duplication eliminated
-- ✅ Haptic system overhauled
-- ✅ Active spreadsheet bug fixed
+- ✅ Major architectural refactor completed (June 2025)
+- ✅ All duplication eliminated (917 lines removed)
+- ✅ Haptic system overhauled with multi-tier fallback
+- ✅ Active spreadsheet bug fixed via UserDefaults observation
+- ✅ Enterprise security system implemented
 - 🔄 Ready for continued development
 
 ---
 
-*This refactor maintains all existing functionality while dramatically improving code structure and user experience.*
+*This documentation reflects the post-refactor architecture completed in June 2025.*
