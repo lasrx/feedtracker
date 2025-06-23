@@ -54,6 +54,11 @@ jobs:
       run: |
         echo "🔍 Scanning file contents for API keys and secrets..."
         
+        # Debug: Show current directory and files
+        echo "DEBUG: Current directory: $(pwd)"
+        echo "DEBUG: Files in current directory:"
+        ls -la
+        
         # Define patterns for common API keys
         PATTERNS=(
           "AIzaSy[A-Za-z0-9_-]{33}"                    # Google API keys
@@ -73,15 +78,20 @@ jobs:
         
         SECRETS_FOUND=false
         
+        echo "DEBUG: Starting pattern scan with ${#PATTERNS[@]} patterns"
+        
         for pattern in "${PATTERNS[@]}"; do
+          echo "DEBUG: Scanning for pattern: $pattern"
           # Skip scanning this security workflow file itself
-          SCAN_RESULTS=$(grep -r -E "$pattern" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null | grep -v "security-check.yml")
+          SCAN_RESULTS=$(grep -r -E "$pattern" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null | grep -v "security-check.yml" || true)
           if [ -n "$SCAN_RESULTS" ]; then
             echo "❌ CRITICAL: API key or secret pattern detected: $pattern"
             echo "   Details: $SCAN_RESULTS"
             SECRETS_FOUND=true
           fi
         done
+        
+        echo "DEBUG: Pattern scan completed, SECRETS_FOUND=$SECRETS_FOUND"
         
         if [ "$SECRETS_FOUND" = true ]; then
           echo ""
