@@ -1,0 +1,147 @@
+name: Security Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Scan for forbidden files
+      run: |
+        echo "🔍 Scanning for forbidden file patterns..."
+        
+        # Check for environment files
+        if find . -name "*.env*" -not -path "./.git/*" -not -name ".env.example"; then
+          echo "❌ Environment files detected - these should never be committed"
+          exit 1
+        fi
+        
+        # Check for Google service files
+        if find . -name "GoogleService-Info.plist" -not -path "./.git/*"; then
+          echo "❌ GoogleService-Info.plist detected - contains OAuth secrets"
+          exit 1
+        fi
+        
+        # Check for other sensitive files
+        if find . \( -name "secrets.*" -o -name "credentials.*" -o -name "*.key" \) -not -path "./.git/*"; then
+          echo "❌ Sensitive files detected"
+          exit 1
+        fi
+        
+        echo "✅ No forbidden files found"
+    
+    - name: Scan for API keys and secrets
+      run: |
+        echo "🔍 Scanning file contents for API keys and secrets..."
+        
+        # Define patterns for common API keys
+        PATTERNS=(
+          "AIzaSy[A-Za-z0-9_-]{33}"                    # Google API keys
+          "ya29\.[A-Za-z0-9_-]+"                      # Google OAuth tokens
+          "sk-[A-Za-z0-9]{48}"                        # OpenAI API keys
+          "xoxb-[0-9]+-[0-9]+-[A-Za-z0-9]+"          # Slack bot tokens
+          "ghp_[A-Za-z0-9]{36}"                       # GitHub personal access tokens
+          "gho_[A-Za-z0-9]{36}"                       # GitHub OAuth tokens
+          "github_pat_[A-Za-z0-9_]{82}"               # GitHub fine-grained tokens
+          "glpat-[A-Za-z0-9_-]{20}"                   # GitLab personal access tokens
+          "AKIA[0-9A-Z]{16}"                          # AWS access keys
+          "[0-9]+-[a-zA-Z0-9]+\.apps\.googleusercontent\.com"  # OAuth client IDs
+          "postgres://.*:.*@"                         # Database URLs with credentials
+          "mysql://.*:.*@"                            # MySQL URLs with credentials
+          "mongodb://.*:.*@"                          # MongoDB URLs with credentials
+        )
+        
+        SECRETS_FOUND=false
+        
+        for pattern in "${PATTERNS[@]}"; do
+          if grep -r -E "$pattern" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+            echo "❌ CRITICAL: API key or secret pattern detected: $pattern"
+            SECRETS_FOUND=true
+          fi
+        done
+        
+        if [ "$SECRETS_FOUND" = true ]; then
+          echo ""
+          echo "🚨 SECURITY VIOLATION: Secrets detected in repository"
+          echo "📋 Actions required:"
+          echo "   1. Remove sensitive data from files"
+          echo "   2. Rotate any exposed credentials immediately"
+          echo "   3. Add patterns to .gitignore"
+          echo "   4. Use environment variables or secure vaults instead"
+          exit 1
+        fi
+        
+        echo "✅ No API keys or secrets detected"
+    
+    - name: Validate .gitignore coverage
+      run: |
+        echo "🔍 Validating .gitignore coverage..."
+        
+        REQUIRED_PATTERNS=(
+          ".env*"
+          "GoogleService-Info.plist"
+          "*.key"
+          "secrets.*"
+          "credentials.*"
+        )
+        
+        MISSING_PATTERNS=()
+        
+        for pattern in "${REQUIRED_PATTERNS[@]}"; do
+          if ! grep -q "$pattern" .gitignore 2>/dev/null; then
+            MISSING_PATTERNS+=("$pattern")
+          fi
+        done
+        
+        if [ ${#MISSING_PATTERNS[@]} -gt 0 ]; then
+          echo "⚠️ Missing .gitignore patterns:"
+          printf '   - %s\n' "${MISSING_PATTERNS[@]}"
+          echo "These patterns should be added to prevent accidental commits"
+          exit 1
+        fi
+        
+        echo "✅ .gitignore coverage validated"
+    
+    - name: Check for placeholder values
+      run: |
+        echo "🔍 Checking for exposed real values in code..."
+        
+        # Check Info.plist for real OAuth client ID
+        if grep -q "com\.googleusercontent\.apps\." FeedTracker/Info.plist 2>/dev/null; then
+          echo "❌ Real OAuth client ID detected in Info.plist"
+          echo "   Should be: YOUR_OAUTH_CLIENT_ID_HERE"
+          exit 1
+        fi
+        
+        # Check SettingsView.swift for real spreadsheet ID
+        if grep -q '@AppStorage("spreadsheetId") private var spreadsheetId = "[^"]\+"' FeedTracker/SettingsView.swift 2>/dev/null; then
+          SHEET_ID=$(grep -o 'spreadsheetId = "[^"]*"' FeedTracker/SettingsView.swift | sed 's/spreadsheetId = "\(.*\)"/\1/')
+          if [ -n "$SHEET_ID" ] && [ "$SHEET_ID" != "" ]; then
+            echo "❌ Real spreadsheet ID detected in SettingsView.swift"
+            echo "   Should be empty string for public commits"
+            exit 1
+          fi
+        fi
+        
+        echo "✅ No exposed real values found"
+    
+    - name: Security scan summary
+      run: |
+        echo ""
+        echo "🛡️ Security scan completed successfully"
+        echo "✅ Repository is safe for public distribution"
+        echo ""
+        echo "🔒 Protected against:"
+        echo "   • Environment files (.env*)"
+        echo "   • OAuth configuration (GoogleService-Info.plist)"
+        echo "   • API keys (Google, AWS, GitHub, OpenAI, etc.)"
+        echo "   • Database credentials"
+        echo "   • Development secrets in code"

@@ -103,14 +103,47 @@ secrets.plist
 *.mobileprovision
 *.provisionprofile
 
-# SECURITY: Development environment files with sensitive data
+# SECURITY: ALL ENVIRONMENT FILES - NEVER COMMIT THESE!
+# ⚠️  WARNING: These files contain API keys and secrets
+.env*
+*.env
 .env.local
 .env.development.local
 .env.production.local
+.env.staging
+.env.test
+environment.local
+environment.*.local
+config.local.*
+secrets.*
+keys.*
+credentials.*
 
 # SECURITY: Temporary backup files from security scripts
 sensitive_backup.tmp
 .git/sensitive_backup
+
+# SECURITY: Backup and temporary files that might contain secrets
+*.backup
+*.tmp
+*.temp
+*_backup
+*_temp
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# SECURITY: Common sensitive file patterns
+api_keys.*
+db_credentials.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
 
 # IDE Files
 .vscode/

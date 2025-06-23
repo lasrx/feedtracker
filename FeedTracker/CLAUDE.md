@@ -1,8 +1,14 @@
-# FeedTracker - Major Architectural Refactor Documentation
+# Claude Code Assistant Instructions
 
-## Overview
+## Project Overview
 
-This document describes the comprehensive architectural refactor that eliminated 917 lines of code duplication and improved the overall structure of the FeedTracker iOS application.
+MiniLog is an iOS SwiftUI app for tracking baby feeding with Google Sheets integration, haptic feedback, and multi-view navigation.
+
+## Architecture Summary
+- **MVVM Pattern**: Views use `@StateObject` for service ownership and `@ObservedObject` for dependency injection
+- **Shared Components**: Eliminated 917 lines of duplication through architectural refactor
+- **Google Sheets Integration**: Real-time sync with spreadsheet data
+- **Multi-Tier Haptic System**: Modern haptics with AudioToolbox fallback
 
 ## Architectural Improvements Summary
 
@@ -234,12 +240,13 @@ The new HapticHelper implements a sophisticated multi-tier system:
 - Magic Numbers: 0 (all centralized)
 - Haptic Implementations: 1 centralized system
 
-## Conclusion
-
-This architectural refactor represents a significant improvement in code quality, maintainability, and user experience. The elimination of 917 lines of duplicated code, combined with the introduction of robust shared components, creates a foundation for continued development and enhancement of the FeedTracker application.
-
-The new architecture follows iOS development best practices and provides a clear path forward for future features and improvements. The component-based approach ensures that enhancements benefit all parts of the application automatically, while the centralized constants and services provide consistency and reliability.
+## Current Status
+- ✅ Major architectural refactor completed
+- ✅ All duplication eliminated
+- ✅ Haptic system overhauled
+- ✅ Active spreadsheet bug fixed
+- 🔄 Ready for continued development
 
 ---
 
-*This refactor was completed with careful attention to maintaining existing functionality while dramatically improving the underlying code structure and user experience.*
+*This refactor maintains all existing functionality while dramatically improving code structure and user experience.*
