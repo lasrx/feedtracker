@@ -74,7 +74,7 @@ jobs:
         SECRETS_FOUND=false
         
         for pattern in "${PATTERNS[@]}"; do
-          if grep -r -E "$pattern" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+          if grep -r -E "$pattern" . --exclude-dir=.git --exclude-dir=node_modules --exclude=".github/workflows/security-check.yml" 2>/dev/null; then
             echo "❌ CRITICAL: API key or secret pattern detected: $pattern"
             SECRETS_FOUND=true
           fi
