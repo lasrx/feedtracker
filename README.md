@@ -261,63 +261,97 @@ The project uses Swift Package Manager with these dependencies (automatically re
 
 ## Future Considerations
 
-### Scaling Beyond MVP
-**Strategy**: Multi-tier architecture with Google Sheets as privacy-focused basic tier and cost-optimized AWS for advanced analytics.
+### Dual-Strategy Cloud Migration Plan
+**Approach**: Solve current OAuth pain points with simplified onboarding while maintaining privacy-focused Sheets option.
 
-#### Tier 1: Google Sheets (Current - Privacy Focused)
-- **Zero infrastructure costs** - Users pay nothing, data stays in their Google account
-- **Maximum privacy** - No third-party data storage, direct user-to-Google API
-- **Simple setup** - Just requires Google account and spreadsheet ID
-- **Perfect for**: Privacy-conscious users, single-family use, minimal tech setup
+#### Current Challenge: OAuth User Experience
+- Complex Google Sign-In flow with scary permission dialogs
+- Frequent re-authentication required (token expiry issues)
+- Users getting signed out periodically 
+- High friction onboarding deterring adoption
 
-#### Tier 2: Premium Analytics (AWS Cloud)
-**Cost-Optimized Architecture with Advanced Insights:**
+#### Proposed Solution: Dual-Tier Strategy
 
-**Database Layer (Cost-Conscious):**
-- **DynamoDB** - Pay-per-request model, generous free tier (25GB, 25 WCU/RCU)
-- **Skip RDS initially** - DynamoDB handles ~95% of use cases at fraction of cost
-- **S3** - Extremely cheap storage for analytics (~$0.023/GB/month)
+### Tier 1: Firebase Anonymous Auth (Default - Simplified UX)
+**Immediate Solution for OAuth Problems:**
+- **Instant onboarding** - "Start Tracking" button, no sign-up required
+- **Anonymous Firebase users** - Automatic device syncing via persistent user ID
+- **Cross-device sync** - Data follows user across devices seamlessly
+- **Optional account linking** - Upgrade to Google account for backup later
+- **Cost**: $0-3/month for 1000+ users (Firebase free tier coverage)
 
-**Compute Layer (Serverless-First):**
-- **Lambda** - 1M requests/month free, then $0.20 per 1M requests
-- **API Gateway** - 1M API calls/month free tier
-- **EventBridge** - Pay-per-event, minimal cost for feeding notifications
+**User Experience:**
+```
+1. App opens → "Start Tracking" button
+2. Immediate logging (no authentication friction)
+3. Data automatically syncs across user's devices
+4. Optional: "Link Google account" for backup/export
+```
 
-**Cost Projections (1000 active users):**
-- **DynamoDB**: ~$5-15/month (generous free tier coverage)
-- **Lambda**: ~$2-5/month (most requests covered by free tier)
-- **S3**: ~$1-3/month for analytics storage
-- **Total**: ~$10-25/month vs $30-100+ for RDS equivalent
+### Tier 2: Google Sheets (Privacy Pro Mode)
+**Keep Current Implementation as Premium Option:**
+- **Market as "Advanced Privacy Mode"** - For users who want spreadsheet control
+- **Full data ownership** - Data stays in user's Google account
+- **Power user features** - Direct spreadsheet access, custom formulas
+- **Zero infrastructure costs** - Maintain current $0 hosting model
+- **Target audience**: Privacy-conscious users, data analysts, spreadsheet power users
 
-#### Phase 1: Cost-Optimized Foundation
-- **DynamoDB single table design** - Minimize provisioned throughput costs
-- **Lambda + API Gateway** - Serverless backend with pay-per-use pricing
-- **Terraform** - Infrastructure as code from day one
-- **CloudWatch free tier** - Basic monitoring and logging
+### Infrastructure as Code + Learning Path
 
-#### Phase 2: Premium Analytics Features
-- **DynamoDB Streams** - Real-time data processing (included in DynamoDB cost)
-- **S3 + Athena** - Query historical data without dedicated analytics database
-- **QuickSight SPICE** - $5/user/month only for admin dashboards
-- **Lambda analytics** - Custom insights without expensive ML services
+#### Phase 1: Firebase Foundation (Immediate - 2-3 months)
+**Technology Stack:**
+- **Firebase Auth** - Anonymous users + optional Google linking
+- **Firestore** - Real-time database with offline sync
+- **Cloud Functions** - Serverless processing
+- **Firebase Hosting** - Web dashboard (optional)
 
-**Premium Analytics Capabilities:**
-- **Feeding Pattern Analysis** - Growth trends, volume patterns, timing insights
-- **Age-Appropriate Comparisons** - Anonymous peer comparisons by age group
-- **Predictive Insights** - Next feeding time predictions, growth projections
-- **Health Milestone Tracking** - Integration with pediatric feeding guidelines
-- **Custom Reports** - Weekly/monthly summaries, pediatrician reports
-- **Smart Notifications** - Feeding reminders based on patterns, growth alerts
+**Development Benefits:**
+- **Terraform support** - Full IaC for Firebase project setup
+- **GCP ecosystem integration** - Leverage existing Google Sign-In knowledge
+- **Lower migration complexity** - Keep authentication patterns
+- **Free tier advantages** - 50K reads/20K writes daily free
 
-#### Benefits by Tier
-**Google Sheets Tier:**
-- Zero cost, maximum privacy, simple setup
+#### Phase 2: AWS + Kubernetes Learning (Future - when ready)
+**Learning-Focused Infrastructure:**
+- **Amazon EKS** - Real Kubernetes cluster management experience
+- **Terraform modules** - Complete infrastructure as code
+- **DynamoDB** - Cost-effective database with single-table design
+- **Container architecture** - API services running in K8s pods
 
-**Premium Analytics Tier:**
-- Advanced insights, predictive analytics, peer comparisons
-- Estimated $10-25/month for 1000+ users vs $0 for Sheets
-- Custom dashboards, automated notifications, health milestone tracking
-- Privacy-compliant analytics with user consent and data control
+**Cost-Optimized K8s Setup:**
+- **EKS Fargate** - Pay-per-pod, no EC2 management (~$100/month)
+- **Spot instances** - Cost reduction for development workloads
+- **Full DevOps stack** - CI/CD, monitoring, service mesh learning
+
+#### Long-term Architecture Vision
+
+**Three-Tier Strategy:**
+1. **Firebase Tier** - Simplified UX, $0-5/month operational costs
+2. **Google Sheets Tier** - Privacy-focused, zero infrastructure costs  
+3. **AWS K8s Tier** - Learning environment, advanced analytics (~$100/month)
+
+**Premium Analytics Capabilities (Future):**
+- **Machine Learning Insights** - Feeding pattern recognition, growth predictions
+- **Peer Comparisons** - Anonymous age-appropriate benchmarking
+- **Health Integration** - Pediatric milestone tracking
+- **Professional Reports** - Automated pediatrician summaries
+- **Advanced Notifications** - Predictive feeding reminders
+
+#### Migration Timeline
+**Immediate (Next 1-2 months):**
+- Add Firebase Anonymous Auth as default onboarding
+- Keep Google Sheets as "Pro Mode" option
+- Solve current OAuth friction problems
+
+**Medium-term (3-6 months):**
+- Terraform Firebase infrastructure 
+- Advanced analytics on Firebase data
+- Enhanced user dashboard
+
+**Long-term (6+ months):**
+- AWS EKS learning environment
+- Kubernetes-based microservices
+- Advanced ML analytics pipeline
 
 ### Privacy & Security
 
