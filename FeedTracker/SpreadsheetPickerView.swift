@@ -214,7 +214,7 @@ struct SpreadsheetPickerView: View {
 }
 
 struct SpreadsheetRow: View {
-    let spreadsheet: SpreadsheetInfo
+    let spreadsheet: StorageOption
     let isSelected: Bool
     let onSelect: () -> Void
     
@@ -228,11 +228,11 @@ struct SpreadsheetRow: View {
                         .lineLimit(2)
                     
                     HStack {
-                        if !spreadsheet.lastModified.isEmpty {
+                        if let lastModified = spreadsheet.lastModified, !lastModified.isEmpty {
                             HStack(spacing: 4) {
                                 Image(systemName: "clock")
                                     .font(.caption2)
-                                Text("Updated \(spreadsheet.lastModified)")
+                                Text("Updated \(lastModified)")
                             }
                             .font(.caption2)
                             .foregroundColor(.secondary)
