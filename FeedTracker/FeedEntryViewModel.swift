@@ -29,7 +29,7 @@ class FeedEntryViewModel: ObservableObject {
     private var lastDragTime = Date()
     
     // MARK: - Dependencies
-    private var sheetsService: GoogleSheetsService
+    private var storageService: any StorageServiceProtocol
     private let hapticHelper = HapticHelper.shared
     
     // MARK: - AppStorage Properties
@@ -71,8 +71,8 @@ class FeedEntryViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(sheetsService: GoogleSheetsService) {
-        self.sheetsService = sheetsService
+    init(storageService: any StorageServiceProtocol) {
+        self.storageService = storageService
         
         // Set default formula type
         formulaType = formulaTypes.first ?? "Breast milk"
@@ -84,11 +84,11 @@ class FeedEntryViewModel: ObservableObject {
     // MARK: - Data Loading Methods
     
     func loadTodayTotal() {
-        guard sheetsService.isSignedIn else { return }
+        guard storageService.isSignedIn else { return }
         
         Task {
             do {
-                let total = try await sheetsService.fetchTodayTotal()
+                let total = try await storageService.fetchTodayFeedTotal()
                 totalVolumeToday = total
             } catch {
                 print("Error loading today's total: \(error)")
@@ -97,10 +97,10 @@ class FeedEntryViewModel: ObservableObject {
     }
     
     func loadTodayTotalAsync() async {
-        guard sheetsService.isSignedIn else { return }
+        guard storageService.isSignedIn else { return }
         
         do {
-            let total = try await sheetsService.fetchTodayTotal()
+            let total = try await storageService.fetchTodayFeedTotal()
             totalVolumeToday = total
         } catch {
             print("Error loading today's total: \(error)")
@@ -217,8 +217,8 @@ class FeedEntryViewModel: ObservableObject {
         
         Task {
             do {
-                // Save to Google Sheets
-                try await sheetsService.appendRow(
+                // Save to storage
+                try await storageService.appendFeed(
                     date: dateString,
                     time: timeString,
                     volume: volume,  // Just the number, no "mL"
@@ -246,7 +246,7 @@ class FeedEntryViewModel: ObservableObject {
                 // Update today's total if it's today
                 if Calendar.current.isDateInToday(selectedDate) {
                     do {
-                        let total = try await sheetsService.fetchTodayTotal()
+                        let total = try await storageService.fetchTodayFeedTotal()
                         totalVolumeToday = total
                     } catch {
                         print("Error refreshing total: \(error)")
@@ -298,10 +298,4 @@ class FeedEntryViewModel: ObservableObject {
         showingSettings = false
     }
     
-    // MARK: - Dependency Management
-    
-    /// Updates the sheets service instance (for ContentView compatibility)
-    func updateSheetsService(_ newService: GoogleSheetsService) {
-        sheetsService = newService
-    }
 }

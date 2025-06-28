@@ -8,7 +8,7 @@ struct FeedEntryForm: View {
     
     // MARK: - Dependencies
     @StateObject var viewModel: FeedEntryViewModel
-    @ObservedObject var sheetsService: GoogleSheetsService
+    @ObservedObject var storageService: any StorageServiceProtocol
     
     // MARK: - Environment
     @Environment(\.colorScheme) var colorScheme
@@ -17,7 +17,7 @@ struct FeedEntryForm: View {
     var body: some View {
         Form {
             // Sign-in prompt if not signed in
-            if !sheetsService.isSignedIn {
+            if !storageService.isSignedIn {
                 signInPromptSection
             }
             
@@ -53,7 +53,7 @@ struct FeedEntryForm: View {
         .onAppear {
             viewModel.loadTodayTotal()
         }
-        .onChange(of: sheetsService.isSignedIn) { _, isSignedIn in
+        .onChange(of: storageService.isSignedIn) { _, isSignedIn in
             viewModel.handleSignInStatusChange(isSignedIn: isSignedIn)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
@@ -281,8 +281,8 @@ struct FeedEntryForm: View {
 #Preview {
     NavigationView {
         FeedEntryForm(
-            viewModel: FeedEntryViewModel(sheetsService: GoogleSheetsService()),
-            sheetsService: GoogleSheetsService()
+            viewModel: FeedEntryViewModel(storageService: GoogleSheetsStorageService()),
+            storageService: GoogleSheetsStorageService()
         )
     }
 }
