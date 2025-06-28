@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct PumpingHistoryView: View {
-    @ObservedObject var sheetsService: GoogleSheetsService
+    @ObservedObject var storageService: any StorageServiceProtocol
     let refreshTrigger: Int
     @State private var todayPumpingSessions: [PumpingEntry] = []
     @State private var isLoading = false
@@ -179,8 +179,8 @@ struct PumpingHistoryView: View {
     }
     
     private func loadTodaySessionsAsync() async {
-        print("PumpingHistoryView: loadTodaySessionsAsync called, isSignedIn: \(sheetsService.isSignedIn)")
-        guard sheetsService.isSignedIn else {
+        print("PumpingHistoryView: loadTodaySessionsAsync called, isSignedIn: \(storageService.isSignedIn)")
+        guard storageService.isSignedIn else {
             print("PumpingHistoryView: Not signed in, skipping load")
             await MainActor.run {
                 isLoading = false
@@ -190,7 +190,7 @@ struct PumpingHistoryView: View {
         
         do {
             print("PumpingHistoryView: Calling fetchTodayPumpingSessions...")
-            let sessions = try await sheetsService.fetchTodayPumpingSessions()
+            let sessions = try await storageService.fetchTodayPumpingSessions()
             print("PumpingHistoryView: Received \(sessions.count) sessions")
             await MainActor.run {
                 self.todayPumpingSessions = sessions.sorted { $0.fullDate > $1.fullDate } // Most recent first
@@ -208,7 +208,7 @@ struct PumpingHistoryView: View {
     
     private func loadWeeklyTotalsAsync() async {
         print("PumpingHistoryView: loadWeeklyTotalsAsync called")
-        guard sheetsService.isSignedIn else {
+        guard storageService.isSignedIn else {
             print("PumpingHistoryView: Not signed in, skipping weekly load")
             await MainActor.run {
                 isLoadingWeekly = false
@@ -218,7 +218,7 @@ struct PumpingHistoryView: View {
         
         do {
             print("PumpingHistoryView: Calling fetchPast7DaysPumpingTotals...")
-            let totals = try await sheetsService.fetchPast7DaysPumpingTotals()
+            let totals = try await storageService.fetchPast7DaysPumpingTotals()
             print("PumpingHistoryView: Received \(totals.count) daily totals")
             await MainActor.run {
                 self.weeklyTotals = totals
@@ -282,5 +282,5 @@ struct PumpingRowView: View {
 }
 
 #Preview {
-    PumpingHistoryView(sheetsService: GoogleSheetsService(), refreshTrigger: 0)
+    PumpingHistoryView(storageService: GoogleSheetsStorageService(), refreshTrigger: 0)
 }

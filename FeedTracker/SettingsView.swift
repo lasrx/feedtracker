@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @StateObject private var sheetsService = GoogleSheetsService()
+    @StateObject private var storageService = GoogleSheetsStorageService()
     @AppStorage("spreadsheetId") private var spreadsheetId = ""
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("formulaTypes") private var formulaTypesData = ""
@@ -45,12 +45,14 @@ struct SettingsView: View {
             Form {
                 // Account Section
                 Section(header: Text("Account")) {
-                    if !sheetsService.isSignedIn {
+                    if !storageService.isSignedIn {
                         VStack(spacing: 12) {
                             Text("Sign in to save feeds")
                                 .font(.headline)
                             Button(action: {
-                                sheetsService.signIn()
+                                Task {
+                                    try await storageService.signIn()
+                                }
                             }) {
                                 Label("Sign in with Google", systemImage: "person.badge.key")
                                     .frame(maxWidth: .infinity)
@@ -64,12 +66,12 @@ struct SettingsView: View {
                                 Text("Signed in as:")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
-                                Text(sheetsService.userEmail ?? "Unknown")
+                                Text(storageService.userEmail ?? "Unknown")
                                     .font(.headline)
                             }
                             Spacer()
                             Button("Sign Out") {
-                                sheetsService.signOut()
+                                try? storageService.signOut()
                             }
                             .buttonStyle(.bordered)
                         }
@@ -84,13 +86,13 @@ struct SettingsView: View {
                             Text("Active Spreadsheet")
                             Spacer()
                             Button("Select") {
-                                if sheetsService.isSignedIn {
+                                if storageService.isSignedIn {
                                     showingSpreadsheetPicker = true
                                 }
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
-                            .disabled(!sheetsService.isSignedIn)
+                            .disabled(!storageService.isSignedIn)
                         }
                         
                         if !spreadsheetId.isEmpty {
@@ -126,7 +128,7 @@ struct SettingsView: View {
                             }
                             .buttonStyle(.borderedProminent)
                             .controlSize(.small)
-                            .disabled(!sheetsService.isSignedIn || isCreatingSheet)
+                            .disabled(!storageService.isSignedIn || isCreatingSheet)
                         }
                         
                         // Manual entry option
@@ -287,7 +289,12 @@ struct SettingsView: View {
                 Button("Save") {
                     spreadsheetId = tempSpreadsheetId
                     // Update the service with new spreadsheet ID
-                    sheetsService.updateSpreadsheetId(tempSpreadsheetId)
+                    let config = StorageConfiguration(
+                        identifier: tempSpreadsheetId,
+                        name: "Current Spreadsheet",
+                        provider: .googleSheets
+                    )
+                    try? storageService.updateConfiguration(config)
                 }
             } message: {
                 Text("Enter the Google Sheets ID from your spreadsheet URL")
@@ -305,7 +312,7 @@ struct SettingsView: View {
                 Text("Enter formula types separated by commas")
             }
             .sheet(isPresented: $showingSpreadsheetPicker) {
-                SpreadsheetPickerView()
+                SpreadsheetPickerView(storageService: storageService)
             }
             .alert("Create New Sheet", isPresented: $showingCreateSheetAlert) {
                 TextField("Sheet Name", text: $newSheetTitle)
@@ -348,12 +355,17 @@ struct SettingsView: View {
         
         Task {
             do {
-                let newSheetId = try await sheetsService.createNewFeedTrackingSheet(title: newSheetTitle)
+                let newSheetId = try await storageService.createNewStorage(title: newSheetTitle)
                 
                 await MainActor.run {
                     // Update the spreadsheet ID
                     spreadsheetId = newSheetId
-                    sheetsService.updateSpreadsheetId(newSheetId)
+                    let config = StorageConfiguration(
+                        identifier: newSheetId,
+                        name: newSheetTitle,
+                        provider: .googleSheets
+                    )
+                    try? storageService.updateConfiguration(config)
                     isCreatingSheet = false
                 }
             } catch {

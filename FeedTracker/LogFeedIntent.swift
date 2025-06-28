@@ -26,8 +26,8 @@ struct LogFeedIntent: AppIntent {
         let lastFormulaType = UserDefaults.standard.string(forKey: "lastUsedFormulaType") ?? "Breast milk"
         
         // Check if user is signed in - if not, require opening the app
-        let sheetsService = GoogleSheetsService()
-        guard sheetsService.isSignedIn else {
+        let storageService = GoogleSheetsStorageService()
+        guard storageService.isSignedIn else {
             throw LogFeedError.notSignedIn
         }
         
@@ -42,7 +42,7 @@ struct LogFeedIntent: AppIntent {
         let timeString = timeFormatter.string(from: now)
         
         do {
-            try await sheetsService.appendRow(
+            try await storageService.appendFeed(
                 date: dateString,
                 time: timeString,
                 volume: String(volume.value),

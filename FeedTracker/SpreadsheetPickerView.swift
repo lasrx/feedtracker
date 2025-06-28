@@ -1,21 +1,21 @@
 import SwiftUI
 
 struct SpreadsheetPickerView: View {
-    @StateObject private var sheetsService = GoogleSheetsService()
+    @ObservedObject var storageService: any StorageServiceProtocol
     @AppStorage("spreadsheetId") private var spreadsheetId = ""
     
-    @State private var spreadsheets: [SpreadsheetInfo] = []
-    @State private var allSpreadsheets: [SpreadsheetInfo] = []
+    @State private var spreadsheets: [StorageOption] = []
+    @State private var allSpreadsheets: [StorageOption] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var selectedSpreadsheet: SpreadsheetInfo?
+    @State private var selectedSpreadsheet: StorageOption?
     @State private var showingMore = false
     
     private let initialDisplayCount = 6
     
     @Environment(\.presentationMode) var presentationMode
     
-    var displayedSpreadsheets: [SpreadsheetInfo] {
+    var displayedSpreadsheets: [StorageOption] {
         if showingMore {
             return allSpreadsheets
         } else {
@@ -83,7 +83,12 @@ struct SpreadsheetPickerView: View {
                                         onSelect: {
                                             selectedSpreadsheet = spreadsheet
                                             spreadsheetId = spreadsheet.id
-                                            sheetsService.updateSpreadsheetId(spreadsheet.id)
+                                            let config = StorageConfiguration(
+                                                identifier: spreadsheet.id,
+                                                name: spreadsheet.name,
+                                                provider: spreadsheet.provider
+                                            )
+                                            try? storageService.updateConfiguration(config)
                                         }
                                     )
                                 }
@@ -167,7 +172,7 @@ struct SpreadsheetPickerView: View {
         
         Task {
             do {
-                let fetchedSpreadsheets = try await sheetsService.fetchUserSpreadsheets()
+                let fetchedSpreadsheets = try await storageService.fetchAvailableStorageOptions()
                 await MainActor.run {
                     self.allSpreadsheets = fetchedSpreadsheets
                     self.updateDisplayedSheets()
@@ -246,5 +251,5 @@ struct SpreadsheetRow: View {
 }
 
 #Preview {
-    SpreadsheetPickerView()
+    SpreadsheetPickerView(storageService: GoogleSheetsStorageService())
 }

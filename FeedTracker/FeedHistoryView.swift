@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct FeedHistoryView: View {
-    @ObservedObject var sheetsService: GoogleSheetsService
+    @ObservedObject var storageService: any StorageServiceProtocol
     let refreshTrigger: Int
     @State private var todayFeeds: [FeedEntry] = []
     @State private var isLoading = false
@@ -177,8 +177,8 @@ struct FeedHistoryView: View {
     }
     
     private func loadTodayFeedsAsync() async {
-        print("FeedHistoryView: loadTodayFeedsAsync called, isSignedIn: \(sheetsService.isSignedIn)")
-        guard sheetsService.isSignedIn else {
+        print("FeedHistoryView: loadTodayFeedsAsync called, isSignedIn: \(storageService.isSignedIn)")
+        guard storageService.isSignedIn else {
             print("FeedHistoryView: Not signed in, skipping load")
             await MainActor.run {
                 isLoading = false
@@ -188,7 +188,7 @@ struct FeedHistoryView: View {
         
         do {
             print("FeedHistoryView: Calling fetchTodayFeeds...")
-            let feeds = try await sheetsService.fetchTodayFeeds()
+            let feeds = try await storageService.fetchTodayFeeds()
             print("FeedHistoryView: Received \(feeds.count) feeds")
             await MainActor.run {
                 self.todayFeeds = feeds.sorted { $0.fullDate > $1.fullDate } // Most recent first
@@ -206,7 +206,7 @@ struct FeedHistoryView: View {
     
     private func loadWeeklyTotalsAsync() async {
         print("FeedHistoryView: loadWeeklyTotalsAsync called")
-        guard sheetsService.isSignedIn else {
+        guard storageService.isSignedIn else {
             print("FeedHistoryView: Not signed in, skipping weekly load")
             await MainActor.run {
                 isLoadingWeekly = false
@@ -216,7 +216,7 @@ struct FeedHistoryView: View {
         
         do {
             print("FeedHistoryView: Calling fetchPast7DaysFeedTotals...")
-            let totals = try await sheetsService.fetchPast7DaysFeedTotals()
+            let totals = try await storageService.fetchPast7DaysFeedTotals()
             print("FeedHistoryView: Received \(totals.count) daily totals")
             await MainActor.run {
                 self.weeklyTotals = totals
@@ -282,5 +282,5 @@ struct FeedRowView: View {
 
 
 #Preview {
-    FeedHistoryView(sheetsService: GoogleSheetsService(), refreshTrigger: 0)
+    FeedHistoryView(storageService: GoogleSheetsStorageService(), refreshTrigger: 0)
 }

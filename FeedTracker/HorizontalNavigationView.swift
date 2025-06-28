@@ -6,7 +6,7 @@ struct HorizontalNavigationView: View {
     @State private var currentPage: Int = 1 // Start at center (feed logging)
     @GestureState private var dragOffset: CGFloat = 0
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
-    @StateObject private var sheetsService = GoogleSheetsService()
+    @StateObject private var storageService = GoogleSheetsStorageService()
     @State private var pumpingViewTrigger: Int = 0
     @State private var feedHistoryViewTrigger: Int = 0
     @State private var pumpingHistoryViewTrigger: Int = 0
@@ -15,22 +15,22 @@ struct HorizontalNavigationView: View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
                 // Left pane: Feed History
-                FeedHistoryView(sheetsService: sheetsService, refreshTrigger: feedHistoryViewTrigger)
+                FeedHistoryView(storageService: storageService, refreshTrigger: feedHistoryViewTrigger)
                     .frame(width: geometry.size.width)
                     .tag(0)
                 
                 // Center pane: Feed Logging (existing ContentView)
-                FeedLoggingView(sheetsService: sheetsService)
+                FeedLoggingView(storageService: storageService)
                     .frame(width: geometry.size.width)
                     .tag(1)
                 
                 // Right pane: Pumping Logger
-                PumpingView(sheetsService: sheetsService, refreshTrigger: pumpingViewTrigger)
+                PumpingView(storageService: storageService, refreshTrigger: pumpingViewTrigger)
                     .frame(width: geometry.size.width)
                     .tag(2)
                 
                 // Far right pane: Pumping History
-                PumpingHistoryView(sheetsService: sheetsService, refreshTrigger: pumpingHistoryViewTrigger)
+                PumpingHistoryView(storageService: storageService, refreshTrigger: pumpingHistoryViewTrigger)
                     .frame(width: geometry.size.width)
                     .tag(3)
             }
@@ -97,13 +97,13 @@ struct HorizontalNavigationView: View {
 struct FeedLoggingView: View {
     
     // MARK: - Dependencies
-    @ObservedObject var sheetsService: GoogleSheetsService
+    @ObservedObject var storageService: any StorageServiceProtocol
     @StateObject private var viewModel: FeedEntryViewModel
     
     // MARK: - Initialization
-    init(sheetsService: GoogleSheetsService) {
-        self.sheetsService = sheetsService
-        self._viewModel = StateObject(wrapping: FeedEntryViewModel(sheetsService: sheetsService))
+    init(storageService: any StorageServiceProtocol) {
+        self.storageService = storageService
+        self._viewModel = StateObject(wrappedValue: FeedEntryViewModel(storageService: storageService))
     }
     
     // MARK: - Body
@@ -111,12 +111,8 @@ struct FeedLoggingView: View {
         // Use the shared FeedEntryForm component
         FeedEntryForm(
             viewModel: viewModel,
-            sheetsService: sheetsService
+            storageService: storageService
         )
-        .onAppear {
-            // Ensure viewModel has the correct sheets service
-            viewModel.updateSheetsService(sheetsService)
-        }
     }
 }
 

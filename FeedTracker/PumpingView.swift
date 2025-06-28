@@ -14,7 +14,7 @@ struct PumpingView: View {
     @State private var isSubmitting = false
     @State private var lastHapticVolume: Int = 0
     
-    @ObservedObject var sheetsService: GoogleSheetsService
+    @ObservedObject var storageService: any StorageServiceProtocol
     let refreshTrigger: Int
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
@@ -32,7 +32,7 @@ struct PumpingView: View {
         NavigationView {
             Form {
                 // Sign-in prompt if not signed in
-                if !sheetsService.isSignedIn {
+                if !storageService.isSignedIn {
                     Section {
                         VStack(spacing: 8) {
                             Image(systemName: "drop.triangle")
@@ -172,7 +172,7 @@ struct PumpingView: View {
                         .frame(height: 50)
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(volume.isEmpty || !sheetsService.isSignedIn || isSubmitting)
+                    .disabled(volume.isEmpty || !storageService.isSignedIn || isSubmitting)
                     .accentColor(.purple)
                 }
                 
@@ -225,7 +225,7 @@ struct PumpingView: View {
                 print("PumpingView: refreshTrigger changed, loading data")
                 loadTodayTotal()
             }
-            .onChange(of: sheetsService.isSignedIn) { _, isSignedIn in
+            .onChange(of: storageService.isSignedIn) { _, isSignedIn in
                 if isSignedIn {
                     loadTodayTotal()
                 } else {
@@ -240,8 +240,8 @@ struct PumpingView: View {
     }
     
     private func loadTodayTotal() {
-        print("PumpingView: loadTodayTotal called, isSignedIn: \(sheetsService.isSignedIn)")
-        guard sheetsService.isSignedIn else { 
+        print("PumpingView: loadTodayTotal called, isSignedIn: \(storageService.isSignedIn)")
+        guard storageService.isSignedIn else { 
             print("PumpingView: Not signed in, skipping load")
             return 
         }
@@ -249,7 +249,7 @@ struct PumpingView: View {
         Task {
             do {
                 print("PumpingView: Calling fetchTodayPumpingTotal...")
-                let total = try await sheetsService.fetchTodayPumpingTotal()
+                let total = try await storageService.fetchTodayPumpingTotal()
                 print("PumpingView: Received pumping total: \(total)mL")
                 await MainActor.run {
                     totalVolumeToday = total
@@ -262,10 +262,10 @@ struct PumpingView: View {
     }
     
     private func loadTodayTotalAsync() async {
-        guard sheetsService.isSignedIn else { return }
+        guard storageService.isSignedIn else { return }
         
         do {
-            let total = try await sheetsService.fetchTodayPumpingTotal()
+            let total = try await storageService.fetchTodayPumpingTotal()
             await MainActor.run {
                 totalVolumeToday = total
             }
@@ -288,7 +288,7 @@ struct PumpingView: View {
         
         Task {
             do {
-                try await sheetsService.appendPumpingRow(
+                try await storageService.appendPumping(
                     date: dateString,
                     time: timeString,
                     volume: volume
@@ -324,5 +324,5 @@ struct PumpingView: View {
 }
 
 #Preview {
-    PumpingView(sheetsService: GoogleSheetsService(), refreshTrigger: 0)
+    PumpingView(storageService: GoogleSheetsStorageService(), refreshTrigger: 0)
 }
