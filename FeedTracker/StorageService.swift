@@ -4,7 +4,7 @@ import Foundation
 
 /// Abstract interface for data storage operations
 /// Enables multiple storage providers (Google Sheets, Firebase, etc.)
-protocol StorageServiceProtocol: ObservableObject {
+protocol StorageServiceProtocol: AnyObject, ObservableObject {
     // MARK: - Authentication
     var isSignedIn: Bool { get }
     var userEmail: String? { get }

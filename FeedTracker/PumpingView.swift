@@ -14,7 +14,7 @@ struct PumpingView: View {
     @State private var isSubmitting = false
     @State private var lastHapticVolume: Int = 0
     
-    @ObservedObject var storageService: any StorageServiceProtocol
+    @ObservedObject var storageService: GoogleSheetsStorageService
     let refreshTrigger: Int
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true

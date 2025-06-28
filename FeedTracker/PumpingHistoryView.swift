@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct PumpingHistoryView: View {
-    @ObservedObject var storageService: any StorageServiceProtocol
+    @ObservedObject var storageService: GoogleSheetsStorageService
     let refreshTrigger: Int
     @State private var todayPumpingSessions: [PumpingEntry] = []
     @State private var isLoading = false

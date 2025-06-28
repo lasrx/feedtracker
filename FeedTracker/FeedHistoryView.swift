@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct FeedHistoryView: View {
-    @ObservedObject var storageService: any StorageServiceProtocol
+    @ObservedObject var storageService: GoogleSheetsStorageService
     let refreshTrigger: Int
     @State private var todayFeeds: [FeedEntry] = []
     @State private var isLoading = false

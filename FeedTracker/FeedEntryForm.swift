@@ -8,7 +8,7 @@ struct FeedEntryForm: View {
     
     // MARK: - Dependencies
     @StateObject var viewModel: FeedEntryViewModel
-    @ObservedObject var storageService: any StorageServiceProtocol
+    @ObservedObject var storageService: GoogleSheetsStorageService
     
     // MARK: - Environment
     @Environment(\.colorScheme) var colorScheme

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SpreadsheetPickerView: View {
-    @ObservedObject var storageService: any StorageServiceProtocol
+    @ObservedObject var storageService: GoogleSheetsStorageService
     @AppStorage("spreadsheetId") private var spreadsheetId = ""
     
     @State private var spreadsheets: [StorageOption] = []

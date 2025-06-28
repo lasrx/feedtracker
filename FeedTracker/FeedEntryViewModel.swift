@@ -29,7 +29,7 @@ class FeedEntryViewModel: ObservableObject {
     private var lastDragTime = Date()
     
     // MARK: - Dependencies
-    private var storageService: any StorageServiceProtocol
+    private var storageService: GoogleSheetsStorageService
     private let hapticHelper = HapticHelper.shared
     
     // MARK: - AppStorage Properties
@@ -61,7 +61,7 @@ class FeedEntryViewModel: ObservableObject {
     }
     
     var isFormValid: Bool {
-        !volume.isEmpty && sheetsService.isSignedIn && !isSubmitting
+        !volume.isEmpty && storageService.isSignedIn && !isSubmitting
     }
     
     var progressPercentage: Double {
@@ -71,7 +71,7 @@ class FeedEntryViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(storageService: any StorageServiceProtocol) {
+    init(storageService: GoogleSheetsStorageService) {
         self.storageService = storageService
         
         // Set default formula type

@@ -97,11 +97,11 @@ struct HorizontalNavigationView: View {
 struct FeedLoggingView: View {
     
     // MARK: - Dependencies
-    @ObservedObject var storageService: any StorageServiceProtocol
+    @ObservedObject var storageService: GoogleSheetsStorageService
     @StateObject private var viewModel: FeedEntryViewModel
     
     // MARK: - Initialization
-    init(storageService: any StorageServiceProtocol) {
+    init(storageService: GoogleSheetsStorageService) {
         self.storageService = storageService
         self._viewModel = StateObject(wrappedValue: FeedEntryViewModel(storageService: storageService))
     }
