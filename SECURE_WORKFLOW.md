@@ -30,7 +30,7 @@ nano .env.local
 ```bash
 # Local development configuration - DO NOT COMMIT
 SPREADSHEET_ID=your_actual_spreadsheet_id_here
-GOOGLE_CLIENT_ID=410991883412-example.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=123456789-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com
 ```
 
 **Note**: The `.env.local` file is automatically git-ignored and protected by all security layers.
