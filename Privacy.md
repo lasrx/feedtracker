@@ -1,7 +1,7 @@
 # MiniLog – Feed Tracker - Privacy Policy
 
-**Last Updated:** June 19, 2025  
-**Effective Date:** June 19, 2025
+**Last Updated:** June 28, 2025  
+**Effective Date:** June 28, 2025
 
 ## Overview
 
@@ -10,14 +10,21 @@ MiniLog is designed with privacy as a core principle. We believe your baby's fee
 ## Data Collection and Storage
 
 ### What Data We Collect
-MiniLog collects only the feeding information you explicitly enter:
-- **Feeding Date and Time** - When the feeding occurred
+MiniLog collects only the information you explicitly enter:
+
+**Feeding Data:**
+- **Date and Time** - When the feeding occurred
 - **Volume** - Amount of milk/formula consumed (in mL)
 - **Formula Type** - Type of milk or formula used
+- **Waste Amount** - Amount of milk wasted (when advanced features enabled)
+
+**Pumping Data:**
+- **Date and Time** - When the pumping session occurred
+- **Volume** - Amount of milk pumped (in mL)
 
 ### Where Your Data is Stored
 **Google Sheets Storage:**
-- All feeding data is stored directly in Google Sheets within your own Google account
+- All feeding and pumping data is stored directly in Google Sheets within your own Google account
 - MiniLog acts only as a client to write data to your spreadsheets
 - We have no access to your Google account or spreadsheet data
 - Your data never passes through our servers
@@ -26,6 +33,9 @@ MiniLog collects only the feeding information you explicitly enter:
 - App settings (daily volume goals, formula types, spreadsheet ID)
 - Google OAuth tokens (managed by Google's SDK)
 - Last used formula type (for Siri convenience)
+- Haptic feedback preferences
+- Quick volume button configurations
+- Advanced features toggle state
 
 ## Data We Do NOT Collect
 
@@ -52,15 +62,18 @@ MiniLog integrates with Google services for core functionality:
 - We cannot access your spreadsheets or Google account data
 
 **Google Drive API (Limited):**
-- Used only to create new tracking spreadsheets within your Google Drive
+- Used to create new tracking spreadsheets within your Google Drive
+- Used to browse existing spreadsheets for selection via SpreadsheetPickerView
 - Limited to `drive.file` scope (only accesses files created by the app)
-- Cannot access existing files in your Google Drive
+- Cannot access or modify files not created by MiniLog
 
 ## Siri and Voice Data
 
 **Siri Shortcuts:**
 - Voice commands are processed locally on your device by Apple's Siri
 - No voice data is transmitted to our servers
+- Supports natural language commands like "Log 100 to MiniLog"
+- Uses App Intents framework for enhanced recognition (iOS 16+)
 - Siri integration follows Apple's privacy standards
 - You can disable Siri access at any time in iOS Settings
 
@@ -69,8 +82,9 @@ MiniLog integrates with Google services for core functionality:
 **We do not share, sell, or transfer your data to any third parties.**
 
 The only data transmission occurs when:
-- You log a feeding entry (sent directly to your Google Sheets)
+- You log a feeding or pumping entry (sent directly to your Google Sheets)
 - You create a new tracking spreadsheet (created in your Google Drive)
+- You browse existing spreadsheets (read-only access to spreadsheet list)
 
 ## Data Control and Rights
 
@@ -118,8 +132,8 @@ MiniLog can be used globally. Your data is stored in Google's global infrastruct
 
 If you have questions about this Privacy Policy or our privacy practices:
 
-**Email:** [Contact Email]  
-**GitHub Issues:** [Repository URL]/issues
+**GitHub Issues:** https://github.com/lasrx/feedtracker/issues  
+**Project Repository:** https://github.com/lasrx/feedtracker
 
 For questions about Google's data handling, please refer to [Google's Privacy Policy](https://policies.google.com/privacy) and [Google Cloud Privacy](https://cloud.google.com/privacy).
 
@@ -131,12 +145,13 @@ MiniLog requests the following minimal permissions:
 - `https://www.googleapis.com/auth/drive.file` - Create new files in Google Drive (limited scope)
 
 ### Data Minimization
-- Only collects feeding data necessary for the app's functionality
+- Only collects feeding and pumping data necessary for the app's functionality
 - No tracking pixels, analytics SDKs, or behavioral monitoring
 - Local storage limited to app functionality and user preferences
+- Haptic feedback processed locally on device
 
 ---
 
 ## Summary
 
-MiniLog is built on a foundation of data privacy and user control. Your feeding data stays in your Google account, we have no access to it, and you maintain complete control over your information. We believe this approach provides the best balance of functionality and privacy for tracking your baby's important health information.
+MiniLog is built on a foundation of data privacy and user control. Your feeding and pumping data stays in your Google account, we have no access to it, and you maintain complete control over your information. We believe this approach provides the best balance of functionality and privacy for tracking your baby's important health information.

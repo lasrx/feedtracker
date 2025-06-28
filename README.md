@@ -38,30 +38,29 @@ feedtracker/
 ├── .github/workflows/          # GitHub Actions security enforcement
 ├── scripts/                    # Security audit and development tools
 └── FeedTracker/               # Source code directory
-    ├── FeedTrackerApp.swift           # App entry point & configuration
-    ├── HorizontalNavigationView.swift # Four-pane swipe navigation
-    ├── ContentView.swift              # Main feed entry (70 lines - 92% reduction!)
-    ├── FeedLoggingView.swift          # Secondary feed entry interface
+    ├── FeedTrackerApp.swift           # App entry point & configuration (29 lines)
+    ├── HorizontalNavigationView.swift # Four-pane swipe navigation (125 lines)
+    ├── ContentView.swift              # Main feed entry (32 lines - 97% reduction!)
     │
     ├── 🎯 Shared Components (NEW)
-    ├── FeedEntryForm.swift            # Shared UI component (245 lines)
-    ├── FeedEntryViewModel.swift       # Shared business logic (200+ lines)
-    ├── FeedConstants.swift            # Centralized constants (50 lines)
-    ├── HapticHelper.swift             # Multi-tier haptic system (200+ lines)
+    ├── FeedEntryForm.swift            # Shared UI component (287 lines)
+    ├── FeedEntryViewModel.swift       # Shared business logic (306 lines)
+    ├── FeedConstants.swift            # Centralized constants (75 lines)
+    ├── HapticHelper.swift             # Multi-tier haptic system (230 lines)
     │
     ├── 📊 Views & Features
-    ├── FeedHistoryView.swift          # Feed analytics with 7-day trends
-    ├── PumpingView.swift              # Pumping session logger
-    ├── PumpingHistoryView.swift       # Pumping analytics & insights
-    ├── WeeklySummaryView.swift        # Reusable trend analysis
-    ├── SettingsView.swift             # App configuration
-    ├── SpreadsheetPickerView.swift    # Google Sheets browser
+    ├── FeedHistoryView.swift          # Feed analytics with 7-day trends (285 lines)
+    ├── PumpingView.swift              # Pumping session logger (327 lines)
+    ├── PumpingHistoryView.swift       # Pumping analytics & insights (285 lines)
+    ├── WeeklySummaryView.swift        # Reusable trend analysis (189 lines)
+    ├── SettingsView.swift             # App configuration (372 lines)
+    ├── SpreadsheetPickerView.swift    # Google Sheets browser (249 lines)
     │
     ├── 🔧 Services & Models
-    ├── GoogleSheetsService.swift      # API integration with UserDefaults sync
-    ├── Models.swift                   # Data models
-    ├── Utilities.swift                # Shared utilities
-    ├── LogFeedIntent.swift            # Siri Shortcuts (iOS 16+)
+    ├── GoogleSheetsService.swift      # API integration with UserDefaults sync (797 lines)
+    ├── Models.swift                   # Data models (69 lines)
+    ├── Utilities.swift                # Shared utilities (11 lines)
+    ├── LogFeedIntent.swift            # Siri Shortcuts (iOS 16+) (113 lines)
     │
     └── 📱 Configuration
         ├── Info.plist                # App configuration
@@ -132,15 +131,16 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 ### Latest Release: Architectural Refactor & Security Overhaul
 
 #### 🏗️ Massive Code Reduction
-- **917 lines eliminated** - Removed all code duplication through shared components
-- **ContentView: 987 → 70 lines** (92.9% reduction)
-- **Created 4 new shared files** - `FeedEntryForm`, `FeedEntryViewModel`, `FeedConstants`, `HapticHelper`
+- **955+ lines eliminated** - Removed all code duplication through shared components
+- **ContentView: 987 → 32 lines** (96.8% reduction!)
+- **Created 4 new shared files** - `FeedEntryForm` (287), `FeedEntryViewModel` (306), `FeedConstants` (75), `HapticHelper` (230)
 
 #### 🔒 Enterprise Security System  
-- **GitHub Actions enforcement** - Server-side security scanning on every commit
+- **GitHub Actions Secrets Scanner** - Fully operational server-side enforcement on every commit
 - **Multi-layer protection** - Pre-commit hooks, content scanning, pattern detection
+- **Template file support** - Allows `.env.local.template` and `.env.example` files
 - **Comprehensive .gitignore** - Blocks all sensitive file types automatically
-- **Security audit tools** - Regular monitoring and incident response
+- **Self-aware scanning** - Excludes security workflow from its own pattern detection
 
 #### 🎵 Enhanced User Experience
 - **Multi-tier haptic system** - Fallback compatibility across all iOS devices

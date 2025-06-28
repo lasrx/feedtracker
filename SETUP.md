@@ -7,10 +7,37 @@ This guide walks you through setting up the MiniLog app for development or perso
 - Xcode 14+
 - iOS 18+ deployment target
 - Google Cloud Console account
+- Git (for repository cloning and security features)
+
+## Quick Start
+
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/lasrx/feedtracker.git
+   cd feedtracker
+   ```
+
+2. **Set up environment** (see detailed steps below)
+3. **Open in Xcode** and build
 
 ## Required Configuration Files
 
-### 1. Google OAuth Setup
+### 1. Environment File Setup
+
+Create your local environment configuration:
+
+```bash
+# Copy the template file
+cp .env.local.template .env.local
+
+# Edit with your actual values
+# SPREADSHEET_ID=your_actual_spreadsheet_id_here
+# GOOGLE_CLIENT_ID=your_oauth_client_id_here
+```
+
+⚠️ **Important**: The `.env.local` file is automatically git-ignored and should NEVER be committed.
+
+### 2. Google OAuth Setup
 
 You'll need to create your own Google OAuth credentials:
 
@@ -25,7 +52,7 @@ You'll need to create your own Google OAuth credentials:
 - Make sure it's added to the target
 - **NEVER commit this file to git** (it's already in .gitignore)
 
-### 2. Update Info.plist
+### 3. Update Info.plist
 
 Update the OAuth URL scheme in `Info.plist`:
 
@@ -38,7 +65,9 @@ Update the OAuth URL scheme in `Info.plist`:
 
 Replace `YOUR_OAUTH_CLIENT_ID_HERE` with your actual client ID from GoogleService-Info.plist.
 
-### 3. Bundle Identifier
+⚠️ **Security Note**: The pre-commit hooks will automatically clean this file before commits to prevent credential leaks.
+
+### 4. Bundle Identifier
 
 Update the bundle identifier in your Xcode project settings to match your Apple Developer account.
 
@@ -48,16 +77,31 @@ Update the bundle identifier in your Xcode project settings to match your Apple 
 2. Create a new spreadsheet via Settings, or
 3. Manually enter an existing spreadsheet ID in Settings
 
-## Security Notes
+## 🔒 Security System
 
-⚠️ **IMPORTANT**: The following files contain sensitive information and should NEVER be committed to public repositories:
+This project includes **enterprise-grade security** to prevent credential leaks:
 
-- `GoogleService-Info.plist` - Contains OAuth secrets
-- `Info.plist` - Contains OAuth client ID (automatically protected by security scripts)
-- Any `.xcconfig` files with API keys
-- Provisioning profiles (`.mobileprovision`, `.provisionprofile`)
+### Multi-Layer Protection
+- **🛡️ GitHub Actions Secrets Scanner** - Server-side enforcement on every commit
+- **🔧 Pre-commit hooks** - Local protection with automatic cleaning
+- **📋 Enhanced .gitignore** - Comprehensive pattern blocking
+- **✅ Template file support** - Allows `.env.local.template` and `.env.example`
 
-The project includes security scripts that automatically clean sensitive data before commits. See `SECURE_WORKFLOW.md` for details.
+### Protected Files
+The following files are automatically protected:
+- `.env.local` - Development environment (git-ignored)
+- `GoogleService-Info.plist` - OAuth secrets (git-ignored)
+- `Info.plist` - OAuth client ID (auto-cleaned by pre-commit hooks)
+
+### Security Verification
+Test that the security system is working:
+```bash
+# This should be BLOCKED by pre-commit hooks
+git add .env.local
+git commit -m "test"  # Should fail with security warning
+```
+
+See `SECURITY.md` for complete security documentation.
 
 ## Troubleshooting
 
@@ -78,9 +122,27 @@ The project includes security scripts that automatically clean sensitive data be
 
 ## Development Tips
 
+### General Development
 - Use the Simulator for development - no real device provisioning needed
 - Test with different Google accounts to ensure OAuth flow works
 - The app stores spreadsheet ID in UserDefaults, so it persists between app launches
+
+### Architecture Understanding
+The app uses a **shared component architecture** (post-refactor):
+- **ContentView.swift** - Main feed entry (32 lines)
+- **Shared Components** - `FeedEntryForm`, `FeedEntryViewModel`, `FeedConstants`, `HapticHelper`
+- **Feature Views** - `FeedHistoryView`, `PumpingView`, `SettingsView`, etc.
+
+### Code Guidelines
+- Follow existing patterns in shared components
+- Use `FeedConstants.swift` for configuration values
+- All haptic feedback goes through `HapticHelper.swift`
+- Business logic belongs in `FeedEntryViewModel.swift`
+
+### Security During Development
+- The security system will clean sensitive data automatically
+- Never bypass security warnings - they prevent credential leaks
+- Use `git status` to verify what's being committed
 
 ## License
 

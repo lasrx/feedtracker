@@ -15,19 +15,30 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 
 ## Architecture Overview
 
-### Key Components
-- **FeedTrackerApp.swift**: App entry point, configures Google Sign-In and Siri Shortcuts
-- **HorizontalNavigationView.swift**: Main UI with four-pane horizontal swipe horizontal navigation
-- **ContentView.swift**: Legacy feed logging view (now FeedLoggingView within HorizontalNavigationView)
+### Core Application
+- **FeedTrackerApp.swift**: App entry point, configures Google Sign-In and Siri Shortcuts (29 lines)
+- **HorizontalNavigationView.swift**: Main UI with four-pane horizontal swipe navigation (125 lines)
+- **ContentView.swift**: Main feed entry (32 lines - massive reduction from original!)
+
+### 🎯 Shared Components (NEW - Post-Refactor)
+- **FeedEntryForm.swift**: Shared UI component (287 lines) - eliminates code duplication
+- **FeedEntryViewModel.swift**: Shared business logic (306 lines) - centralized feed logic
+- **FeedConstants.swift**: Centralized constants (75 lines) - no more magic numbers
+- **HapticHelper.swift**: Multi-tier haptic system (230 lines) - enhanced feedback
+
+### Feature Views
 - **FeedHistoryView.swift**: Left pane - Today's feed overview with 7-day analytics
 - **PumpingView.swift**: Right pane - Pumping session logger with customizable quick volumes
 - **PumpingHistoryView.swift**: Far right pane - Pumping overview with session list and weekly insights
 - **WeeklySummaryView.swift**: Reusable 7-day trend analysis component for both feed and pumping data
 - **SettingsView.swift**: Configuration UI for spreadsheet selection, haptic preferences, daily goals, formula types, and Quick Volume customization
 - **SpreadsheetPickerView.swift**: Google Drive API-powered spreadsheet browser with bottom-aligned selection
+
+### Services & Models
 - **GoogleSheetsService.swift**: Google Sheets/Drive API integration with OAuth 2.0, supports both Feed Log and Pumping sheets
 - **Models.swift**: Data models (FeedEntry, PumpingEntry, DailyTotal) with proper 12-hour time parsing
 - **LogFeedIntent.swift**: Siri Shortcuts integration for voice logging (iOS 16+)
+- **Utilities.swift**: Shared utilities and helper functions
 
 ### Data Flow
 1. User authentication via Google Sign-In SDK
@@ -133,20 +144,27 @@ The app uses Swift Package Manager with these dependencies:
 - **Auto-donation** after successful feeds to improve recognition
 - **Consent-based** - Users control Siri access via iOS Settings
 
-## ⚠️ SECURITY - SENSITIVE FILES
+## 🔒 SECURITY SYSTEM - FULLY OPERATIONAL
 
-**CRITICAL**: The following files contain sensitive data and must NEVER be committed directly:
+**STATUS**: Enterprise-grade security system is fully implemented and operational.
 
-### Sensitive Files:
-- **Info.plist** - Contains OAuth client ID (auto-protected by security scripts)
-- **SettingsView.swift** - Contains spreadsheet ID (auto-protected by security scripts)  
+### Multi-Layer Protection:
+- **GitHub Actions Secrets Scanner** - Server-side enforcement on every commit
+- **Pre-commit hooks** - Local protection with automatic cleaning
+- **Enhanced .gitignore** - Comprehensive pattern blocking
+- **Template file support** - Allows `.env.local.template` and `.env.example`
+
+### Protected Files:
 - **GoogleService-Info.plist** - OAuth secrets (git-ignored)
-- **.env.local** - Development config (git-ignored)
+- **.env.local** - Development config (removed from tracking, git-ignored)
+- **Info.plist** - OAuth client ID (auto-cleaned by pre-commit hooks)
+- **Any API keys/credentials** - Detected by pattern scanning
 
-### Security Protocol:
-- **NEVER use `git commit` directly** on files with sensitive data
-- **ALWAYS use `./utils/clean_for_commit.sh "message"`** for safe commits
-- **Info.plist and SettingsView.swift** are automatically cleaned/restored by security scripts
+### Security Status:
+- ✅ **Secrets Scanner**: Fully operational, scans 13+ credential patterns
+- ✅ **Template files**: Properly allowed (.env.local.template, .env.example)
+- ✅ **Self-aware**: Security workflow excludes its own patterns
+- ✅ **Auto-cleanup**: Pre-commit hooks clean sensitive data automatically
 - **Check `git status`** before commits - sensitive files should show as modified but not be staged
 
 ### Emergency Recovery:
