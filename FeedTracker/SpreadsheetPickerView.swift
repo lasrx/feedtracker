@@ -25,144 +25,158 @@ struct SpreadsheetPickerView: View {
     
     var body: some View {
         NavigationView {
-            Group {
-                if isLoading {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .scaleEffect(1.2)
-                        Text("Loading your spreadsheets...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let errorMessage = errorMessage {
-                    VStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.largeTitle)
-                            .foregroundColor(.orange)
-                        Text("Error loading spreadsheets")
-                            .font(.headline)
-                        Text(errorMessage)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                        
-                        Button("Try Again") {
-                            loadSpreadsheets()
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                    .padding()
-                } else if spreadsheets.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "doc.text")
-                            .font(.largeTitle)
-                            .foregroundColor(.secondary)
-                        Text("No Sheets Found")
-                            .font(.headline)
-                        Text("Create a new tracking sheet using the \"Create Sheet\" button in Settings.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                        
-                        Button("Refresh") {
-                            loadSpreadsheets()
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                    .padding()
-                } else {
-                    VStack(spacing: 0) {
-                        List {
-                            Section(header: Text("Available Spreadsheets")) {
-                                ForEach(displayedSpreadsheets) { spreadsheet in
-                                    SpreadsheetRow(
-                                        spreadsheet: spreadsheet,
-                                        isSelected: spreadsheet.id == spreadsheetId,
-                                        onSelect: {
-                                            selectedSpreadsheet = spreadsheet
-                                            spreadsheetId = spreadsheet.id
-                                            let config = StorageConfiguration(
-                                                identifier: spreadsheet.id,
-                                                name: spreadsheet.name,
-                                                provider: spreadsheet.provider
-                                            )
-                                            try? storageService.updateConfiguration(config)
-                                        }
-                                    )
-                                }
-                                
-                                // Show More button if there are more sheets
-                                if !showingMore && allSpreadsheets.count > initialDisplayCount {
-                                    Button(action: {
-                                        showingMore = true
-                                        updateDisplayedSheets()
-                                    }) {
-                                        HStack {
-                                            Image(systemName: "chevron.down")
-                                            Text("Show \(allSpreadsheets.count - initialDisplayCount) More Sheets")
-                                            Spacer()
-                                        }
-                                        .foregroundColor(.blue)
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // Done button at bottom
-                        if !spreadsheetId.isEmpty {
-                            VStack(spacing: 8) {
-                                Text("Selected: \(getSelectedSheetName())")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 8)
-                                
-                                Button(action: {
-                                    presentationMode.wrappedValue.dismiss()
-                                }) {
-                                    HStack {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.white)
-                                        Text("Select Sheet")
-                                            .foregroundColor(.white)
-                                            .fontWeight(.medium)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(Color.green)
-                                    .cornerRadius(10)
-                                }
-                                .padding(.horizontal)
-                                .padding(.bottom, 8)
-                            }
-                            .background(Color(.systemGroupedBackground))
-                        }
-                    }
-                }
-            }
-            .navigationTitle("Select Sheet")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Refresh") {
-                        loadSpreadsheets()
-                    }
-                    .disabled(isLoading)
-                }
-            }
+            contentView
         }
+        .navigationTitle("Select Spreadsheet")
         .onAppear {
-            if spreadsheets.isEmpty {
+            loadSpreadsheets()
+        }
+    }
+    
+    @ViewBuilder
+    private var contentView: some View {
+        if isLoading {
+            loadingView
+        } else if let errorMessage = errorMessage {
+            errorView(message: errorMessage)
+        } else if spreadsheets.isEmpty {
+            emptyStateView
+        } else {
+            spreadsheetListView
+        }
+    }
+    
+    private var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle())
+                .scaleEffect(1.2)
+            Text("Loading your spreadsheets...")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.largeTitle)
+                .foregroundColor(.orange)
+            Text("Error loading spreadsheets")
+                .font(.headline)
+            Text(message)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button("Try Again") {
                 loadSpreadsheets()
             }
+            .buttonStyle(.borderedProminent)
         }
+        .padding()
+    }
+    
+    private var emptyStateView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "doc.text")
+                .font(.largeTitle)
+                .foregroundColor(.secondary)
+            Text("No Sheets Found")
+                .font(.headline)
+            Text("Create a new tracking sheet using the \"Create Sheet\" button in Settings.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button("Refresh") {
+                loadSpreadsheets()
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+    
+    private var spreadsheetListView: some View {
+        VStack(spacing: 0) {
+            List {
+                Section(header: Text("Available Spreadsheets")) {
+                    ForEach(displayedSpreadsheets) { spreadsheet in
+                        SpreadsheetRow(
+                            spreadsheet: spreadsheet,
+                            isSelected: spreadsheet.id == spreadsheetId,
+                            onSelect: { selectSpreadsheet(spreadsheet) }
+                        )
+                    }
+                    
+                    showMoreButtonView
+                }
+            }
+            
+            doneButtonView
+        }
+    }
+    
+    @ViewBuilder
+    private var showMoreButtonView: some View {
+        if !showingMore && allSpreadsheets.count > initialDisplayCount {
+            Button(action: {
+                showingMore = true
+                updateDisplayedSheets()
+            }) {
+                HStack {
+                    Image(systemName: "chevron.down")
+                    Text("Show \(allSpreadsheets.count - initialDisplayCount) More Sheets")
+                    Spacer()
+                }
+                .foregroundColor(.blue)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var doneButtonView: some View {
+        if !spreadsheetId.isEmpty {
+            VStack(spacing: 8) {
+                Text("Selected: \(getSelectedSheetName())")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 8)
+                
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.white)
+                        Text("Select Sheet")
+                            .foregroundColor(.white)
+                            .fontWeight(.medium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.green)
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+            }
+            .background(Color(.systemGroupedBackground))
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func selectSpreadsheet(_ spreadsheet: StorageOption) {
+        selectedSpreadsheet = spreadsheet
+        spreadsheetId = spreadsheet.id
+        let config = StorageConfiguration(
+            identifier: spreadsheet.id,
+            name: spreadsheet.name,
+            provider: spreadsheet.provider
+        )
+        try? storageService.updateConfiguration(config)
     }
     
     private func loadSpreadsheets() {
