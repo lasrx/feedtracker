@@ -139,7 +139,7 @@ struct PumpingHistoryView: View {
             loadTodaySessions()
         }
         .refreshable {
-            await loadTodaySessionsAsync()
+            await loadTodaySessionsAsync(forceRefresh: true)
         }
     }
     
@@ -173,12 +173,12 @@ struct PumpingHistoryView: View {
         isLoading = true
         isLoadingWeekly = true
         Task {
-            await loadTodaySessionsAsync()
-            await loadWeeklyTotalsAsync()
+            await loadTodaySessionsAsync(forceRefresh: false)
+            await loadWeeklyTotalsAsync(forceRefresh: false)
         }
     }
     
-    private func loadTodaySessionsAsync() async {
+    private func loadTodaySessionsAsync(forceRefresh: Bool = true) async {
         print("PumpingHistoryView: loadTodaySessionsAsync called, isSignedIn: \(storageService.isSignedIn)")
         guard storageService.isSignedIn else {
             print("PumpingHistoryView: Not signed in, skipping load")
@@ -190,7 +190,7 @@ struct PumpingHistoryView: View {
         
         do {
             print("PumpingHistoryView: Calling fetchTodayPumpingSessions...")
-            let sessions = try await storageService.fetchTodayPumpingSessions()
+            let sessions = try await storageService.fetchTodayPumpingSessions(forceRefresh: forceRefresh)
             print("PumpingHistoryView: Received \(sessions.count) sessions")
             await MainActor.run {
                 self.todayPumpingSessions = sessions.sorted { $0.fullDate > $1.fullDate } // Most recent first
@@ -206,7 +206,7 @@ struct PumpingHistoryView: View {
         }
     }
     
-    private func loadWeeklyTotalsAsync() async {
+    private func loadWeeklyTotalsAsync(forceRefresh: Bool = true) async {
         print("PumpingHistoryView: loadWeeklyTotalsAsync called")
         guard storageService.isSignedIn else {
             print("PumpingHistoryView: Not signed in, skipping weekly load")
@@ -218,7 +218,7 @@ struct PumpingHistoryView: View {
         
         do {
             print("PumpingHistoryView: Calling fetchPast7DaysPumpingTotals...")
-            let totals = try await storageService.fetchPast7DaysPumpingTotals()
+            let totals = try await storageService.fetchPast7DaysPumpingTotals(forceRefresh: forceRefresh)
             print("PumpingHistoryView: Received \(totals.count) daily totals")
             await MainActor.run {
                 self.weeklyTotals = totals

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @StateObject private var storageService = GoogleSheetsStorageService()
+    @ObservedObject var storageService: GoogleSheetsStorageService
     @AppStorage("spreadsheetId") private var spreadsheetId = ""
     @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
     @AppStorage("formulaTypes") private var formulaTypesData = ""
@@ -380,5 +380,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(storageService: GoogleSheetsStorageService())
 }

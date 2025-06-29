@@ -249,7 +249,7 @@ struct PumpingView: View {
         Task {
             do {
                 print("PumpingView: Calling fetchTodayPumpingTotal...")
-                let total = try await storageService.fetchTodayPumpingTotal()
+                let total = try await storageService.fetchTodayPumpingTotal(forceRefresh: false)
                 print("PumpingView: Received pumping total: \(total)mL")
                 await MainActor.run {
                     totalVolumeToday = total
@@ -265,7 +265,7 @@ struct PumpingView: View {
         guard storageService.isSignedIn else { return }
         
         do {
-            let total = try await storageService.fetchTodayPumpingTotal()
+            let total = try await storageService.fetchTodayPumpingTotal(forceRefresh: true)
             await MainActor.run {
                 totalVolumeToday = total
             }

@@ -15,7 +15,6 @@ class FeedEntryViewModel: ObservableObject {
     @Published var showingAlert = false
     @Published var alertMessage = ""
     @Published var lastFeedTime: Date?
-    @Published var lastFeedVolume: String?
     @Published var totalVolumeToday: Int = 0
     @Published var isDragging = false
     @Published var dragStartVolume: Int = 0
@@ -88,7 +87,7 @@ class FeedEntryViewModel: ObservableObject {
         
         Task {
             do {
-                let total = try await storageService.fetchTodayFeedTotal()
+                let total = try await storageService.fetchTodayFeedTotal(forceRefresh: false)
                 totalVolumeToday = total
             } catch {
                 print("Error loading today's total: \(error)")
@@ -100,7 +99,7 @@ class FeedEntryViewModel: ObservableObject {
         guard storageService.isSignedIn else { return }
         
         do {
-            let total = try await storageService.fetchTodayFeedTotal()
+            let total = try await storageService.fetchTodayFeedTotal(forceRefresh: true)
             totalVolumeToday = total
         } catch {
             print("Error loading today's total: \(error)")
@@ -195,11 +194,6 @@ class FeedEntryViewModel: ObservableObject {
         hapticHelper.light(enabled: hapticFeedbackEnabled)
     }
     
-    func selectLastVolume() {
-        guard let lastVolume = lastFeedVolume else { return }
-        volume = lastVolume
-        hapticHelper.light(enabled: hapticFeedbackEnabled)
-    }
     
     // MARK: - Feed Submission
     
@@ -227,7 +221,6 @@ class FeedEntryViewModel: ObservableObject {
                 
                 // Success - update tracking variables
                 lastFeedTime = selectedTime
-                lastFeedVolume = volume
                 
                 // Haptic feedback for success
                 hapticHelper.success(enabled: hapticFeedbackEnabled)
@@ -246,7 +239,7 @@ class FeedEntryViewModel: ObservableObject {
                 // Update today's total if it's today
                 if Calendar.current.isDateInToday(selectedDate) {
                     do {
-                        let total = try await storageService.fetchTodayFeedTotal()
+                        let total = try await storageService.fetchTodayFeedTotal(forceRefresh: false)
                         totalVolumeToday = total
                     } catch {
                         print("Error refreshing total: \(error)")

@@ -39,6 +39,10 @@ struct FeedConstants {
     // MARK: - Time Constants
     static let backgroundRefreshThreshold: TimeInterval = 3600  // 1 hour in seconds
     
+    // MARK: - Caching Constants
+    static let cacheMaxAge: TimeInterval = 300  // 5 minutes - how long cached data stays fresh
+    static let tokenRefreshThreshold: TimeInterval = 600  // 10 minutes before OAuth token expiry
+    
     // MARK: - UserDefaults Keys
     struct UserDefaultsKeys {
         static let dailyVolumeGoal = "dailyVolumeGoal"

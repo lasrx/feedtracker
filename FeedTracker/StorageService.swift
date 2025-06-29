@@ -15,15 +15,15 @@ protocol StorageServiceProtocol: AnyObject, ObservableObject {
     
     // MARK: - Feed Operations
     func appendFeed(date: String, time: String, volume: String, formulaType: String) async throws
-    func fetchTodayFeedTotal() async throws -> Int
-    func fetchTodayFeeds() async throws -> [FeedEntry]
-    func fetchPast7DaysFeedTotals() async throws -> [DailyTotal]
+    func fetchTodayFeedTotal(forceRefresh: Bool) async throws -> Int
+    func fetchTodayFeeds(forceRefresh: Bool) async throws -> [FeedEntry]
+    func fetchPast7DaysFeedTotals(forceRefresh: Bool) async throws -> [DailyTotal]
     
     // MARK: - Pumping Operations
     func appendPumping(date: String, time: String, volume: String) async throws
-    func fetchTodayPumpingTotal() async throws -> Int
-    func fetchTodayPumpingSessions() async throws -> [PumpingEntry]
-    func fetchPast7DaysPumpingTotals() async throws -> [DailyTotal]
+    func fetchTodayPumpingTotal(forceRefresh: Bool) async throws -> Int
+    func fetchTodayPumpingSessions(forceRefresh: Bool) async throws -> [PumpingEntry]
+    func fetchPast7DaysPumpingTotals(forceRefresh: Bool) async throws -> [DailyTotal]
     
     // MARK: - Configuration
     func updateConfiguration(_ config: StorageConfiguration) throws
@@ -60,6 +60,75 @@ enum StorageProvider: String, CaseIterable {
         case .aws: return "AWS"
         }
     }
+}
+
+// MARK: - Caching Infrastructure
+
+/// Cache entry with timestamp for staleness checking
+struct CacheEntry<T> {
+    let data: T
+    let timestamp: Date
+    let cacheKey: String
+    
+    /// Check if cache entry is stale (older than specified interval)
+    func isStale(maxAge: TimeInterval) -> Bool {
+        Date().timeIntervalSince(timestamp) > maxAge
+    }
+}
+
+/// Thread-safe cache manager for storage operations
+actor DataCache {
+    private var cache: [String: Any] = [:]
+    private let defaultMaxAge: TimeInterval = FeedConstants.cacheMaxAge
+    
+    /// Store data in cache with current timestamp
+    func store<T>(_ data: T, forKey key: String) {
+        let entry = CacheEntry(data: data, timestamp: Date(), cacheKey: key)
+        cache[key] = entry
+    }
+    
+    /// Retrieve cached data if not stale, otherwise return nil
+    func retrieve<T>(_ type: T.Type, forKey key: String, maxAge: TimeInterval? = nil) -> T? {
+        guard let entry = cache[key] as? CacheEntry<T> else { return nil }
+        
+        let ageLimit = maxAge ?? defaultMaxAge
+        return entry.isStale(maxAge: ageLimit) ? nil : entry.data
+    }
+    
+    /// Clear specific cache entry
+    func clear(forKey key: String) {
+        cache.removeValue(forKey: key)
+    }
+    
+    /// Clear all cached data
+    func clearAll() {
+        cache.removeAll()
+    }
+    
+    /// Clear stale entries older than maxAge
+    func clearStale(maxAge: TimeInterval? = nil) {
+        let ageLimit = maxAge ?? defaultMaxAge
+        let keysToRemove = cache.compactMap { key, value -> String? in
+            if let entry = value as? CacheEntry<Any> {
+                return entry.isStale(maxAge: ageLimit) ? key : nil
+            }
+            return nil
+        }
+        
+        for key in keysToRemove {
+            cache.removeValue(forKey: key)
+        }
+    }
+}
+
+/// Cache keys for different data types
+enum CacheKeys {
+    static let todayFeedTotal = "today_feed_total"
+    static let todayFeeds = "today_feeds"
+    static let past7DaysFeedTotals = "past_7_days_feed_totals"
+    static let todayPumpingTotal = "today_pumping_total"
+    static let todayPumpingSessions = "today_pumping_sessions"
+    static let past7DaysPumpingTotals = "past_7_days_pumping_totals"
 }
 
 // MARK: - Storage Service Errors

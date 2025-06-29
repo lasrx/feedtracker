@@ -43,7 +43,7 @@ struct FeedEntryForm: View {
             }
         }
         .sheet(isPresented: $viewModel.showingSettings) {
-            SettingsView()
+            SettingsView(storageService: storageService)
         }
         .alert("Feed Entry", isPresented: $viewModel.showingAlert) {
             Button("OK", role: .cancel, action: viewModel.dismissAlert)
@@ -253,19 +253,6 @@ struct FeedEntryForm: View {
                         .buttonStyle(.bordered)
                     }
                     
-                    // Dynamic "Last" button
-                    if let lastVolume = viewModel.lastFeedVolume {
-                        Button(action: viewModel.selectLastVolume) {
-                            Text(lastVolume)
-                                .font(.system(size: 16, weight: .medium))
-                                .frame(
-                                    width: FeedConstants.quickVolumeButtonWidth,
-                                    height: FeedConstants.quickVolumeButtonHeight
-                                )
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(.orange)
-                    }
                 }
                 
                 Text("Tip: Swipe up/down on volume field to adjust")

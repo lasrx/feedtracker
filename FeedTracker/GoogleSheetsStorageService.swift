@@ -15,9 +15,12 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     private let scopes = FeedConstants.GoogleSheets.scopes
     
     // Enhanced OAuth properties
-    private let tokenRefreshThreshold: TimeInterval = 600 // 10 minutes
+    private let tokenRefreshThreshold: TimeInterval = FeedConstants.tokenRefreshThreshold
     private let maxRetryAttempts = 3
     private let retryBaseDelay: TimeInterval = 1.0
+    
+    // Caching infrastructure
+    private let dataCache = DataCache()
     
     init() {
         loadConfiguration()
@@ -252,10 +255,23 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                 throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
             }
         }
+        
+        // Invalidate related cache entries after successful append
+        await dataCache.clear(forKey: CacheKeys.todayFeedTotal)
+        await dataCache.clear(forKey: CacheKeys.todayFeeds)
+        await dataCache.clear(forKey: CacheKeys.past7DaysFeedTotals)
     }
     
-    func fetchTodayFeedTotal() async throws -> Int {
-        return try await performAuthenticatedRequest { accessToken in
+    func fetchTodayFeedTotal(forceRefresh: Bool) async throws -> Int {
+        // Check cache first unless force refresh is requested
+        if !forceRefresh,
+           let cachedTotal = await dataCache.retrieve(Int.self, forKey: CacheKeys.todayFeedTotal) {
+            print("GoogleSheetsStorageService: Using cached feed total: \(cachedTotal)mL")
+            return cachedTotal
+        }
+        
+        print("GoogleSheetsStorageService: Fetching feed total from API (forceRefresh: \(forceRefresh))")
+        let total: Int = try await performAuthenticatedRequest { accessToken in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
             let todayString = dateFormatter.string(from: Date())
@@ -291,10 +307,22 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return totalVolume
         }
+        
+        // Cache the result
+        await dataCache.store(total, forKey: CacheKeys.todayFeedTotal)
+        return total
     }
     
-    func fetchTodayFeeds() async throws -> [FeedEntry] {
-        return try await performAuthenticatedRequest { accessToken in
+    func fetchTodayFeeds(forceRefresh: Bool) async throws -> [FeedEntry] {
+        // Check cache first unless force refresh is requested
+        if !forceRefresh,
+           let cachedFeeds = await dataCache.retrieve([FeedEntry].self, forKey: CacheKeys.todayFeeds) {
+            print("GoogleSheetsStorageService: Using cached feeds: \(cachedFeeds.count) entries")
+            return cachedFeeds
+        }
+        
+        print("GoogleSheetsStorageService: Fetching feeds from API (forceRefresh: \(forceRefresh))")
+        let feeds: [FeedEntry] = try await performAuthenticatedRequest { accessToken in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
             let todayString = dateFormatter.string(from: Date())
@@ -336,10 +364,22 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return todayFeeds
         }
+        
+        // Cache the result
+        await dataCache.store(feeds, forKey: CacheKeys.todayFeeds)
+        return feeds
     }
     
-    func fetchPast7DaysFeedTotals() async throws -> [DailyTotal] {
-        return try await performAuthenticatedRequest { accessToken in
+    func fetchPast7DaysFeedTotals(forceRefresh: Bool) async throws -> [DailyTotal] {
+        // Check cache first unless force refresh is requested
+        if !forceRefresh,
+           let cachedTotals = await dataCache.retrieve([DailyTotal].self, forKey: CacheKeys.past7DaysFeedTotals) {
+            print("GoogleSheetsStorageService: Using cached 7-day feed totals: \(cachedTotals.count) entries")
+            return cachedTotals
+        }
+        
+        print("GoogleSheetsStorageService: Fetching 7-day feed totals from API (forceRefresh: \(forceRefresh))")
+        let totals: [DailyTotal] = try await performAuthenticatedRequest { accessToken in
             let calendar = Calendar.current
             let today = calendar.startOfDay(for: Date())
             let dateFormatter = DateFormatter()
@@ -391,6 +431,10 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return dailyTotals.sorted { $0.date < $1.date }
         }
+        
+        // Cache the result
+        await dataCache.store(totals, forKey: CacheKeys.past7DaysFeedTotals)
+        return totals
     }
     
     // MARK: - Pumping Operations
@@ -425,10 +469,23 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                 throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
             }
         }
+        
+        // Invalidate related cache entries after successful append
+        await dataCache.clear(forKey: CacheKeys.todayPumpingTotal)
+        await dataCache.clear(forKey: CacheKeys.todayPumpingSessions)
+        await dataCache.clear(forKey: CacheKeys.past7DaysPumpingTotals)
     }
     
-    func fetchTodayPumpingTotal() async throws -> Int {
-        return try await performAuthenticatedRequest { accessToken in
+    func fetchTodayPumpingTotal(forceRefresh: Bool) async throws -> Int {
+        // Check cache first unless force refresh is requested
+        if !forceRefresh,
+           let cachedTotal = await dataCache.retrieve(Int.self, forKey: CacheKeys.todayPumpingTotal) {
+            print("GoogleSheetsStorageService: Using cached pumping total: \(cachedTotal)mL")
+            return cachedTotal
+        }
+        
+        print("GoogleSheetsStorageService: Fetching pumping total from API (forceRefresh: \(forceRefresh))")
+        let total: Int = try await performAuthenticatedRequest { accessToken in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
             let todayString = dateFormatter.string(from: Date())
@@ -464,10 +521,22 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return totalVolume
         }
+        
+        // Cache the result
+        await dataCache.store(total, forKey: CacheKeys.todayPumpingTotal)
+        return total
     }
     
-    func fetchTodayPumpingSessions() async throws -> [PumpingEntry] {
-        return try await performAuthenticatedRequest { accessToken in
+    func fetchTodayPumpingSessions(forceRefresh: Bool) async throws -> [PumpingEntry] {
+        // Check cache first unless force refresh is requested
+        if !forceRefresh,
+           let cachedSessions = await dataCache.retrieve([PumpingEntry].self, forKey: CacheKeys.todayPumpingSessions) {
+            print("GoogleSheetsStorageService: Using cached pumping sessions: \(cachedSessions.count) entries")
+            return cachedSessions
+        }
+        
+        print("GoogleSheetsStorageService: Fetching pumping sessions from API (forceRefresh: \(forceRefresh))")
+        let sessions: [PumpingEntry] = try await performAuthenticatedRequest { accessToken in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
             let todayString = dateFormatter.string(from: Date())
@@ -508,10 +577,22 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return todaySessions
         }
+        
+        // Cache the result
+        await dataCache.store(sessions, forKey: CacheKeys.todayPumpingSessions)
+        return sessions
     }
     
-    func fetchPast7DaysPumpingTotals() async throws -> [DailyTotal] {
-        return try await performAuthenticatedRequest { accessToken in
+    func fetchPast7DaysPumpingTotals(forceRefresh: Bool) async throws -> [DailyTotal] {
+        // Check cache first unless force refresh is requested
+        if !forceRefresh,
+           let cachedTotals = await dataCache.retrieve([DailyTotal].self, forKey: CacheKeys.past7DaysPumpingTotals) {
+            print("GoogleSheetsStorageService: Using cached 7-day pumping totals: \(cachedTotals.count) entries")
+            return cachedTotals
+        }
+        
+        print("GoogleSheetsStorageService: Fetching 7-day pumping totals from API (forceRefresh: \(forceRefresh))")
+        let totals: [DailyTotal] = try await performAuthenticatedRequest { accessToken in
             let calendar = Calendar.current
             let today = calendar.startOfDay(for: Date())
             let dateFormatter = DateFormatter()
@@ -563,6 +644,10 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return dailyTotals.sorted { $0.date < $1.date }
         }
+        
+        // Cache the result
+        await dataCache.store(totals, forKey: CacheKeys.past7DaysPumpingTotals)
+        return totals
     }
     
     // MARK: - Storage Management

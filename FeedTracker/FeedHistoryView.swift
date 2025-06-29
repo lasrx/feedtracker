@@ -134,7 +134,7 @@ struct FeedHistoryView: View {
             loadTodayFeeds()
         }
         .refreshable {
-            await loadTodayFeedsAsync()
+            await loadTodayFeedsAsync(forceRefresh: true)
         }
     }
     
@@ -171,12 +171,12 @@ struct FeedHistoryView: View {
         isLoading = true
         isLoadingWeekly = true
         Task {
-            await loadTodayFeedsAsync()
-            await loadWeeklyTotalsAsync()
+            await loadTodayFeedsAsync(forceRefresh: false)
+            await loadWeeklyTotalsAsync(forceRefresh: false)
         }
     }
     
-    private func loadTodayFeedsAsync() async {
+    private func loadTodayFeedsAsync(forceRefresh: Bool = true) async {
         print("FeedHistoryView: loadTodayFeedsAsync called, isSignedIn: \(storageService.isSignedIn)")
         guard storageService.isSignedIn else {
             print("FeedHistoryView: Not signed in, skipping load")
@@ -188,7 +188,7 @@ struct FeedHistoryView: View {
         
         do {
             print("FeedHistoryView: Calling fetchTodayFeeds...")
-            let feeds = try await storageService.fetchTodayFeeds()
+            let feeds = try await storageService.fetchTodayFeeds(forceRefresh: forceRefresh)
             print("FeedHistoryView: Received \(feeds.count) feeds")
             await MainActor.run {
                 self.todayFeeds = feeds.sorted { $0.fullDate > $1.fullDate } // Most recent first
@@ -204,7 +204,7 @@ struct FeedHistoryView: View {
         }
     }
     
-    private func loadWeeklyTotalsAsync() async {
+    private func loadWeeklyTotalsAsync(forceRefresh: Bool = true) async {
         print("FeedHistoryView: loadWeeklyTotalsAsync called")
         guard storageService.isSignedIn else {
             print("FeedHistoryView: Not signed in, skipping weekly load")
@@ -216,7 +216,7 @@ struct FeedHistoryView: View {
         
         do {
             print("FeedHistoryView: Calling fetchPast7DaysFeedTotals...")
-            let totals = try await storageService.fetchPast7DaysFeedTotals()
+            let totals = try await storageService.fetchPast7DaysFeedTotals(forceRefresh: forceRefresh)
             print("FeedHistoryView: Received \(totals.count) daily totals")
             await MainActor.run {
                 self.weeklyTotals = totals
