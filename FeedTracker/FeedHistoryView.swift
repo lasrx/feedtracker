@@ -44,7 +44,7 @@ struct FeedHistoryView: View {
                     
                     // Quick Stats
                     if !todayFeeds.isEmpty {
-                        HStack(spacing: 20) {
+                        HStack(spacing: 15) {
                             VStack {
                                 Text(averageVolume)
                                     .font(.headline)
@@ -70,6 +70,16 @@ struct FeedHistoryView: View {
                                 Text("Most Used")
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
+                            }
+                            
+                            VStack {
+                                Text(totalWastedVolume)
+                                    .font(.headline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.orange)
+                                Text("Wasted")
+                                    .font(.caption2)
+                                    .foregroundColor(.orange)
                             }
                         }
                         .padding(.bottom)
@@ -141,9 +151,17 @@ struct FeedHistoryView: View {
     // MARK: - Computed Properties
     
     private var averageVolume: String {
-        guard !todayFeeds.isEmpty else { return "0 mL" }
-        let avg = totalVolume / todayFeeds.count
+        let feedEntries = todayFeeds.filter { !$0.isWaste }
+        guard !feedEntries.isEmpty else { return "0 mL" }
+        let totalFeedVolume = feedEntries.reduce(0) { $0 + $1.actualVolume }
+        let avg = totalFeedVolume / feedEntries.count
         return "\(avg) mL"
+    }
+    
+    private var totalWastedVolume: String {
+        let wasteEntries = todayFeeds.filter { $0.isWaste }
+        let totalWaste = wasteEntries.reduce(0) { $0 + $1.actualVolume }
+        return "\(totalWaste) mL"
     }
     
     private var timeSinceLastFeed: String {
@@ -251,24 +269,31 @@ struct FeedRowView: View {
             
             // Volume
             VStack(spacing: 2) {
-                Text("\(feed.volume)")
+                Text("\(feed.actualVolume)")
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(feed.isWaste ? .orange : .accentColor)
                 
-                Text("mL")
+                Text(feed.isWaste ? "waste" : "mL")
                     .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(feed.isWaste ? .orange : .secondary)
             }
             .frame(width: 50)
             
             Spacer()
             
-            // Formula Type
-            Text(feed.formulaType)
-                .font(.subheadline)
-                .foregroundColor(.primary)
-                .multilineTextAlignment(.trailing)
+            // Formula Type and waste indicator
+            HStack {
+                if feed.isWaste {
+                    Image(systemName: "trash.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
+                Text(feed.formulaType)
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.trailing)
+            }
         }
         .padding(.vertical, 4)
     }

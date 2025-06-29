@@ -6,8 +6,24 @@ struct FeedEntry: Identifiable {
     let id = UUID()
     let date: String
     let time: String
-    let volume: Int
+    let volume: Int           // Positive for feeds, negative for waste
     let formulaType: String
+    let wasteAmount: Int      // Positive value for actual waste amount (column E)
+    
+    var isWaste: Bool {
+        return volume < 0
+    }
+    
+    var actualVolume: Int {
+        // For waste entries, return the absolute value of volume
+        // For feed entries, return the volume as-is
+        return abs(volume)
+    }
+    
+    var effectiveVolume: Int {
+        // For calculations: feeds are positive, waste is negative
+        return volume
+    }
     
     var fullDate: Date {
         let formatter = DateFormatter()

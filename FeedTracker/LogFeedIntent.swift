@@ -46,7 +46,8 @@ struct LogFeedIntent: AppIntent {
                 date: dateString,
                 time: timeString,
                 volume: String(volume.value),
-                formulaType: lastFormulaType
+                formulaType: lastFormulaType,
+                wasteAmount: "0"  // Siri logging is only for feeds, not waste
             )
             
             return .result(dialog: "Successfully logged \(volume.value) \(lastFormulaType)")

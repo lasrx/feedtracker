@@ -12,6 +12,7 @@ class FeedEntryViewModel: ObservableObject {
     @Published var selectedTime = Date()
     @Published var volume = ""
     @Published var formulaType = "Breast milk"
+    @Published var isWaste = false
     @Published var showingAlert = false
     @Published var alertMessage = ""
     @Published var lastFeedTime: Date?
@@ -194,6 +195,13 @@ class FeedEntryViewModel: ObservableObject {
         hapticHelper.light(enabled: hapticFeedbackEnabled)
     }
     
+    // MARK: - Waste Tracking
+    
+    func toggleWasteMode() {
+        isWaste.toggle()
+        hapticHelper.light(enabled: hapticFeedbackEnabled)
+    }
+    
     
     // MARK: - Feed Submission
     
@@ -211,12 +219,17 @@ class FeedEntryViewModel: ObservableObject {
         
         Task {
             do {
+                // For waste entries, send negative volume to indicate waste
+                let volumeForStorage = isWaste ? "-\(volume)" : volume
+                let wasteAmountForStorage = isWaste ? volume : "0"
+                
                 // Save to storage
                 try await storageService.appendFeed(
                     date: dateString,
                     time: timeString,
-                    volume: volume,  // Just the number, no "mL"
-                    formulaType: formulaType
+                    volume: volumeForStorage,  // Negative for waste, positive for feed
+                    formulaType: formulaType,
+                    wasteAmount: wasteAmountForStorage  // Positive waste amount in column E
                 )
                 
                 // Success - update tracking variables
@@ -226,7 +239,8 @@ class FeedEntryViewModel: ObservableObject {
                 hapticHelper.success(enabled: hapticFeedbackEnabled)
                 
                 // Show success message
-                alertMessage = "Saved: \(volume) mL of \(formulaType)"
+                let entryType = isWaste ? "waste" : "feed"
+                alertMessage = "Saved: \(volume) mL \(entryType) of \(formulaType)"
                 showingAlert = true
                 isSubmitting = false
                 
@@ -275,9 +289,10 @@ class FeedEntryViewModel: ObservableObject {
     
     func dismissAlert() {
         showingAlert = false
-        // Clear volume after dismissing alert if submission was successful
+        // Clear volume and reset waste mode after dismissing alert if submission was successful
         if !alertMessage.hasPrefix("Error") {
             volume = ""
+            isWaste = false
         }
     }
     

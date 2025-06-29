@@ -14,7 +14,7 @@ protocol StorageServiceProtocol: AnyObject, ObservableObject {
     func signOut() throws
     
     // MARK: - Feed Operations
-    func appendFeed(date: String, time: String, volume: String, formulaType: String) async throws
+    func appendFeed(date: String, time: String, volume: String, formulaType: String, wasteAmount: String) async throws
     func fetchTodayFeedTotal(forceRefresh: Bool) async throws -> Int
     func fetchTodayFeeds(forceRefresh: Bool) async throws -> [FeedEntry]
     func fetchPast7DaysFeedTotals(forceRefresh: Bool) async throws -> [DailyTotal]

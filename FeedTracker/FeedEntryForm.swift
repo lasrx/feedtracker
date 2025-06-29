@@ -161,16 +161,53 @@ struct FeedEntryForm: View {
         HStack {
             Text("Volume")
             Spacer()
+            
+            // Feed/Waste segmented control
+            HStack(spacing: 0) {
+                Button(action: {
+                    if viewModel.isWaste {
+                        viewModel.toggleWasteMode()
+                    }
+                }) {
+                    Text("Feed")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(viewModel.isWaste ? .secondary : .white)
+                        .frame(width: 40, height: 26)
+                        .background(viewModel.isWaste ? Color.clear : .accentColor)
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Button(action: {
+                    if !viewModel.isWaste {
+                        viewModel.toggleWasteMode()
+                    }
+                }) {
+                    Text("Waste")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(viewModel.isWaste ? .white : .secondary)
+                        .frame(width: 40, height: 26)
+                        .background(viewModel.isWaste ? Color.orange : Color.clear)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .background(Color(.systemGray5))
+            .cornerRadius(8)
+            
+            Spacer()
+            
+            // Volume input on the right
             HStack {
                 if viewModel.isDragging {
                     Text("\(viewModel.dragStartVolume)")
                         .font(.system(size: 32, weight: .bold))
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(viewModel.isWaste ? .orange : .accentColor)
                         .frame(
                             width: FeedConstants.dragVolumeDisplayWidth,
                             height: FeedConstants.dragVolumeDisplayHeight
                         )
-                        .background(Color.accentColor.opacity(FeedConstants.accentOpacity))
+                        .background((viewModel.isWaste ? Color.orange : Color.accentColor).opacity(FeedConstants.accentOpacity))
                         .cornerRadius(8)
                 } else {
                     TextField("0", text: $viewModel.volume)
@@ -178,6 +215,7 @@ struct FeedEntryForm: View {
                         .multilineTextAlignment(.trailing)
                         .frame(width: FeedConstants.volumeTextFieldWidth)
                         .font(.system(size: 17))
+                        .foregroundColor(viewModel.isWaste ? .orange : .primary)
                 }
                 
                 Text("mL")
@@ -215,8 +253,8 @@ struct FeedEntryForm: View {
                             .scaleEffect(0.8)
                         Text("Saving...")
                     } else {
-                        Image(systemName: "plus.circle.fill")
-                        Text("Add Feed Entry")
+                        Image(systemName: viewModel.isWaste ? "trash.circle.fill" : "plus.circle.fill")
+                        Text(viewModel.isWaste ? "Log Waste Entry" : "Add Feed Entry")
                     }
                 }
                 .fontWeight(.medium)
@@ -224,6 +262,7 @@ struct FeedEntryForm: View {
                 .frame(height: FeedConstants.submitButtonHeight)
             }
             .buttonStyle(.borderedProminent)
+            .tint(viewModel.isWaste ? .orange : .accentColor)
             .disabled(!viewModel.isFormValid)
         }
     }

@@ -225,7 +225,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     
     // MARK: - Feed Operations
     
-    func appendFeed(date: String, time: String, volume: String, formulaType: String) async throws {
+    func appendFeed(date: String, time: String, volume: String, formulaType: String, wasteAmount: String = "0") async throws {
         try await performAuthenticatedRequest { accessToken in
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range):append?valueInputOption=USER_ENTERED")!
             
@@ -234,8 +234,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             
+            // 5-column model: Date, Time, Volume, Formula Type, Waste Amount
             let body: [String: Any] = [
-                "values": [[date, time, volume, formulaType]]
+                "values": [[date, time, volume, formulaType, wasteAmount]]
             ]
             
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -349,14 +350,17 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             var todayFeeds: [FeedEntry] = []
             for row in values {
+                // Support both 4-column (legacy) and 5-column (with waste) models
                 if row.count >= 4,
                    row[0] == todayString,
                    let volume = Int(row[2]) {
+                    let wasteAmount = row.count >= 5 ? Int(row[4]) ?? 0 : 0
                     let feedEntry = FeedEntry(
                         date: row[0],
                         time: row[1],
                         volume: volume,
-                        formulaType: row[3]
+                        formulaType: row[3],
+                        wasteAmount: wasteAmount
                     )
                     todayFeeds.append(feedEntry)
                 }
