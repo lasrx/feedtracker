@@ -280,6 +280,25 @@ struct SettingsView: View {
                             .foregroundColor(.secondary)
                     }
                 }
+                
+                // Debug Section (only in debug builds)
+                #if DEBUG
+                Section(header: Text("Debug Tools")) {
+                    NavigationLink(destination: DataCaptureView(storageService: storageService)) {
+                        HStack {
+                            Image(systemName: "externaldrive.badge.plus")
+                                .foregroundColor(.blue)
+                            VStack(alignment: .leading) {
+                                Text("Capture Test Data")
+                                    .font(.headline)
+                                Text("Record real API responses for unit testing")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+                #endif
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

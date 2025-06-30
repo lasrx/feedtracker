@@ -22,6 +22,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     // Caching infrastructure
     private let dataCache = DataCache()
     
+    // Debug data capture (optional - only used in debug builds)
+    weak var dataCaptureService: DataCaptureService?
+    
     init() {
         loadConfiguration()
         setupSpreadsheetIdObservation()
@@ -309,6 +312,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return totalVolume
         }
         
+        // Capture data for testing if capture service is available
+        await dataCaptureService?.captureFeedTotal(total: total, source: "fetchTodayFeedTotal")
+        
         // Cache the result
         await dataCache.store(total, forKey: CacheKeys.todayFeedTotal)
         return total
@@ -368,6 +374,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return todayFeeds
         }
+        
+        // Capture data for testing if capture service is available
+        await dataCaptureService?.captureFeedData(feeds: feeds, source: "fetchTodayFeeds")
         
         // Cache the result
         await dataCache.store(feeds, forKey: CacheKeys.todayFeeds)
@@ -435,6 +444,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return dailyTotals.sorted { $0.date < $1.date }
         }
+        
+        // Capture data for testing if capture service is available  
+        await dataCaptureService?.captureWeeklyTotals(totals: totals, source: "fetchPast7DaysFeedTotals")
         
         // Cache the result
         await dataCache.store(totals, forKey: CacheKeys.past7DaysFeedTotals)
@@ -526,6 +538,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return totalVolume
         }
         
+        // Capture data for testing if capture service is available
+        await dataCaptureService?.capturePumpingTotal(total: total, source: "fetchTodayPumpingTotal")
+        
         // Cache the result
         await dataCache.store(total, forKey: CacheKeys.todayPumpingTotal)
         return total
@@ -581,6 +596,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return todaySessions
         }
+        
+        // Capture data for testing if capture service is available
+        await dataCaptureService?.capturePumpingData(sessions: sessions, source: "fetchTodayPumpingSessions")
         
         // Cache the result
         await dataCache.store(sessions, forKey: CacheKeys.todayPumpingSessions)
@@ -648,6 +666,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return dailyTotals.sorted { $0.date < $1.date }
         }
+        
+        // Capture data for testing if capture service is available
+        await dataCaptureService?.captureWeeklyTotals(totals: totals, source: "fetchPast7DaysPumpingTotals")
         
         // Cache the result
         await dataCache.store(totals, forKey: CacheKeys.past7DaysPumpingTotals)

@@ -11,6 +11,10 @@ struct HorizontalNavigationView: View {
     @State private var feedHistoryViewTrigger: Int = 0
     @State private var pumpingHistoryViewTrigger: Int = 0
     
+    #if DEBUG
+    @StateObject private var dataCaptureService = DataCaptureService()
+    #endif
+    
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
@@ -90,6 +94,12 @@ struct HorizontalNavigationView: View {
                 .padding(.bottom, FeedConstants.pageIndicatorBottomPadding)
             }
         )
+        #if DEBUG
+        .onAppear {
+            // Connect data capture service to storage service in debug builds
+            storageService.dataCaptureService = dataCaptureService
+        }
+        #endif
     }
 }
 
