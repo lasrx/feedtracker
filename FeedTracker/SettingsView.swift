@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("feedQuickVolumes") private var feedQuickVolumesData = "40,60,130,150"
     @AppStorage("pumpingQuickVolumes") private var pumpingQuickVolumesData = "130,140,150,170"
+    @AppStorage("dragSpeed") private var dragSpeedRawValue = FeedConstants.DragSpeed.default.rawValue
     
     @State private var showingSpreadsheetIdAlert = false
     @State private var tempSpreadsheetId = ""
@@ -24,6 +25,10 @@ struct SettingsView: View {
     
     // Default formula types
     private let defaultFormulaTypes = ["Breast milk", "Similac 360", "Emfamil Neuropro"]
+    
+    var dragSpeed: FeedConstants.DragSpeed {
+        return FeedConstants.DragSpeed(rawValue: dragSpeedRawValue) ?? .default
+    }
     
     var formulaTypes: [String] {
         if formulaTypesData.isEmpty {
@@ -226,6 +231,24 @@ struct SettingsView: View {
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
+                    
+                    // Drag Speed Picker
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Volume Drag Speed")
+                            .font(.headline)
+                        
+                        Picker("Drag Speed", selection: $dragSpeedRawValue) {
+                            ForEach(FeedConstants.DragSpeed.allCases, id: \.rawValue) { speed in
+                                Text(speed.description).tag(speed.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        
+                        Text("Controls how fast the volume changes when dragging up/down on the volume field")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
                     
                     // Feed Quick Volumes
                     VStack(alignment: .leading, spacing: 4) {

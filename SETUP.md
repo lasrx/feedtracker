@@ -2,6 +2,21 @@
 
 This guide walks you through setting up the MiniLog app for development or personal use.
 
+## Architecture Overview
+
+MiniLog follows a clean MVVM (Model-View-ViewModel) architecture with complete consistency:
+
+### **MVVM Components**
+- **FeedEntryViewModel** & **PumpingEntryViewModel**: Shared business logic with consistent app lifecycle handling
+- **FeedEntryForm.swift**: Reusable UI component eliminating code duplication
+- **FeedConstants.swift**: Centralized configuration including drag speed settings and user preferences
+
+### **Key Features**
+- **Configurable Drag Speed**: User-selectable (Slow/Default/Fast) with optimized sensitivity curves
+- **Unified Haptics**: `HapticHelper.shared` provides consistent tactile feedback across all views
+- **Smart App Lifecycle**: Auto-reset date/time after 1+ hour inactivity to prevent stale timestamps
+- **Production Ready**: Debug statements wrapped for clean App Store builds
+
 ## Prerequisites
 
 - Xcode 14+

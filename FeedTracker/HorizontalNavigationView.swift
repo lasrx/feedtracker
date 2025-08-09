@@ -1,5 +1,4 @@
 import SwiftUI
-import AppIntents
 import Foundation
 
 struct HorizontalNavigationView: View {

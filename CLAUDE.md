@@ -20,15 +20,16 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 - **HorizontalNavigationView.swift**: Main UI with four-pane horizontal swipe navigation (125 lines)
 - **ContentView.swift**: Main feed entry (32 lines - massive reduction from original!)
 
-### 🎯 Shared Components (NEW - Post-Refactor)
+### 🎯 Shared Components (Complete MVVM Architecture)
 - **FeedEntryForm.swift**: Shared UI component (287 lines) - eliminates code duplication
-- **FeedEntryViewModel.swift**: Shared business logic (306 lines) - centralized feed logic
-- **FeedConstants.swift**: Centralized constants (75 lines) - no more magic numbers
-- **HapticHelper.swift**: Multi-tier haptic system (230 lines) - enhanced feedback
+- **FeedEntryViewModel.swift**: Feed business logic (306 lines) - centralized feed logic with app lifecycle handling
+- **PumpingEntryViewModel.swift**: Pumping business logic (240 lines) - consistent MVVM pattern with app lifecycle handling
+- **FeedConstants.swift**: Centralized constants & drag speed settings (95 lines) - configurable user preferences
+- **HapticHelper.swift**: Multi-tier haptic system (230 lines) - centralized feedback management
 
 ### Feature Views
 - **FeedHistoryView.swift**: Left pane - Today's feed overview with 7-day analytics
-- **PumpingView.swift**: Right pane - Pumping session logger with customizable quick volumes
+- **PumpingView.swift**: Right pane - Pumping session logger following MVVM pattern with PumpingEntryViewModel
 - **PumpingHistoryView.swift**: Far right pane - Pumping overview with session list and weekly insights
 - **WeeklySummaryView.swift**: Reusable 7-day trend analysis component for both feed and pumping data
 - **SettingsView.swift**: Configuration UI for spreadsheet selection, haptic preferences, daily goals, formula types, and Quick Volume customization
@@ -68,8 +69,9 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 - **Configurable**: Toggle in Settings with user-friendly description
 - **Smart Intervals**: Light haptic every 5mL, medium haptic every 25mL during drag
 - **Comprehensive Coverage**: Drag slider, quick buttons, success/error states, auto-refresh
-- **Performance Optimized**: Haptic logic runs independently of UI updates for smooth operation
-- **Drag Slider Precision**: 3 pixels per 1mL for optimal balance of speed and control
+- **Performance Optimized**: HapticHelper.shared provides centralized haptic management across all ViewModels
+- **Configurable Drag Speed**: Three-speed setting (Slow/Default/Fast) with sensitivity values from -3.0 to -1.5
+- **5mL Increment Precision**: All drag speeds maintain 5mL increments for consistent data entry
 
 ## Dependencies
 
@@ -102,10 +104,11 @@ The app uses Swift Package Manager with these dependencies:
 - **Pull-to-Refresh**: Updates today's total from spreadsheet
 - **Dark Mode**: Full support via SwiftUI environment
 
-### State Management
-- **@StateObject**: GoogleSheetsService managed as observable object
-- **@State**: Local UI state for form fields and loading states
-- **@Published**: Authentication state and user email in service layer
+### State Management (MVVM Pattern)
+- **ViewModels**: FeedEntryViewModel and PumpingEntryViewModel manage all business logic and app lifecycle
+- **@StateObject**: ViewModels are managed as StateObjects with proper initialization
+- **@Published**: Reactive UI updates via Published properties in ViewModels
+- **App Lifecycle**: Both ViewModels handle foreground/background transitions with automatic date/time reset after 1+ hour
 
 ### Error Handling
 - **Custom Error Types**: SheetsServiceError enum with localized descriptions
@@ -124,9 +127,11 @@ The app uses Swift Package Manager with these dependencies:
 ### Advanced Features
 - **Intelligent Caching System**: 5-minute smart cache with 80-90% API call reduction for optimal performance
 - **Enhanced Settings Page**: Configurable spreadsheet ID, haptic feedback toggle, daily goals, formula types, and Quick Volume customization
-- **Precision Drag Slider**: 3 pixels per 1mL sensitivity optimized for feeding volumes (0-200mL range)
-- **Advanced Haptic System**: Smart feedback with light clicks (5mL) and medium clicks (25mL)
-- **Customizable Quick Volumes**: User-configurable preset buttons via Settings (removed 5th dynamic "Last" button for cleaner interface)
+- **Configurable Drag Slider**: User-selectable speed (Slow/Default/Fast) with 5mL increments for optimal precision (0-200mL range)
+- **Advanced Haptic System**: Centralized HapticHelper.shared with smart feedback - light clicks (5mL) and medium clicks (25mL)
+- **Customizable Quick Volumes**: User-configurable preset buttons via Settings for both Feed and Pumping
+- **Complete MVVM Architecture**: Consistent patterns across all entry views with shared ViewModels
+- **Unified App Lifecycle**: Both Feed and Pumping views automatically reset date/time after extended app inactivity
 - **Accurate Timing Displays**: Fixed "Since Last" calculations with proper 12-hour AM/PM date parsing
 - **Siri Shortcuts**: Natural voice logging with phrases like "Log 100 to MiniLog"
 - **Progress Tracking**: Visual progress bar toward daily volume goal

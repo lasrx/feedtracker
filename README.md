@@ -11,10 +11,10 @@ MiniLog is designed to help parents log baby feeding information quickly and eff
 - 📊 **Multi-View Dashboard** - Four-pane swipe navigation (Feed entry, History, Pumping, Analytics)
 - 🗂️ **Google Sheets Integration** - Real-time sync, automatic backups, multi-device access
 - ⚡ **Intelligent Caching** - 80-90% API reduction with 5-minute smart cache system
-- 🔊 **Enhanced Haptic Feedback** - Multi-tier system with device compatibility fallbacks
+- 🔊 **Enhanced Haptic Feedback** - Centralized system with configurable drag speeds and optimal tactile precision
 - 🗑️ **Waste Tracking** - Advanced milk waste monitoring with 2-hour expiration awareness
 - 📱 **Siri Integration** - Natural voice commands ("Log 100 to MiniLog")
-- ⚙️ **Highly Configurable** - Custom volumes, formula types, daily goals, haptic preferences
+- ⚙️ **Highly Configurable** - Custom volumes, formula types, daily goals, haptic preferences, drag speeds
 - 📈 **Analytics & Insights** - 7-day trends, daily totals, pattern recognition
 - 🔒 **Enterprise-Grade Security** - Multi-layer protection against credential leaks
 
@@ -44,15 +44,16 @@ feedtracker/
     ├── HorizontalNavigationView.swift # Four-pane swipe navigation (125 lines)
     ├── ContentView.swift              # Main feed entry (32 lines - 97% reduction!)
     │
-    ├── 🎯 Shared Components (NEW)
+    ├── 🎯 Shared Components (MVVM Architecture)
     ├── FeedEntryForm.swift            # Shared UI component (287 lines)
-    ├── FeedEntryViewModel.swift       # Shared business logic (306 lines)
+    ├── FeedEntryViewModel.swift       # Feed business logic with app lifecycle (306 lines)
+    ├── PumpingEntryViewModel.swift    # Pumping business logic with app lifecycle (240 lines)
     ├── FeedConstants.swift            # Centralized constants (75 lines)
     ├── HapticHelper.swift             # Multi-tier haptic system (230 lines)
     │
     ├── 📊 Views & Features
     ├── FeedHistoryView.swift          # Feed analytics with 7-day trends (285 lines)
-    ├── PumpingView.swift              # Pumping session logger (327 lines)
+    ├── PumpingView.swift              # Pumping session logger with MVVM pattern (180 lines)
     ├── PumpingHistoryView.swift       # Pumping analytics & insights (285 lines)
     ├── WeeklySummaryView.swift        # Reusable trend analysis (189 lines)
     ├── SettingsView.swift             # App configuration (372 lines)
@@ -146,16 +147,23 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 - **Consistent behavior** - Manual refresh respects user intent for fresh data
 - **Enhanced feedback** - Clear cache hit vs API call logging for transparency
 
+#### 🏗️ Latest: Complete MVVM Architecture & Configurable UX
+- **Complete MVVM Pattern** - Added `PumpingEntryViewModel` (240 lines) for full architectural consistency across all entry views
+- **Configurable Drag Speed** - User-selectable speed (Slow/Default/Fast) in Settings with optimized sensitivity curves
+- **Unified App Lifecycle** - Both Feed and Pumping views auto-reset date/time after 1+ hour inactivity using shared lifecycle patterns
+- **Centralized Haptic System** - All views use `HapticHelper.shared` for consistent tactile feedback with 5mL precision
+- **Enhanced Accessibility** - Improved Settings UI with cleaner segmented controls and better user guidance
+- **Production Ready** - Debug statements wrapped for clean App Store builds with comprehensive error handling
+
 #### 🏗️ Previous: Architectural Refactor & Security Overhaul
 - **955+ lines eliminated** - Removed all code duplication through shared components
 - **ContentView: 987 → 32 lines** (96.8% reduction!)
-- **Created 4 new shared files** - `FeedEntryForm` (287), `FeedEntryViewModel` (306), `FeedConstants` (75), `HapticHelper` (230)
+- **Created 4 shared components** - `FeedEntryForm` (287), `FeedEntryViewModel` (306), `FeedConstants` (75), `HapticHelper` (230)
 - **Enterprise Security System** - GitHub Actions secrets scanner with multi-layer protection
-- **Enhanced haptic feedback** - Multi-tier system with device compatibility fallbacks
 
 ### Previous Improvements (Pre-Refactor)
 - **🗑️ Advanced Waste Tracking**: Complete milk waste tracking system with 2-hour expiration awareness
-- **⚡ 5mL Precision Slider**: Optimized volume adjustment with 5mL increments for faster, more practical input
+- **⚡ Configurable Drag Slider**: User-selectable speed settings (Slow/Default/Fast) with 5mL increments and optimized sensitivity curves
 - **📱 Space-Optimized UI**: Compact Feed/Waste toggle integrated directly on volume line for cleaner interface
 - **📊 Waste Analytics**: Feed Overview displays waste metrics and statistics when advanced features enabled
 - **🔧 Settings Integration**: Advanced features toggle in Settings to keep interface clean for basic users
