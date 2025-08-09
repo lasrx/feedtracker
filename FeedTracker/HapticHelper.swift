@@ -177,6 +177,22 @@ class HapticHelper {
                 heavyImpactGenerator?.prepare()
             }
             heavyImpactGenerator?.impactOccurred()
+        case .rigid:
+            if #available(iOS 13.0, *) {
+                if heavyImpactGenerator == nil {
+                    heavyImpactGenerator = UIImpactFeedbackGenerator(style: .heavy)
+                    heavyImpactGenerator?.prepare()
+                }
+                heavyImpactGenerator?.impactOccurred()
+            }
+        case .soft:
+            if #available(iOS 13.0, *) {
+                if lightImpactGenerator == nil {
+                    lightImpactGenerator = UIImpactFeedbackGenerator(style: .light)
+                    lightImpactGenerator?.prepare()
+                }
+                lightImpactGenerator?.impactOccurred()
+            }
         @unknown default:
             // Fallback to medium for unknown styles
             if mediumImpactGenerator == nil {

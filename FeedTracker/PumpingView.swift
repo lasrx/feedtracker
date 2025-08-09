@@ -1,28 +1,18 @@
 import SwiftUI
-import AppIntents
 import Foundation
 
 struct PumpingView: View {
-    @State private var selectedDate = Date()
-    @State private var selectedTime = Date()
-    @State private var volume = ""
-    @State private var showingAlert = false
-    @State private var alertMessage = ""
-    @State private var totalVolumeToday: Int = 0
-    @State private var isDragging = false
-    @State private var dragStartVolume: Int = 0
-    @State private var isSubmitting = false
-    @State private var lastHapticVolume: Int = 0
     
+    // MARK: - Dependencies
+    @StateObject private var viewModel: PumpingEntryViewModel
     @ObservedObject var storageService: GoogleSheetsStorageService
     let refreshTrigger: Int
-    @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
-    @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     
-    @AppStorage("pumpingQuickVolumes") private var pumpingQuickVolumesData = "130,140,150,170"
-    
-    var quickVolumes: [String] {
-        return pumpingQuickVolumesData.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+    // MARK: - Initialization
+    init(storageService: GoogleSheetsStorageService, refreshTrigger: Int) {
+        self.storageService = storageService
+        self.refreshTrigger = refreshTrigger
+        self._viewModel = StateObject(wrappedValue: PumpingEntryViewModel(storageService: storageService))
     }
     
     // Dark mode aware colors
@@ -58,7 +48,7 @@ struct PumpingView: View {
                             .font(.headline)
                         
                         HStack(alignment: .bottom) {
-                            Text("\(totalVolumeToday) mL")
+                            Text("\(viewModel.totalVolumeToday) mL")
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
                                 .foregroundColor(.purple)
@@ -69,7 +59,7 @@ struct PumpingView: View {
                         }
                         
                         // Progress bar (using same goal as feeding for now)
-                        ProgressView(value: Double(totalVolumeToday), total: Double(dailyVolumeGoal))
+                        ProgressView(value: viewModel.progressPercentage)
                             .progressViewStyle(LinearProgressViewStyle())
                             .scaleEffect(y: 1.5)
                             .accentColor(.purple)
@@ -83,12 +73,12 @@ struct PumpingView: View {
                 
                 Section(header: Text("Pumping Session")) {
                     // Date Picker
-                    DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
+                    DatePicker("Date", selection: $viewModel.selectedDate, displayedComponents: .date)
                         .datePickerStyle(.compact)
                         .frame(minHeight: 44)
                     
                     // Time Picker
-                    DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
+                    DatePicker("Time", selection: $viewModel.selectedTime, displayedComponents: .hourAndMinute)
                         .datePickerStyle(.compact)
                         .frame(minHeight: 44)
                     
@@ -97,15 +87,15 @@ struct PumpingView: View {
                         Text("Volume")
                         Spacer()
                         HStack {
-                            if isDragging {
-                                Text("\(dragStartVolume)")
+                            if viewModel.isDragging {
+                                Text("\(viewModel.dragStartVolume)")
                                     .font(.system(size: 32, weight: .bold))
                                     .foregroundColor(.purple)
                                     .frame(width: 120, height: 60)
                                     .background(Color.purple.opacity(0.1))
                                     .cornerRadius(8)
                             } else {
-                                TextField("0", text: $volume)
+                                TextField("0", text: $viewModel.volume)
                                     .keyboardType(.numberPad)
                                     .multilineTextAlignment(.trailing)
                                     .frame(width: 80)
@@ -115,49 +105,15 @@ struct PumpingView: View {
                             Text("mL")
                                 .foregroundColor(.secondary)
                         }
-                        .highPriorityGesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    if !isDragging {
-                                        isDragging = true
-                                        dragStartVolume = Int(volume) ?? 0
-                                        lastHapticVolume = dragStartVolume
-                                        if hapticFeedbackEnabled {
-                                            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                                        }
-                                    }
-                                    
-                                    // Same sensitivity as feed logging: 2.5 pixels per 1 mL
-                                    let change = Int(value.translation.height / -2.5)
-                                    let originalStart = Int(volume) ?? 0
-                                    let newVolume = max(0, min(999, originalStart + change))
-                                    
-                                    // Update dragStartVolume for visual feedback during drag
-                                    dragStartVolume = newVolume
-                                    
-                                    // Haptic feedback on 5mL boundaries
-                                    if hapticFeedbackEnabled && newVolume % 5 == 0 && newVolume != lastHapticVolume {
-                                        let hapticStyle: UIImpactFeedbackGenerator.FeedbackStyle = newVolume % 25 == 0 ? .heavy : .medium
-                                        UIImpactFeedbackGenerator(style: hapticStyle).impactOccurred()
-                                        lastHapticVolume = newVolume
-                                    }
-                                }
-                                .onEnded { _ in
-                                    isDragging = false
-                                    volume = "\(dragStartVolume)"
-                                    if hapticFeedbackEnabled {
-                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                    }
-                                }
-                        )
+                        .highPriorityGesture(volumeDragGesture)
                     }
                     .frame(minHeight: 44)
                 }
                 
                 Section {
-                    Button(action: submitEntry) {
+                    Button(action: viewModel.submitEntry) {
                         HStack {
-                            if isSubmitting {
+                            if viewModel.isSubmitting {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle())
                                     .scaleEffect(0.8)
@@ -172,7 +128,7 @@ struct PumpingView: View {
                         .frame(height: 50)
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(volume.isEmpty || !storageService.isSignedIn || isSubmitting)
+                    .disabled(!viewModel.isFormValid)
                     .accentColor(.purple)
                 }
                 
@@ -184,14 +140,9 @@ struct PumpingView: View {
                             .foregroundColor(.secondary)
                         
                         HStack(spacing: 8) {
-                            ForEach(quickVolumes, id: \.self) { amount in
+                            ForEach(viewModel.quickVolumes, id: \.self) { amount in
                                 Button(action: {
-                                    volume = amount
-                                    // Haptic feedback
-                                    if hapticFeedbackEnabled {
-                                        let impact = UIImpactFeedbackGenerator(style: .light)
-                                        impact.impactOccurred()
-                                    }
+                                    viewModel.selectQuickVolume(amount)
                                 }) {
                                     Text("\(amount)")
                                         .font(.system(size: 16, weight: .medium))
@@ -212,117 +163,56 @@ struct PumpingView: View {
             }
             .navigationTitle("Pumping")
             .navigationBarTitleDisplayMode(.inline)
-            .alert(isPresented: $showingAlert) {
-                Alert(title: Text("Pumping Session"), message: Text(alertMessage), dismissButton: .default(Text("OK")) {
-                    volume = ""
-                })
+            .alert("Pumping Session", isPresented: $viewModel.showingAlert) {
+                Button("OK", role: .cancel, action: viewModel.dismissAlert)
+            } message: {
+                Text(viewModel.alertMessage)
             }
             .onAppear {
+                #if DEBUG
                 print("PumpingView: onAppear called")
-                loadTodayTotal()
+                #endif
+                viewModel.loadTodayTotal()
             }
             .onChange(of: refreshTrigger) { _, _ in
+                #if DEBUG
                 print("PumpingView: refreshTrigger changed, loading data")
-                loadTodayTotal()
+                #endif
+                viewModel.loadTodayTotal()
             }
             .onChange(of: storageService.isSignedIn) { _, isSignedIn in
-                if isSignedIn {
-                    loadTodayTotal()
-                } else {
-                    totalVolumeToday = 0
-                }
+                viewModel.handleSignInStatusChange(isSignedIn: isSignedIn)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                viewModel.handleAppWillEnterForeground()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+                viewModel.handleAppDidEnterBackground()
             }
             .refreshable {
-                await loadTodayTotalAsync()
+                await viewModel.loadTodayTotalAsync()
             }
         }
         .preferredColorScheme(nil)
     }
     
-    private func loadTodayTotal() {
-        print("PumpingView: loadTodayTotal called, isSignedIn: \(storageService.isSignedIn)")
-        guard storageService.isSignedIn else { 
-            print("PumpingView: Not signed in, skipping load")
-            return 
-        }
-        
-        Task {
-            do {
-                print("PumpingView: Calling fetchTodayPumpingTotal...")
-                let total = try await storageService.fetchTodayPumpingTotal(forceRefresh: false)
-                print("PumpingView: Received pumping total: \(total)mL")
-                await MainActor.run {
-                    totalVolumeToday = total
-                    print("PumpingView: Updated UI with pumping total: \(totalVolumeToday)mL")
-                }
-            } catch {
-                print("Error loading today's pumping total: \(error)")
-            }
-        }
-    }
+    // MARK: - Volume Drag Gesture
     
-    private func loadTodayTotalAsync() async {
-        guard storageService.isSignedIn else { return }
-        
-        do {
-            let total = try await storageService.fetchTodayPumpingTotal(forceRefresh: true)
-            await MainActor.run {
-                totalVolumeToday = total
-            }
-        } catch {
-            print("Error loading today's pumping total: \(error)")
-        }
-    }
-    
-    private func submitEntry() {
-        guard !isSubmitting else { return }
-        isSubmitting = true
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "M/d/yyyy"
-        let dateString = dateFormatter.string(from: selectedDate)
-        
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "h:mm a"  // 12-hour format with AM/PM
-        let timeString = timeFormatter.string(from: selectedTime)
-        
-        Task {
-            do {
-                try await storageService.appendPumping(
-                    date: dateString,
-                    time: timeString,
-                    volume: volume
-                )
-                
-                await MainActor.run {
-                    alertMessage = "Saved: \(volume) mL pumping session"
-                    showingAlert = true
-                    isSubmitting = false
-                    
-                    if hapticFeedbackEnabled {
-                        let notification = UINotificationFeedbackGenerator()
-                        notification.notificationOccurred(.success)
-                    }
-                    
-                    // Refresh today's total
-                    loadTodayTotal()
+    private var volumeDragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if !viewModel.isDragging {
+                    viewModel.startVolumeDrag()
                 }
-            } catch {
-                await MainActor.run {
-                    alertMessage = "Error: \(error.localizedDescription)"
-                    showingAlert = true
-                    isSubmitting = false
-                    
-                    if hapticFeedbackEnabled {
-                        let notification = UINotificationFeedbackGenerator()
-                        notification.notificationOccurred(.error)
-                    }
-                }
+                viewModel.updateVolumeDrag(translation: value.translation)
             }
-        }
+            .onEnded { _ in
+                viewModel.endVolumeDrag()
+            }
     }
 }
 
+// MARK: - Preview
 #Preview {
     PumpingView(storageService: GoogleSheetsStorageService(), refreshTrigger: 0)
 }

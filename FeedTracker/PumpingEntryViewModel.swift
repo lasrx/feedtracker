@@ -1,26 +1,21 @@
 import Foundation
 import SwiftUI
-import AppIntents
 
-/// Shared business logic for feed entry operations
-/// Eliminates code duplication between ContentView and FeedLoggingView
+/// Shared business logic for pumping entry operations
+/// Follows the same MVVM pattern as FeedEntryViewModel for architectural consistency
 @MainActor
-class FeedEntryViewModel: ObservableObject {
+class PumpingEntryViewModel: ObservableObject {
     
     // MARK: - Published Properties
     @Published var selectedDate = Date()
     @Published var selectedTime = Date()
     @Published var volume = ""
-    @Published var formulaType = "Breast milk"
-    @Published var isWaste = false
     @Published var showingAlert = false
     @Published var alertMessage = ""
-    @Published var lastFeedTime: Date?
     @Published var totalVolumeToday: Int = 0
     @Published var isDragging = false
     @Published var dragStartVolume: Int = 0
     @Published var isSubmitting = false
-    @Published var showingSettings = false
     
     // MARK: - Private Properties
     private var lastActiveTime = Date()
@@ -34,14 +29,11 @@ class FeedEntryViewModel: ObservableObject {
     @AppStorage(FeedConstants.UserDefaultsKeys.dailyVolumeGoal) 
     var dailyVolumeGoal = FeedConstants.defaultDailyVolumeGoal
     
-    @AppStorage(FeedConstants.UserDefaultsKeys.formulaTypes) 
-    private var formulaTypesData = ""
-    
     @AppStorage(FeedConstants.UserDefaultsKeys.hapticFeedbackEnabled) 
     private var hapticFeedbackEnabled = true
     
-    @AppStorage(FeedConstants.UserDefaultsKeys.feedQuickVolumes) 
-    private var feedQuickVolumesData = FeedConstants.defaultQuickVolumes
+    @AppStorage(FeedConstants.UserDefaultsKeys.pumpingQuickVolumes) 
+    private var pumpingQuickVolumesData = "130,140,150,170"
     
     @AppStorage(FeedConstants.UserDefaultsKeys.dragSpeed)
     private var dragSpeedRawValue = FeedConstants.DragSpeed.default.rawValue
@@ -53,15 +45,7 @@ class FeedEntryViewModel: ObservableObject {
     }
     
     var quickVolumes: [String] {
-        return feedQuickVolumesData.components(separatedBy: ",")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-    }
-    
-    var formulaTypes: [String] {
-        if formulaTypesData.isEmpty {
-            return FeedConstants.defaultFormulaTypes
-        }
-        return formulaTypesData.components(separatedBy: ",")
+        return pumpingQuickVolumesData.components(separatedBy: ",")
             .map { $0.trimmingCharacters(in: .whitespaces) }
     }
     
@@ -79,9 +63,6 @@ class FeedEntryViewModel: ObservableObject {
     init(storageService: GoogleSheetsStorageService) {
         self.storageService = storageService
         
-        // Set default formula type
-        formulaType = formulaTypes.first ?? "Breast milk"
-        
         // Prepare haptic generators for optimal performance
         hapticHelper.prepareGenerators()
     }
@@ -89,14 +70,34 @@ class FeedEntryViewModel: ObservableObject {
     // MARK: - Data Loading Methods
     
     func loadTodayTotal() {
-        guard storageService.isSignedIn else { return }
+        #if DEBUG
+        print("PumpingEntryViewModel: loadTodayTotal called, isSignedIn: \(storageService.isSignedIn)")
+        #endif
+        
+        guard storageService.isSignedIn else { 
+            #if DEBUG
+            print("PumpingEntryViewModel: Not signed in, skipping load")
+            #endif
+            return 
+        }
         
         Task {
             do {
-                let total = try await storageService.fetchTodayFeedTotal(forceRefresh: false)
+                #if DEBUG
+                print("PumpingEntryViewModel: Calling fetchTodayPumpingTotal...")
+                #endif
+                let total = try await storageService.fetchTodayPumpingTotal(forceRefresh: false)
+                #if DEBUG
+                print("PumpingEntryViewModel: Received pumping total: \(total)mL")
+                #endif
                 totalVolumeToday = total
+                #if DEBUG
+                print("PumpingEntryViewModel: Updated UI with pumping total: \(totalVolumeToday)mL")
+                #endif
             } catch {
-                print("Error loading today's total: \(error)")
+                #if DEBUG
+                print("Error loading today's pumping total: \(error)")
+                #endif
             }
         }
     }
@@ -105,34 +106,14 @@ class FeedEntryViewModel: ObservableObject {
         guard storageService.isSignedIn else { return }
         
         do {
-            let total = try await storageService.fetchTodayFeedTotal(forceRefresh: true)
+            let total = try await storageService.fetchTodayPumpingTotal(forceRefresh: true)
             totalVolumeToday = total
         } catch {
-            print("Error loading today's total: \(error)")
+            print("Error loading today's pumping total: \(error)")
         }
     }
     
-    // MARK: - Interface Management
-    
-    func refreshInterface() {
-        // Reset form to fresh state for new entry
-        selectedDate = Date()
-        selectedTime = Date()
-        volume = ""
-        
-        // Reset last used formula type to default
-        formulaType = formulaTypes.first ?? "Breast milk"
-        
-        // Refresh today's total
-        loadTodayTotal()
-        
-        // Light haptic feedback to indicate refresh
-        hapticHelper.light(enabled: hapticFeedbackEnabled)
-        
-        #if DEBUG
-        print("Interface refreshed after extended absence")
-        #endif
-    }
+    // MARK: - App Lifecycle Methods
     
     func handleAppWillEnterForeground() {
         // App is returning from background
@@ -151,8 +132,26 @@ class FeedEntryViewModel: ObservableObject {
         lastActiveTime = Date()
     }
     
+    func refreshInterface() {
+        // Reset form to fresh state for new entry
+        selectedDate = Date()
+        selectedTime = Date()
+        volume = ""
+        
+        // Refresh today's total
+        loadTodayTotal()
+        
+        // Light haptic feedback to indicate refresh
+        hapticHelper.light(enabled: hapticFeedbackEnabled)
+        
+        #if DEBUG
+        print("PumpingEntryViewModel: Interface refreshed after extended absence")
+        #endif
+    }
+    
+    // MARK: - Sign-in Status Handling
+    
     func handleSignInStatusChange(isSignedIn: Bool) {
-        // Load today's total when sign-in status changes
         if isSignedIn {
             loadTodayTotal()
         } else {
@@ -170,7 +169,7 @@ class FeedEntryViewModel: ObservableObject {
     }
     
     func updateVolumeDrag(translation: CGSize) {
-        // Use user-configurable drag sensitivity
+        // Use user-configurable drag sensitivity (consistent with feed logging)
         let change = Int(translation.height / dragSpeed.sensitivity)
         let originalStart = Int(volume) ?? 0
         let rawNewVolume = originalStart + change
@@ -194,7 +193,7 @@ class FeedEntryViewModel: ObservableObject {
     
     func endVolumeDrag() {
         isDragging = false
-        volume = "\(dragStartVolume)" // Update the volume string with final value
+        volume = "\(dragStartVolume)"
         hapticHelper.volumeDragEnd(enabled: hapticFeedbackEnabled)
     }
     
@@ -205,15 +204,7 @@ class FeedEntryViewModel: ObservableObject {
         hapticHelper.light(enabled: hapticFeedbackEnabled)
     }
     
-    // MARK: - Waste Tracking
-    
-    func toggleWasteMode() {
-        isWaste.toggle()
-        hapticHelper.light(enabled: hapticFeedbackEnabled)
-    }
-    
-    
-    // MARK: - Feed Submission
+    // MARK: - Pumping Session Submission
     
     func submitEntry() {
         guard !isSubmitting else { return }
@@ -229,44 +220,27 @@ class FeedEntryViewModel: ObservableObject {
         
         Task {
             do {
-                // For waste entries, send negative volume to indicate waste
-                let volumeForStorage = isWaste ? "-\(volume)" : volume
-                let wasteAmountForStorage = isWaste ? volume : "0"
-                
-                // Save to storage
-                try await storageService.appendFeed(
+                try await storageService.appendPumping(
                     date: dateString,
                     time: timeString,
-                    volume: volumeForStorage,  // Negative for waste, positive for feed
-                    formulaType: formulaType,
-                    wasteAmount: wasteAmountForStorage  // Positive waste amount in column E
+                    volume: volume
                 )
                 
-                // Success - update tracking variables
-                lastFeedTime = selectedTime
-                
-                // Haptic feedback for success
-                hapticHelper.success(enabled: hapticFeedbackEnabled)
-                
-                // Show success message
-                let entryType = isWaste ? "waste" : "feed"
-                alertMessage = "Saved: \(volume) mL \(entryType) of \(formulaType)"
+                // Success - show success message
+                alertMessage = "Saved: \(volume) mL pumping session"
                 showingAlert = true
                 isSubmitting = false
                 
-                // Save last used formula type for Siri
-                UserDefaults.standard.set(formulaType, forKey: FeedConstants.UserDefaultsKeys.lastUsedFormulaType)
-                
-                // Donate to Siri for future voice commands
-                await donateSiriIntent()
+                // Success haptic
+                hapticHelper.success(enabled: hapticFeedbackEnabled)
                 
                 // Update today's total if it's today
                 if Calendar.current.isDateInToday(selectedDate) {
                     do {
-                        let total = try await storageService.fetchTodayFeedTotal(forceRefresh: false)
+                        let total = try await storageService.fetchTodayPumpingTotal(forceRefresh: false)
                         totalVolumeToday = total
                     } catch {
-                        print("Error refreshing total: \(error)")
+                        print("Error refreshing pumping total: \(error)")
                     }
                 }
             } catch {
@@ -281,39 +255,13 @@ class FeedEntryViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Siri Integration
-    
-    private func donateSiriIntent() async {
-        let intent = LogFeedIntent()
-        intent.volume = VolumeEntity(id: Int(volume) ?? 0)
-        
-        // Simplified donation
-        do {
-            try await intent.donate()
-        } catch {
-            print("Failed to donate Siri intent: \(error)")
-        }
-    }
-    
     // MARK: - Alert Handling
     
     func dismissAlert() {
         showingAlert = false
-        // Clear volume and reset waste mode after dismissing alert if submission was successful
+        // Clear volume after dismissing alert if submission was successful
         if !alertMessage.hasPrefix("Error") {
             volume = ""
-            isWaste = false
         }
     }
-    
-    // MARK: - Settings Management
-    
-    func showSettings() {
-        showingSettings = true
-    }
-    
-    func hideSettings() {
-        showingSettings = false
-    }
-    
 }

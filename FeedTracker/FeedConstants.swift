@@ -22,7 +22,6 @@ struct FeedConstants {
     static let pageIndicatorBottomPadding: CGFloat = 20
     
     // MARK: - Drag Gesture Constants
-    static let dragSensitivity: CGFloat = -2.5  // pixels per 1 mL
     static let maxVolumeLimit = 999
     static let minVolumeLimit = 0
     static let swipeThreshold: CGFloat = 50
@@ -43,6 +42,29 @@ struct FeedConstants {
     static let cacheMaxAge: TimeInterval = 300  // 5 minutes - how long cached data stays fresh
     static let tokenRefreshThreshold: TimeInterval = 600  // 10 minutes before OAuth token expiry
     
+    // MARK: - Drag Speed Settings
+    enum DragSpeed: String, CaseIterable {
+        case slow = "Slow"
+        case `default` = "Default" 
+        case fast = "Fast"
+        
+        var sensitivity: CGFloat {
+            switch self {
+            case .slow: return -3.0      // More precise, slower
+            case .default: return -2.25  // Balanced speed (updated)
+            case .fast: return -1.5      // Faster, less precise
+            }
+        }
+        
+        var description: String {
+            switch self {
+            case .slow: return "Slow"
+            case .default: return "Default"
+            case .fast: return "Fast"
+            }
+        }
+    }
+    
     // MARK: - UserDefaults Keys
     struct UserDefaultsKeys {
         static let dailyVolumeGoal = "dailyVolumeGoal"
@@ -52,6 +74,7 @@ struct FeedConstants {
         static let pumpingQuickVolumes = "pumpingQuickVolumes"
         static let spreadsheetId = "spreadsheetId"
         static let lastUsedFormulaType = "lastUsedFormulaType"
+        static let dragSpeed = "dragSpeed"
     }
     
     // MARK: - Date Formats

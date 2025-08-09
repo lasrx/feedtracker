@@ -161,30 +161,25 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             throw StorageServiceError.configurationInvalid
         }
         
-        return try await withCheckedThrowingContinuation { continuation in
-            DispatchQueue.main.async {
-                GIDSignIn.sharedInstance.signIn(
-                    withPresenting: rootViewController,
-                    hint: nil,
-                    additionalScopes: self.scopes
-                ) { [weak self] result, error in
-                    if let error = error {
-                        continuation.resume(throwing: StorageServiceError.authenticationFailed(error))
-                        return
-                    }
-                    
-                    if let user = result?.user {
-                        self?.isSignedIn = true
-                        self?.userEmail = user.profile?.email
-                        self?.error = nil
-                        continuation.resume()
-                    } else {
-                        continuation.resume(throwing: StorageServiceError.authenticationFailed(
-                            NSError(domain: "GoogleSheetsStorageService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user returned"])
-                        ))
-                    }
-                }
+        let scopes = self.scopes
+        
+        // Use async alternative for modern concurrency
+        do {
+            let result = try await GIDSignIn.sharedInstance.signIn(
+                withPresenting: rootViewController,
+                hint: nil,
+                additionalScopes: scopes
+            )
+            
+            // Update properties on main actor
+            await MainActor.run {
+                self.isSignedIn = true
+                self.userEmail = result.user.profile?.email
+                self.error = nil
             }
+            
+        } catch {
+            throw StorageServiceError.authenticationFailed(error)
         }
     }
     

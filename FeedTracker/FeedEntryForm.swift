@@ -1,6 +1,5 @@
 import SwiftUI
 import GoogleSignIn
-import AppIntents
 
 /// Shared UI component for feed entry forms
 /// Eliminates code duplication between ContentView and FeedLoggingView
