@@ -90,7 +90,7 @@ struct PumpingHistoryView: View {
                         WeeklySummaryView(
                             dailyTotals: weeklyTotals,
                             todayVolume: totalVolume,
-                            title: "Past Week Summary",
+                            title: "Weekly Summary",
                             color: .purple
                         )
                         .padding(.horizontal)
@@ -174,7 +174,7 @@ struct PumpingHistoryView: View {
             loadTodaySessions()
         }
         .refreshable {
-            await loadTodaySessionsAsync(forceRefresh: true)
+            await loadAllPumpingDataParallel(forceRefresh: true)
         }
         .deleteAlert(
             isPresented: $showDeleteAlert,
@@ -237,8 +237,41 @@ struct PumpingHistoryView: View {
         isLoading = true
         isLoadingWeekly = true
         Task {
-            await loadTodaySessionsAsync(forceRefresh: false)
-            await loadWeeklyTotalsAsync(forceRefresh: false)
+            await loadAllPumpingDataParallel(forceRefresh: false)
+        }
+    }
+    
+    // MARK: - Optimized Data Loading
+    
+    private func loadAllPumpingDataParallel(forceRefresh: Bool) async {
+        guard storageService.isSignedIn else {
+            await MainActor.run {
+                isLoading = false
+                isLoadingWeekly = false
+            }
+            return
+        }
+        
+        do {
+            // Parallel API calls instead of sequential
+            async let todaySessions = storageService.fetchTodayPumpingSessions(forceRefresh: forceRefresh)
+            async let weeklyTotals = storageService.fetchPast7DaysPumpingTotals(forceRefresh: forceRefresh)
+            
+            let (sessions, totals) = try await (todaySessions, weeklyTotals)
+            
+            await MainActor.run {
+                self.todayPumpingSessions = sessions.sorted { $0.fullDate > $1.fullDate }
+                self.totalVolume = sessions.reduce(0) { $0 + $1.volume }
+                self.weeklyTotals = totals
+                self.isLoading = false
+                self.isLoadingWeekly = false
+            }
+            
+        } catch {
+            await MainActor.run {
+                self.isLoading = false
+                self.isLoadingWeekly = false
+            }
         }
     }
     
@@ -314,7 +347,7 @@ struct PumpingHistoryView: View {
             )
             
             // Reload data after successful edit
-            await loadTodaySessionsAsync(forceRefresh: true)
+            await loadAllPumpingDataParallel(forceRefresh: true)
             sessionToEdit = nil
             
         } catch {
@@ -329,7 +362,7 @@ struct PumpingHistoryView: View {
             try await storageService.deletePumpingEntry(session)
             
             // Reload data after successful delete
-            await loadTodaySessionsAsync(forceRefresh: true)
+            await loadAllPumpingDataParallel(forceRefresh: true)
             
         } catch {
         }

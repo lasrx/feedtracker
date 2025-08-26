@@ -8,10 +8,9 @@ struct StackedWeeklySummaryView: View {
     let title: String
     let color: Color
     
-    // Processed chart data
-    private var dailyTotalsWithBreakdown: [DailyTotalWithBreakdown] {
-        ChartDataProcessor.processPast7DaysData(dailyTotals, from: feedEntries)
-    }
+    // Cached processed chart data
+    @State private var cachedDailyTotals: [DailyTotalWithBreakdown] = []
+    @State private var lastProcessedHash: Int = 0
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -34,7 +33,7 @@ struct StackedWeeklySummaryView: View {
             
             // Daily stacked bars
             HStack(alignment: .bottom, spacing: 4) {
-                ForEach(dailyTotalsWithBreakdown) { daily in
+                ForEach(cachedDailyTotals) { daily in
                     VStack(spacing: 4) {
                         // Stacked volume bars
                         stackedBar(for: daily)
@@ -96,6 +95,15 @@ struct StackedWeeklySummaryView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+        .onAppear {
+            updateCachedData()
+        }
+        .onChange(of: feedEntries.count) { _, _ in
+            updateCachedData()
+        }
+        .onChange(of: dailyTotals.count) { _, _ in
+            updateCachedData()
+        }
     }
     
     // MARK: - Stacked Bar Component
@@ -143,22 +151,22 @@ struct StackedWeeklySummaryView: View {
     // MARK: - Computed Properties
     
     private var allFormulaTypes: [String] {
-        let allTypes = Set(dailyTotalsWithBreakdown.flatMap { $0.formulaBreakdown.map { $0.formulaType } })
+        let allTypes = Set(cachedDailyTotals.flatMap { $0.formulaBreakdown.map { $0.formulaType } })
         return Array(allTypes).sorted()
     }
     
     private var maxVolume: Int {
-        let allVolumes = dailyTotalsWithBreakdown.map { $0.totalVolume } + [todayVolume]
+        let allVolumes = cachedDailyTotals.map { $0.totalVolume } + [todayVolume]
         return allVolumes.max() ?? 1
     }
     
     private var weeklyAverage: Int {
-        let totalVolume = dailyTotalsWithBreakdown.reduce(0) { $0 + $1.totalVolume }
-        return dailyTotalsWithBreakdown.isEmpty ? 0 : totalVolume / dailyTotalsWithBreakdown.count
+        let totalVolume = cachedDailyTotals.reduce(0) { $0 + $1.totalVolume }
+        return cachedDailyTotals.isEmpty ? 0 : totalVolume / cachedDailyTotals.count
     }
     
     private var bestDay: DailyTotalWithBreakdown? {
-        dailyTotalsWithBreakdown.max { $0.totalVolume < $1.totalVolume }
+        cachedDailyTotals.max { $0.totalVolume < $1.totalVolume }
     }
     
     private var bestDayText: String {
@@ -208,6 +216,39 @@ struct StackedWeeklySummaryView: View {
         }
     }
     
+    // MARK: - Caching Functions
+    
+    private func updateCachedData() {
+        // Create a hash from input data to detect changes
+        let currentHash = createDataHash()
+        
+        // Only recompute if data has changed
+        guard currentHash != lastProcessedHash else { return }
+        
+        // Process data in background to avoid blocking UI
+        Task {
+            let processed = ChartDataProcessor.processPast7DaysData(dailyTotals, from: feedEntries)
+            
+            await MainActor.run {
+                self.cachedDailyTotals = processed
+                self.lastProcessedHash = currentHash
+            }
+        }
+    }
+    
+    private func createDataHash() -> Int {
+        var hasher = Hasher()
+        hasher.combine(feedEntries.count)
+        hasher.combine(dailyTotals.count)
+        // Hash key properties to detect content changes
+        for entry in feedEntries.prefix(10) { // Sample first 10 entries for performance
+            hasher.combine(entry.date)
+            hasher.combine(entry.volume)
+            hasher.combine(entry.formulaType)
+        }
+        return hasher.finalize()
+    }
+    
     // MARK: - Helper Functions
     
     private func totalBarHeight(for daily: DailyTotalWithBreakdown) -> CGFloat {
@@ -225,7 +266,7 @@ struct StackedWeeklySummaryView: View {
     
     private func getFormulaColor(_ formulaType: String) -> Color {
         // Find the color from the actual breakdown data to ensure consistency
-        for daily in dailyTotalsWithBreakdown {
+        for daily in cachedDailyTotals {
             if let breakdown = daily.formulaBreakdown.first(where: { $0.formulaType == formulaType }) {
                 return breakdown.color
             }
@@ -256,7 +297,7 @@ struct StackedWeeklySummaryView: View {
         feedEntries: sampleFeedEntries,
         dailyTotals: sampleDailyTotals,
         todayVolume: 170,
-        title: "Past Week Summary",
+        title: "Weekly Summary",
         color: .blue
     )
     .padding()

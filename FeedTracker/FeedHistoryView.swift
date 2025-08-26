@@ -98,7 +98,7 @@ struct FeedHistoryView: View {
                             feedEntries: past7DaysFeedEntries,
                             dailyTotals: weeklyTotals,
                             todayVolume: totalVolume,
-                            title: "Past Week Summary",
+                            title: "Weekly Summary",
                             color: .accentColor
                         )
                         .padding(.horizontal)
@@ -181,7 +181,7 @@ struct FeedHistoryView: View {
             loadTodayFeeds()
         }
         .refreshable {
-            await loadTodayFeedsAsync(forceRefresh: true)
+            await loadAllDataOptimized(forceRefresh: true)
         }
         .deleteAlert(
             isPresented: $showDeleteAlert,
@@ -255,10 +255,68 @@ struct FeedHistoryView: View {
         isLoading = true
         isLoadingWeekly = true
         Task {
-            await loadTodayFeedsAsync(forceRefresh: false)
-            await loadWeeklyTotalsAsync(forceRefresh: false)
-            await loadRecentFeedEntriesAsync(forceRefresh: false)
+            await loadAllDataOptimized(forceRefresh: false)
         }
+    }
+    
+    // MARK: - Optimized Data Loading
+    
+    private func loadAllDataOptimized(forceRefresh: Bool) async {
+        guard storageService.isSignedIn else {
+            await MainActor.run {
+                isLoading = false
+                isLoadingWeekly = false
+            }
+            return
+        }
+        
+        do {
+            // Single API call gets all data we need (7 days including today)
+            let recentEntries = try await storageService.fetchRecentFeedEntries(days: 7, forceRefresh: forceRefresh)
+            
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            
+            // Separate today's entries from historical entries
+            let todaysEntries = recentEntries.filter { entry in
+                calendar.isDate(entry.fullDate, inSameDayAs: Date())
+            }
+            
+            // Calculate daily totals from all entries (past 6 days + today = 7 total days)
+            let chartEntries = recentEntries.filter { entry in
+                let daysDiff = calendar.dateComponents([.day], from: entry.fullDate, to: today).day ?? 0
+                return daysDiff >= 0 && daysDiff <= 6  // Include today (0) through 6 days ago
+            }
+            
+            let calculatedDailyTotals = calculateDailyTotals(from: chartEntries)
+            
+            await MainActor.run {
+                self.todayFeeds = todaysEntries.sorted { $0.fullDate > $1.fullDate }
+                self.totalVolume = todaysEntries.reduce(0) { $0 + $1.volume }
+                self.weeklyTotals = calculatedDailyTotals
+                self.past7DaysFeedEntries = chartEntries
+                self.isLoading = false
+                self.isLoadingWeekly = false
+            }
+            
+        } catch {
+            await MainActor.run {
+                self.isLoading = false
+                self.isLoadingWeekly = false
+            }
+        }
+    }
+    
+    private func calculateDailyTotals(from entries: [FeedEntry]) -> [DailyTotal] {
+        let calendar = Calendar.current
+        let groupedByDate = Dictionary(grouping: entries) { entry in
+            calendar.startOfDay(for: entry.fullDate)
+        }
+        
+        return groupedByDate.map { date, dateEntries in
+            let totalVolume = dateEntries.reduce(0) { $0 + $1.volume }
+            return DailyTotal(date: date, volume: totalVolume)
+        }.sorted { $0.date < $1.date }
     }
     
     private func loadTodayFeedsAsync(forceRefresh: Bool = true) async {
@@ -349,7 +407,7 @@ struct FeedHistoryView: View {
             )
             
             // Reload data after successful edit
-            await loadTodayFeedsAsync(forceRefresh: true)
+            await loadAllDataOptimized(forceRefresh: true)
             feedToEdit = nil
             
         } catch {
@@ -364,7 +422,7 @@ struct FeedHistoryView: View {
             try await storageService.deleteFeedEntry(feed)
             
             // Reload data after successful delete
-            await loadTodayFeedsAsync(forceRefresh: true)
+            await loadAllDataOptimized(forceRefresh: true)
             
         } catch {
         }

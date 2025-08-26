@@ -115,11 +115,11 @@ struct ChartDataProcessor {
     }
     
     static func processPast7DaysData(_ rawDailyTotals: [DailyTotal], from feedEntries: [FeedEntry]) -> [DailyTotalWithBreakdown] {
-        // Get the dates we need
+        // Get the dates we need (past 6 days + today = 7 days total)
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        var past7Days: [Date] = []
-        for i in 1...7 {
+        var past7Days: [Date] = [today] // Include today
+        for i in 1...6 { // Past 6 days instead of 7
             if let date = calendar.date(byAdding: .day, value: -i, to: today) {
                 past7Days.append(date)
             }
