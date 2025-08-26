@@ -9,6 +9,7 @@ struct FeedEntry: Identifiable {
     let volume: Int           // Positive for feeds, negative for waste
     let formulaType: String
     let wasteAmount: Int      // Positive value for actual waste amount (column E)
+    let rowIndex: Int?        // Google Sheets row index for editing/deletion
     
     var isWaste: Bool {
         return volume < 0
@@ -44,6 +45,7 @@ struct PumpingEntry: Identifiable {
     let date: String
     let time: String
     let volume: Int
+    let rowIndex: Int?        // Google Sheets row index for editing/deletion
     
     var fullDate: Date {
         let formatter = DateFormatter()
@@ -84,3 +86,4 @@ struct DailyTotal: Identifiable {
         Calendar.current.isDateInYesterday(date)
     }
 }
+

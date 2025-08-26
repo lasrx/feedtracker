@@ -26,19 +26,24 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 - **PumpingEntryViewModel.swift**: Pumping business logic (240 lines) - consistent MVVM pattern with app lifecycle handling
 - **FeedConstants.swift**: Centralized constants & drag speed settings (95 lines) - configurable user preferences
 - **HapticHelper.swift**: Multi-tier haptic system (230 lines) - centralized feedback management
+- **SwipeActionsView.swift**: Generic swipe-to-edit/delete component (91 lines) - eliminates edit/delete code duplication across views
+- **FeedEditSheet.swift**: Modal edit form for feed entries (180+ lines) - comprehensive editing with date/time/volume controls
+- **PumpingEditSheet.swift**: Modal edit form for pumping sessions (120+ lines) - streamlined pumping data editing
 
 ### Feature Views
-- **FeedHistoryView.swift**: Left pane - Today's feed overview with 7-day analytics
+- **FeedHistoryView.swift**: Left pane - Today's feed overview with 7-day stacked formula charts, swipe-to-edit/delete individual entries
 - **PumpingView.swift**: Right pane - Pumping session logger following MVVM pattern with PumpingEntryViewModel
-- **PumpingHistoryView.swift**: Far right pane - Pumping overview with session list and weekly insights
+- **PumpingHistoryView.swift**: Far right pane - Pumping overview with session list, weekly insights, and swipe-to-edit/delete functionality
 - **WeeklySummaryView.swift**: Reusable 7-day trend analysis component for both feed and pumping data
+- **StackedWeeklySummaryView.swift**: Advanced 7-day chart with formula type breakdown and color-coded stacked bars (262 lines)
 - **SettingsView.swift**: Configuration UI for spreadsheet selection, haptic preferences, daily goals, formula types, and Quick Volume customization
 - **SpreadsheetPickerView.swift**: Google Drive API-powered spreadsheet browser with bottom-aligned selection
 
 ### Services & Models
-- **StorageService.swift**: Protocol abstraction for storage providers with intelligent caching infrastructure (133 lines)
-- **GoogleSheetsStorageService.swift**: Google Sheets/Drive API integration with 5-minute cache, OAuth token refresh, and retry mechanisms (798 lines) 
-- **Models.swift**: Data models (FeedEntry, PumpingEntry, DailyTotal) with proper 12-hour time parsing
+- **StorageService.swift**: Protocol abstraction for storage providers with intelligent caching infrastructure and edit/delete operations (174 lines)
+- **GoogleSheetsStorageService.swift**: Google Sheets/Drive API integration with 5-minute cache, OAuth token refresh, retry mechanisms, and full CRUD operations (1000+ lines) 
+- **Models.swift**: Core data models (FeedEntry, PumpingEntry, DailyTotal) with proper 12-hour time parsing and Google Sheets row tracking
+- **ChartModels.swift**: Chart-specific data models (FormulaBreakdown, DailyTotalWithBreakdown, ChartDataProcessor) with color assignment (120+ lines)
 - **LogFeedIntent.swift**: Siri Shortcuts integration for voice logging (iOS 16+)
 - **Utilities.swift**: Shared utilities and helper functions
 
@@ -61,7 +66,10 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 
 ### Google Sheets Integration
 - **Spreadsheet ID**: Configurable via Settings (stored in UserDefaults)
-- **Column Structure**: A=Date (M/d/yyyy), B=Time (h:mm a), C=Volume (numeric), D=Formula Type (Feed Log); A=Date, B=Time, C=Volume (Pumping sheet)
+- **Column Structure**: A=Date (M/d/yyyy), B=Time (h:mm a), C=Volume (numeric), D=Formula Type, E=Waste Amount (Feed Log); A=Date, B=Time, C=Volume (Pumping sheet)
+- **Full CRUD Operations**: Create, Read, Update, Delete support with row-based targeting for precise modifications
+- **Row Index Tracking**: Each entry maintains its Google Sheets row position for accurate editing/deletion
+- **Atomic Updates**: Edit operations update entire rows to maintain data integrity
 - **API Scope**: `https://www.googleapis.com/auth/spreadsheets` and `https://www.googleapis.com/auth/drive.file`
 - **Authentication**: OAuth 2.0 with automatic token refresh
 
@@ -125,6 +133,9 @@ The app uses Swift Package Manager with these dependencies:
 - **Pumping Overview** (Far Right): Pumping statistics, session history, and weekly insights
 
 ### Advanced Features
+- **Full CRUD Operations**: Complete edit/delete functionality for both feed entries and pumping sessions with Google Sheets synchronization
+- **Swipe-to-Edit Interface**: Native iOS swipe gestures with context menu fallback for modifying/deleting individual entries
+- **Stacked Formula Charts**: Advanced 7-day visualization showing formula type breakdown with dynamic color assignment and legend
 - **Intelligent Caching System**: 5-minute smart cache with 80-90% API call reduction for optimal performance
 - **Enhanced Settings Page**: Configurable spreadsheet ID, haptic feedback toggle, daily goals, formula types, and Quick Volume customization
 - **Configurable Drag Slider**: User-selectable speed (Slow/Default/Fast) with 5mL increments for optimal precision (0-200mL range)
@@ -144,6 +155,29 @@ The app uses Swift Package Manager with these dependencies:
 - **Thread-Safe Operations**: DataCache actor ensures safe concurrent access to cached data
 - **Smart Refresh Logic**: Navigation uses cached data, manual refresh forces fresh API calls
 - **Automatic Cache Invalidation**: Submitting new data clears related cache for immediate consistency
+- **Reusable Component Architecture**: SwipeActionsView and edit sheets eliminate code duplication across views
+- **Gesture Hierarchy**: SwiftUI automatically prioritizes list swipe actions over navigation gestures
+
+## Edit/Delete Implementation
+
+### User Interface
+- **Swipe Gestures**: Left swipe on any feed or pumping entry reveals Edit/Delete buttons
+- **Context Menu**: Long press provides alternative access for accessibility
+- **Modal Edit Forms**: Comprehensive editing with date/time pickers, volume controls, and formula selection
+- **Delete Confirmation**: Native iOS alert with entry details for safe deletion
+
+### Technical Architecture
+- **SwipeActionsView**: Generic component handling swipe-to-edit for both feeds and pumping sessions
+- **Row Index Tracking**: Each entry maintains its Google Sheets row position for precise targeting
+- **Atomic Updates**: Edit operations update entire spreadsheet rows to maintain data integrity
+- **Cache Invalidation**: Automatic cache clearing after successful edit/delete operations
+- **Error Handling**: Graceful failure handling with user-friendly error messages
+
+### Google Sheets Integration
+- **Update Operations**: HTTP PUT requests to modify specific row ranges (e.g., "A5:E5")
+- **Delete Operations**: Clear content from target rows while preserving sheet structure
+- **Row Indexing**: 1-based indexing matching Google Sheets API expectations
+- **Batch Operations**: Efficient API usage with single requests per edit/delete action
 
 ## Siri Integration Implementation
 

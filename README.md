@@ -8,14 +8,15 @@ MiniLog is designed to help parents log baby feeding information quickly and eff
 
 ### Core Features
 - 🍼 **Smart Feed Tracking** - Quick volume entry, drag gestures, customizable presets
+- ✏️ **Full CRUD Operations** - Edit and delete individual feed entries and pumping sessions with swipe gestures
 - 📊 **Multi-View Dashboard** - Four-pane swipe navigation (Feed entry, History, Pumping, Analytics)
-- 🗂️ **Google Sheets Integration** - Real-time sync, automatic backups, multi-device access
+- 📈 **Stacked Formula Charts** - Advanced 7-day visualization with formula type breakdown and dynamic colors
+- 🗂️ **Google Sheets Integration** - Real-time sync, automatic backups, multi-device access, row-based editing
 - ⚡ **Intelligent Caching** - 80-90% API reduction with 5-minute smart cache system
 - 🔊 **Enhanced Haptic Feedback** - Centralized system with configurable drag speeds and optimal tactile precision
 - 🗑️ **Waste Tracking** - Advanced milk waste monitoring with 2-hour expiration awareness
 - 📱 **Siri Integration** - Natural voice commands ("Log 100 to MiniLog")
 - ⚙️ **Highly Configurable** - Custom volumes, formula types, daily goals, haptic preferences, drag speeds
-- 📈 **Analytics & Insights** - 7-day trends, daily totals, pattern recognition
 - 🔒 **Enterprise-Grade Security** - Multi-layer protection against credential leaks
 
 ## Technical Architecture
@@ -50,19 +51,24 @@ feedtracker/
     ├── PumpingEntryViewModel.swift    # Pumping business logic with app lifecycle (240 lines)
     ├── FeedConstants.swift            # Centralized constants (75 lines)
     ├── HapticHelper.swift             # Multi-tier haptic system (230 lines)
+    ├── SwipeActionsView.swift         # Generic swipe-to-edit/delete component (91 lines)
+    ├── FeedEditSheet.swift            # Modal feed entry editor (180+ lines)
+    ├── PumpingEditSheet.swift         # Modal pumping session editor (120+ lines)
     │
     ├── 📊 Views & Features
-    ├── FeedHistoryView.swift          # Feed analytics with 7-day trends (285 lines)
+    ├── FeedHistoryView.swift          # Feed analytics with stacked charts & edit/delete (400+ lines)
     ├── PumpingView.swift              # Pumping session logger with MVVM pattern (180 lines)
-    ├── PumpingHistoryView.swift       # Pumping analytics & insights (285 lines)
+    ├── PumpingHistoryView.swift       # Pumping analytics & insights with edit/delete (350+ lines)
     ├── WeeklySummaryView.swift        # Reusable trend analysis (189 lines)
+    ├── StackedWeeklySummaryView.swift # Advanced stacked bar charts (262 lines)
     ├── SettingsView.swift             # App configuration (372 lines)
     ├── SpreadsheetPickerView.swift    # Google Sheets browser (249 lines)
     │
     ├── 🔧 Services & Models
-    ├── StorageService.swift           # Protocol abstraction with intelligent caching (133 lines)
-    ├── GoogleSheetsStorageService.swift # Google Sheets API integration with cache (798 lines)
-    ├── Models.swift                   # Data models (69 lines)
+    ├── StorageService.swift           # Protocol abstraction with CRUD operations (174 lines)
+    ├── GoogleSheetsStorageService.swift # Google Sheets API integration with full CRUD (1000+ lines)
+    ├── Models.swift                   # Core data models with row tracking (90+ lines)
+    ├── ChartModels.swift              # Chart-specific models and processing (120+ lines)
     ├── Utilities.swift                # Shared utilities (11 lines)
     ├── LogFeedIntent.swift            # Siri Shortcuts (iOS 16+) (113 lines)
     │
@@ -119,11 +125,22 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 4. **Google Sheets Integration**
    - Append new rows to spreadsheet
    - Fetch today's total from all entries
+   - **Full CRUD operations** - Edit and delete individual entries with row-based targeting
+   - **Row index tracking** - Maintain Google Sheets row positions for precise modifications
    - Handle API errors gracefully
    - Create new tracking sheets with proper template
    - Browse and select from available spreadsheets
 
-5. **User Experience**
+5. **Edit/Delete Operations**
+   - **Swipe-to-edit** - Left swipe on any entry reveals Edit/Delete buttons
+   - **Context menu fallback** - Long press for accessibility
+   - **Comprehensive editing** - Modify date, time, volume, formula type, and waste amount
+   - **Modal edit forms** - Full-featured editors with native iOS controls
+   - **Safe deletion** - Confirmation alerts with entry details
+   - **Instant sync** - Changes immediately reflected in Google Sheets
+   - **Smart cache invalidation** - Automatic cache clearing after modifications
+
+6. **User Experience**
    - Precision drag slider optimized for feeding volumes (3 pixels per 1mL)
    - Smart haptic feedback system with configurable intensity
    - Success/error alerts with haptic confirmation
@@ -132,20 +149,25 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - Auto-refresh interface after returning from 1+ hour absence
    - Enhanced Settings page with haptic preferences and UI controls
 
-### Latest Release: Smart Caching System & Performance Optimization
+### Latest Release: Full CRUD Operations & Advanced Analytics
 
-#### ⚡ Intelligent Caching Architecture
-- **80-90% API call reduction** - Thread-safe DataCache actor with 5-minute expiration
-- **Smart refresh logic** - Navigation uses cache, pull-to-refresh forces fresh data
-- **Automatic cache invalidation** - Clears cached data when new entries are submitted
-- **Enhanced OAuth management** - Proactive token refresh and retry mechanisms
-- **Protocol-based storage** - StorageServiceProtocol for future multi-provider support
+#### ✏️ Complete Edit/Delete System
+- **Full CRUD operations** - Edit and delete individual feed entries and pumping sessions
+- **Native iOS swipe gestures** - Left swipe reveals Edit/Delete buttons with context menu fallback
+- **Row-based Google Sheets targeting** - Precise modifications with 1-based row indexing
+- **Comprehensive modal editors** - Full-featured forms with date/time pickers and volume controls
+- **Reusable component architecture** - SwipeActionsView eliminates code duplication across views
 
-#### 🎯 User Experience Improvements
-- **Removed 5th dynamic "Last" button** - Cleaner, more focused quick volume interface
-- **Instant navigation** - Cache hits provide immediate data loading between panes
-- **Consistent behavior** - Manual refresh respects user intent for fresh data
-- **Enhanced feedback** - Clear cache hit vs API call logging for transparency
+#### 📊 Advanced Stacked Charts
+- **Formula type breakdown** - 7-day visualization showing which formulas were used each day
+- **Dynamic color assignment** - Consistent color mapping between charts and legends
+- **Self-contained processing** - Charts handle their own data transformation for better architecture
+- **Enhanced visual analytics** - Better insights into feeding patterns and formula preferences
+
+#### 🏗️ Architectural Improvements
+- **Smart cache invalidation** - Automatic cache clearing after edit/delete operations
+- **Generic storage methods** - Flexible data fetching with configurable day ranges
+- **Clean component separation** - Chart logic moved to chart components for better maintainability
 
 #### 🏗️ Latest: Complete MVVM Architecture & Configurable UX
 - **Complete MVVM Pattern** - Added `PumpingEntryViewModel` (240 lines) for full architectural consistency across all entry views

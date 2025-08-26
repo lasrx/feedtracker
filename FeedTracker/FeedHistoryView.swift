@@ -8,7 +8,11 @@ struct FeedHistoryView: View {
     @State private var isLoading = false
     @State private var totalVolume: Int = 0
     @State private var weeklyTotals: [DailyTotal] = []
+    @State private var past7DaysFeedEntries: [FeedEntry] = []
     @State private var isLoadingWeekly = false
+    @State private var feedToEdit: FeedEntry?
+    @State private var feedToDelete: FeedEntry?
+    @State private var showDeleteAlert = false
     
     var body: some View {
         NavigationView {
@@ -88,9 +92,10 @@ struct FeedHistoryView: View {
                 .background(Color(.systemGroupedBackground))
                 
                 // Weekly Summary
-                if !weeklyTotals.isEmpty {
+                if !weeklyTotals.isEmpty && !past7DaysFeedEntries.isEmpty {
                     VStack(spacing: 0) {
-                        WeeklySummaryView(
+                        StackedWeeklySummaryView(
+                            feedEntries: past7DaysFeedEntries,
                             dailyTotals: weeklyTotals,
                             todayVolume: totalVolume,
                             title: "Past Week Summary",
@@ -126,11 +131,15 @@ struct FeedHistoryView: View {
                     }
                     Spacer()
                 } else {
-                    List(todayFeeds) { feed in
-                        FeedRowView(feed: feed)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                    }
-                    .listStyle(PlainListStyle())
+                    SwipeActionsView(
+                        items: todayFeeds,
+                        rowContent: { FeedRowView(feed: $0) },
+                        onEdit: editFeed,
+                        onDelete: deleteFeed,
+                        editColor: .blue,
+                        editLabel: "Edit",
+                        deleteLabel: "Delete"
+                    )
                 }
             }
             .navigationBarHidden(true)
@@ -145,6 +154,35 @@ struct FeedHistoryView: View {
         }
         .refreshable {
             await loadTodayFeedsAsync(forceRefresh: true)
+        }
+        .deleteAlert(
+            isPresented: $showDeleteAlert,
+            item: $feedToDelete,
+            itemType: "Feed Entry",
+            itemDescription: { feed in
+                "the \(feed.actualVolume)mL feed from \(feed.time)"
+            },
+            onConfirm: {
+                if let feed = feedToDelete {
+                    Task {
+                        await performDelete(feed)
+                    }
+                }
+            }
+        )
+        .sheet(item: $feedToEdit) { feed in
+            FeedEditSheet(
+                feed: feed,
+                storageService: storageService,
+                onSave: { updatedFeed in
+                    Task {
+                        await performEdit(updatedFeed)
+                    }
+                },
+                onCancel: {
+                    feedToEdit = nil
+                }
+            )
         }
     }
     
@@ -191,6 +229,7 @@ struct FeedHistoryView: View {
         Task {
             await loadTodayFeedsAsync(forceRefresh: false)
             await loadWeeklyTotalsAsync(forceRefresh: false)
+            await loadRecentFeedEntriesAsync(forceRefresh: false)
         }
     }
     
@@ -246,6 +285,86 @@ struct FeedHistoryView: View {
                 print("Error loading weekly feed totals: \(error)")
                 self.isLoadingWeekly = false
             }
+        }
+    }
+    
+    private func loadRecentFeedEntriesAsync(forceRefresh: Bool = true) async {
+        print("FeedHistoryView: loadRecentFeedEntriesAsync called")
+        guard storageService.isSignedIn else {
+            print("FeedHistoryView: Not signed in, skipping recent feed entries load")
+            return
+        }
+        
+        do {
+            print("FeedHistoryView: Calling fetchRecentFeedEntries...")
+            let entries = try await storageService.fetchRecentFeedEntries(days: 7, forceRefresh: forceRefresh)
+            print("FeedHistoryView: Received \(entries.count) feed entries for past 7 days")
+            await MainActor.run {
+                self.past7DaysFeedEntries = entries
+                print("FeedHistoryView: Updated UI with recent feed entries")
+            }
+        } catch {
+            await MainActor.run {
+                print("Error loading recent feed entries: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - Edit/Delete Actions
+    
+    private func editFeed(_ feed: FeedEntry) {
+        feedToEdit = feed
+    }
+    
+    private func deleteFeed(_ feed: FeedEntry) {
+        feedToDelete = feed
+        showDeleteAlert = true
+    }
+    
+    private func performEdit(_ updatedFeed: FeedEntry) async {
+        do {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "M/d/yyyy"
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "h:mm a"
+            
+            let date = dateFormatter.string(from: updatedFeed.fullDate)
+            let time = timeFormatter.string(from: updatedFeed.fullDate)
+            
+            try await storageService.updateFeedEntry(
+                updatedFeed,
+                newDate: date,
+                newTime: time,
+                newVolume: String(updatedFeed.actualVolume),
+                newFormulaType: updatedFeed.formulaType,
+                newWasteAmount: String(updatedFeed.wasteAmount)
+            )
+            
+            // Reload data after successful edit
+            await loadTodayFeedsAsync(forceRefresh: true)
+            feedToEdit = nil
+            
+        } catch {
+            print("Error updating feed entry: \(error)")
+            await MainActor.run {
+                feedToEdit = nil
+            }
+        }
+    }
+    
+    private func performDelete(_ feed: FeedEntry) async {
+        do {
+            try await storageService.deleteFeedEntry(feed)
+            
+            // Reload data after successful delete
+            await loadTodayFeedsAsync(forceRefresh: true)
+            
+        } catch {
+            print("Error deleting feed entry: \(error)")
+        }
+        
+        await MainActor.run {
+            feedToDelete = nil
         }
     }
 }

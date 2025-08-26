@@ -18,12 +18,19 @@ protocol StorageServiceProtocol: AnyObject, ObservableObject {
     func fetchTodayFeedTotal(forceRefresh: Bool) async throws -> Int
     func fetchTodayFeeds(forceRefresh: Bool) async throws -> [FeedEntry]
     func fetchPast7DaysFeedTotals(forceRefresh: Bool) async throws -> [DailyTotal]
+    func fetchRecentFeedEntries(days: Int, forceRefresh: Bool) async throws -> [FeedEntry]
     
     // MARK: - Pumping Operations
     func appendPumping(date: String, time: String, volume: String) async throws
     func fetchTodayPumpingTotal(forceRefresh: Bool) async throws -> Int
     func fetchTodayPumpingSessions(forceRefresh: Bool) async throws -> [PumpingEntry]
     func fetchPast7DaysPumpingTotals(forceRefresh: Bool) async throws -> [DailyTotal]
+    
+    // MARK: - Edit/Delete Operations
+    func updateFeedEntry(_ entry: FeedEntry, newDate: String, newTime: String, newVolume: String, newFormulaType: String, newWasteAmount: String) async throws
+    func deleteFeedEntry(_ entry: FeedEntry) async throws
+    func updatePumpingEntry(_ entry: PumpingEntry, newDate: String, newTime: String, newVolume: String) async throws
+    func deletePumpingEntry(_ entry: PumpingEntry) async throws
     
     // MARK: - Configuration
     func updateConfiguration(_ config: StorageConfiguration) throws
@@ -126,6 +133,7 @@ enum CacheKeys {
     static let todayFeedTotal = "today_feed_total"
     static let todayFeeds = "today_feeds"
     static let past7DaysFeedTotals = "past_7_days_feed_totals"
+    static let recentFeedEntries = "recent_feed_entries"
     static let todayPumpingTotal = "today_pumping_total"
     static let todayPumpingSessions = "today_pumping_sessions"
     static let past7DaysPumpingTotals = "past_7_days_pumping_totals"

@@ -9,6 +9,9 @@ struct PumpingHistoryView: View {
     @State private var totalVolume: Int = 0
     @State private var weeklyTotals: [DailyTotal] = []
     @State private var isLoadingWeekly = false
+    @State private var sessionToEdit: PumpingEntry?
+    @State private var sessionToDelete: PumpingEntry?
+    @State private var showDeleteAlert = false
     
     var body: some View {
         NavigationView {
@@ -121,11 +124,15 @@ struct PumpingHistoryView: View {
                     }
                     Spacer()
                 } else {
-                    List(todayPumpingSessions) { session in
-                        PumpingRowView(session: session)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                    }
-                    .listStyle(PlainListStyle())
+                    SwipeActionsView(
+                        items: todayPumpingSessions,
+                        rowContent: { PumpingRowView(session: $0) },
+                        onEdit: editSession,
+                        onDelete: deleteSession,
+                        editColor: .purple,
+                        editLabel: "Edit",
+                        deleteLabel: "Delete"
+                    )
                 }
             }
             .navigationBarHidden(true)
@@ -140,6 +147,35 @@ struct PumpingHistoryView: View {
         }
         .refreshable {
             await loadTodaySessionsAsync(forceRefresh: true)
+        }
+        .deleteAlert(
+            isPresented: $showDeleteAlert,
+            item: $sessionToDelete,
+            itemType: "Pumping Session",
+            itemDescription: { session in
+                "the \(session.volume)mL pumping session from \(session.time)"
+            },
+            onConfirm: {
+                if let session = sessionToDelete {
+                    Task {
+                        await performDelete(session)
+                    }
+                }
+            }
+        )
+        .sheet(item: $sessionToEdit) { session in
+            PumpingEditSheet(
+                session: session,
+                storageService: storageService,
+                onSave: { updatedSession in
+                    Task {
+                        await performEdit(updatedSession)
+                    }
+                },
+                onCancel: {
+                    sessionToEdit = nil
+                }
+            )
         }
     }
     
@@ -230,6 +266,62 @@ struct PumpingHistoryView: View {
                 print("Error loading weekly pumping totals: \(error)")
                 self.isLoadingWeekly = false
             }
+        }
+    }
+    
+    // MARK: - Edit/Delete Actions
+    
+    private func editSession(_ session: PumpingEntry) {
+        sessionToEdit = session
+    }
+    
+    private func deleteSession(_ session: PumpingEntry) {
+        sessionToDelete = session
+        showDeleteAlert = true
+    }
+    
+    private func performEdit(_ updatedSession: PumpingEntry) async {
+        do {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "M/d/yyyy"
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "h:mm a"
+            
+            let date = dateFormatter.string(from: updatedSession.fullDate)
+            let time = timeFormatter.string(from: updatedSession.fullDate)
+            
+            try await storageService.updatePumpingEntry(
+                updatedSession,
+                newDate: date,
+                newTime: time,
+                newVolume: String(updatedSession.volume)
+            )
+            
+            // Reload data after successful edit
+            await loadTodaySessionsAsync(forceRefresh: true)
+            sessionToEdit = nil
+            
+        } catch {
+            print("Error updating pumping session: \(error)")
+            await MainActor.run {
+                sessionToEdit = nil
+            }
+        }
+    }
+    
+    private func performDelete(_ session: PumpingEntry) async {
+        do {
+            try await storageService.deletePumpingEntry(session)
+            
+            // Reload data after successful delete
+            await loadTodaySessionsAsync(forceRefresh: true)
+            
+        } catch {
+            print("Error deleting pumping session: \(error)")
+        }
+        
+        await MainActor.run {
+            sessionToDelete = nil
         }
     }
 }

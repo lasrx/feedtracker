@@ -258,6 +258,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         // Invalidate related cache entries after successful append
         await dataCache.clear(forKey: CacheKeys.todayFeedTotal)
         await dataCache.clear(forKey: CacheKeys.todayFeeds)
+        await dataCache.clear(forKey: CacheKeys.recentFeedEntries)
         await dataCache.clear(forKey: CacheKeys.past7DaysFeedTotals)
     }
     
@@ -350,7 +351,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             }
             
             var todayFeeds: [FeedEntry] = []
-            for row in values {
+            for (index, row) in values.enumerated() {
                 // Support both 4-column (legacy) and 5-column (with waste) models
                 if row.count >= 4,
                    row[0] == todayString,
@@ -361,7 +362,8 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                         time: row[1],
                         volume: volume,
                         formulaType: row[3],
-                        wasteAmount: wasteAmount
+                        wasteAmount: wasteAmount,
+                        rowIndex: index + 1  // Google Sheets API uses 1-based indexing
                     )
                     todayFeeds.append(feedEntry)
                 }
@@ -376,6 +378,75 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         // Cache the result
         await dataCache.store(feeds, forKey: CacheKeys.todayFeeds)
         return feeds
+    }
+    
+    func fetchRecentFeedEntries(days: Int, forceRefresh: Bool) async throws -> [FeedEntry] {
+        // Check cache first unless force refresh is requested
+        if !forceRefresh,
+           let cachedEntries = await dataCache.retrieve([FeedEntry].self, forKey: CacheKeys.recentFeedEntries) {
+            print("GoogleSheetsStorageService: Using cached recent feed entries: \(cachedEntries.count) entries")
+            return cachedEntries
+        }
+        
+        print("GoogleSheetsStorageService: Fetching recent feed entries from API (forceRefresh: \(forceRefresh))")
+        let entries: [FeedEntry] = try await performAuthenticatedRequest { accessToken in
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "M/d/yyyy"
+            
+            var recentDays: Set<String> = []
+            for i in 0...days { // Include today plus requested number of days
+                if let date = calendar.date(byAdding: .day, value: -i, to: today) {
+                    recentDays.insert(dateFormatter.string(from: date))
+                }
+            }
+            
+            let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range)")!
+            
+            var request = URLRequest(url: url)
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
+            }
+            
+            if httpResponse.statusCode != 200 {
+                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
+            }
+            
+            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let values = json["values"] as? [[String]] else {
+                return []
+            }
+            
+            var feedEntries: [FeedEntry] = []
+            for (index, row) in values.enumerated() {
+                // Support both 4-column (legacy) and 5-column (with waste) models
+                if row.count >= 4,
+                   recentDays.contains(row[0]),
+                   let volume = Int(row[2]) {
+                    let wasteAmount = row.count >= 5 ? Int(row[4]) ?? 0 : 0
+                    let feedEntry = FeedEntry(
+                        date: row[0],
+                        time: row[1],
+                        volume: volume,
+                        formulaType: row[3],
+                        wasteAmount: wasteAmount,
+                        rowIndex: index + 1
+                    )
+                    feedEntries.append(feedEntry)
+                }
+            }
+            
+            return feedEntries.sorted { $0.fullDate > $1.fullDate } // Most recent first
+        }
+        
+        // Cache the result
+        await dataCache.store(entries, forKey: CacheKeys.recentFeedEntries)
+        return entries
     }
     
     func fetchPast7DaysFeedTotals(forceRefresh: Bool) async throws -> [DailyTotal] {
@@ -576,14 +647,15 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             }
             
             var todaySessions: [PumpingEntry] = []
-            for row in values {
+            for (index, row) in values.enumerated() {
                 if row.count >= 3,
                    row[0] == todayString,
                    let volume = Int(row[2]) {
                     let pumpingEntry = PumpingEntry(
                         date: row[0],
                         time: row[1],
-                        volume: volume
+                        volume: volume,
+                        rowIndex: index + 1  // Google Sheets API uses 1-based indexing
                     )
                     todaySessions.append(pumpingEntry)
                 }
@@ -811,5 +883,134 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return spreadsheetId
         }
+    }
+    
+    // MARK: - Edit/Delete Operations
+    
+    func updateFeedEntry(_ entry: FeedEntry, newDate: String, newTime: String, newVolume: String, newFormulaType: String, newWasteAmount: String) async throws {
+        guard let rowIndex = entry.rowIndex else {
+            throw StorageServiceError.dataFormatError
+        }
+        
+        let _: Void = try await performAuthenticatedRequest { accessToken in
+            let updateRange = "A\(rowIndex):E\(rowIndex)"
+            let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(updateRange)?valueInputOption=USER_ENTERED")!
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let values = [[newDate, newTime, newVolume, newFormulaType, newWasteAmount]]
+            let body = ["values": values]
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1))
+            }
+            
+            return ()
+        }
+        
+        // Invalidate related cache entries after successful update
+        await dataCache.clear(forKey: CacheKeys.todayFeedTotal)
+        await dataCache.clear(forKey: CacheKeys.todayFeeds)
+        await dataCache.clear(forKey: CacheKeys.recentFeedEntries)
+        await dataCache.clear(forKey: CacheKeys.past7DaysFeedTotals)
+    }
+    
+    func deleteFeedEntry(_ entry: FeedEntry) async throws {
+        guard let rowIndex = entry.rowIndex else {
+            throw StorageServiceError.dataFormatError
+        }
+        
+        // Clear the row content instead of deleting the entire row for simplicity
+        let _: Void = try await performAuthenticatedRequest { accessToken in
+            let updateRange = "A\(rowIndex):E\(rowIndex)"
+            let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(updateRange):clear")!
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1))
+            }
+            
+            return ()
+        }
+        
+        // Invalidate related cache entries after successful delete
+        await dataCache.clear(forKey: CacheKeys.todayFeedTotal)
+        await dataCache.clear(forKey: CacheKeys.todayFeeds)
+        await dataCache.clear(forKey: CacheKeys.recentFeedEntries)
+        await dataCache.clear(forKey: CacheKeys.past7DaysFeedTotals)
+    }
+    
+    func updatePumpingEntry(_ entry: PumpingEntry, newDate: String, newTime: String, newVolume: String) async throws {
+        guard let rowIndex = entry.rowIndex else {
+            throw StorageServiceError.dataFormatError
+        }
+        
+        let _: Void = try await performAuthenticatedRequest { accessToken in
+            let updateRange = "Pumping!A\(rowIndex):C\(rowIndex)"
+            let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(updateRange)?valueInputOption=USER_ENTERED")!
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let values = [[newDate, newTime, newVolume]]
+            let body = ["values": values]
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1))
+            }
+            
+            return ()
+        }
+        
+        // Invalidate related cache entries after successful update
+        await dataCache.clear(forKey: CacheKeys.todayPumpingTotal)
+        await dataCache.clear(forKey: CacheKeys.todayPumpingSessions)
+        await dataCache.clear(forKey: CacheKeys.past7DaysPumpingTotals)
+    }
+    
+    func deletePumpingEntry(_ entry: PumpingEntry) async throws {
+        guard let rowIndex = entry.rowIndex else {
+            throw StorageServiceError.dataFormatError
+        }
+        
+        // For now, clear the row content instead of deleting the entire row
+        // This is simpler and avoids the complexity of sheet ID lookups
+        let _: Void = try await performAuthenticatedRequest { accessToken in
+            let updateRange = "Pumping!A\(rowIndex):C\(rowIndex)"
+            let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(updateRange):clear")!
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1))
+            }
+            
+            return ()
+        }
+        
+        // Invalidate related cache entries after successful delete
+        await dataCache.clear(forKey: CacheKeys.todayPumpingTotal)
+        await dataCache.clear(forKey: CacheKeys.todayPumpingSessions)
+        await dataCache.clear(forKey: CacheKeys.past7DaysPumpingTotals)
     }
 }
