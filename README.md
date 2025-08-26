@@ -154,6 +154,7 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 #### ✏️ Complete Edit/Delete System
 - **Full CRUD operations** - Edit and delete individual feed entries and pumping sessions
 - **Native iOS swipe gestures** - Left swipe reveals Edit/Delete buttons with context menu fallback
+- **Gesture conflict resolution** - Competing gesture priorities allow both list swipes and navigation to work reliably
 - **Row-based Google Sheets targeting** - Precise modifications with 1-based row indexing
 - **Comprehensive modal editors** - Full-featured forms with date/time pickers and volume controls
 - **Reusable component architecture** - SwipeActionsView eliminates code duplication across views

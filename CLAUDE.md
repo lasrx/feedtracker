@@ -179,6 +179,49 @@ The app uses Swift Package Manager with these dependencies:
 - **Row Indexing**: 1-based indexing matching Google Sheets API expectations
 - **Batch Operations**: Efficient API usage with single requests per edit/delete action
 
+## Gesture Conflict Resolution
+
+### Problem
+SwiftUI List swipe actions conflicted with horizontal navigation gestures, making it impossible to edit/delete entries when both gesture recognizers competed for the same touch events.
+
+### Solution
+Implemented competing gesture priorities using different minimum distance thresholds:
+
+```swift
+// HorizontalNavigationView.swift - Navigation gesture (higher threshold)
+.gesture(
+    DragGesture(minimumDistance: 30)
+        .updating($dragOffset) { value, state, _ in
+            let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 2
+            let isLongEnough = abs(value.translation.width) > 30
+            if isHorizontal && isLongEnough {
+                state = value.translation.width
+            }
+        }
+)
+
+// List areas - Competing gesture (lower threshold)
+.simultaneousGesture(
+    DragGesture(minimumDistance: 10)
+        .onChanged { _ in
+            // This gesture will compete with navigation for List area
+        }
+)
+```
+
+### Key Design Principles
+- **Distance Hierarchy**: Short swipes (≥10px) trigger list actions, long swipes (≥30px) trigger navigation
+- **Directional Detection**: Navigation only responds to clearly horizontal gestures (2:1 width:height ratio)
+- **Simultaneous Recognition**: `simultaneousGesture` allows both gesture recognizers to compete naturally
+- **SwiftUI Priority**: Framework automatically prioritizes more specific List swipe actions over general navigation
+- **Context Menu Fallback**: Long press provides accessibility alternative for users who prefer it
+
+### Result
+- ✅ List swipe actions work reliably for edit/delete operations
+- ✅ Horizontal navigation preserved as core functionality
+- ✅ Natural iOS gesture behavior maintained
+- ✅ No performance impact or gesture recognition delays
+
 ## Siri Integration Implementation
 
 ### Supported Voice Commands

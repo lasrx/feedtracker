@@ -131,25 +131,53 @@ struct FeedHistoryView: View {
                     }
                     Spacer()
                 } else {
-                    SwipeActionsView(
-                        items: todayFeeds,
-                        rowContent: { FeedRowView(feed: $0) },
-                        onEdit: editFeed,
-                        onDelete: deleteFeed,
-                        editColor: .blue,
-                        editLabel: "Edit",
-                        deleteLabel: "Delete"
+                    List(todayFeeds) { feed in
+                        FeedRowView(feed: feed)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    editFeed(feed)
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.blue)
+                                
+                                Button {
+                                    deleteFeed(feed)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                                .tint(.red)
+                            }
+                            .contextMenu {
+                                Button {
+                                    editFeed(feed)
+                                } label: {
+                                    Label("Edit Entry", systemImage: "pencil")
+                                }
+                                
+                                Button(role: .destructive) {
+                                    deleteFeed(feed)
+                                } label: {
+                                    Label("Delete Entry", systemImage: "trash")
+                                }
+                            }
+                    }
+                    .listStyle(PlainListStyle())
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 10)
+                            .onChanged { _ in
+                                // This gesture will compete with navigation for List area
+                            }
                     )
                 }
             }
             .navigationBarHidden(true)
         }
         .onAppear {
-            print("FeedHistoryView: onAppear called")
             loadTodayFeeds()
         }
         .onChange(of: refreshTrigger) { _, _ in
-            print("FeedHistoryView: refreshTrigger changed, loading data")
             loadTodayFeeds()
         }
         .refreshable {
@@ -234,9 +262,7 @@ struct FeedHistoryView: View {
     }
     
     private func loadTodayFeedsAsync(forceRefresh: Bool = true) async {
-        print("FeedHistoryView: loadTodayFeedsAsync called, isSignedIn: \(storageService.isSignedIn)")
         guard storageService.isSignedIn else {
-            print("FeedHistoryView: Not signed in, skipping load")
             await MainActor.run {
                 isLoading = false
             }
@@ -244,27 +270,21 @@ struct FeedHistoryView: View {
         }
         
         do {
-            print("FeedHistoryView: Calling fetchTodayFeeds...")
             let feeds = try await storageService.fetchTodayFeeds(forceRefresh: forceRefresh)
-            print("FeedHistoryView: Received \(feeds.count) feeds")
             await MainActor.run {
-                self.todayFeeds = feeds.sorted { $0.fullDate > $1.fullDate } // Most recent first
+                self.todayFeeds = feeds.sorted { $0.fullDate > $1.fullDate }
                 self.totalVolume = feeds.reduce(0) { $0 + $1.volume }
                 self.isLoading = false
-                print("FeedHistoryView: Updated UI with \(self.todayFeeds.count) feeds, total: \(self.totalVolume)mL")
             }
         } catch {
             await MainActor.run {
-                print("Error loading today's feeds: \(error)")
                 self.isLoading = false
             }
         }
     }
     
     private func loadWeeklyTotalsAsync(forceRefresh: Bool = true) async {
-        print("FeedHistoryView: loadWeeklyTotalsAsync called")
         guard storageService.isSignedIn else {
-            print("FeedHistoryView: Not signed in, skipping weekly load")
             await MainActor.run {
                 isLoadingWeekly = false
             }
@@ -272,41 +292,29 @@ struct FeedHistoryView: View {
         }
         
         do {
-            print("FeedHistoryView: Calling fetchPast7DaysFeedTotals...")
             let totals = try await storageService.fetchPast7DaysFeedTotals(forceRefresh: forceRefresh)
-            print("FeedHistoryView: Received \(totals.count) daily totals")
             await MainActor.run {
                 self.weeklyTotals = totals
                 self.isLoadingWeekly = false
-                print("FeedHistoryView: Updated UI with weekly totals")
             }
         } catch {
             await MainActor.run {
-                print("Error loading weekly feed totals: \(error)")
                 self.isLoadingWeekly = false
             }
         }
     }
     
     private func loadRecentFeedEntriesAsync(forceRefresh: Bool = true) async {
-        print("FeedHistoryView: loadRecentFeedEntriesAsync called")
         guard storageService.isSignedIn else {
-            print("FeedHistoryView: Not signed in, skipping recent feed entries load")
             return
         }
         
         do {
-            print("FeedHistoryView: Calling fetchRecentFeedEntries...")
             let entries = try await storageService.fetchRecentFeedEntries(days: 7, forceRefresh: forceRefresh)
-            print("FeedHistoryView: Received \(entries.count) feed entries for past 7 days")
             await MainActor.run {
                 self.past7DaysFeedEntries = entries
-                print("FeedHistoryView: Updated UI with recent feed entries")
             }
         } catch {
-            await MainActor.run {
-                print("Error loading recent feed entries: \(error)")
-            }
         }
     }
     
@@ -345,7 +353,6 @@ struct FeedHistoryView: View {
             feedToEdit = nil
             
         } catch {
-            print("Error updating feed entry: \(error)")
             await MainActor.run {
                 feedToEdit = nil
             }
@@ -360,7 +367,6 @@ struct FeedHistoryView: View {
             await loadTodayFeedsAsync(forceRefresh: true)
             
         } catch {
-            print("Error deleting feed entry: \(error)")
         }
         
         await MainActor.run {

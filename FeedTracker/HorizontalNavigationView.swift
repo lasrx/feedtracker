@@ -40,39 +40,37 @@ struct HorizontalNavigationView: View {
             .offset(x: -CGFloat(currentPage) * geometry.size.width + dragOffset)
             .animation(.interpolatingSpring(stiffness: FeedConstants.springStiffness, damping: FeedConstants.springDamping), value: currentPage)
             .onChange(of: currentPage) { oldPage, newPage in
-                print("HorizontalNavigationView: Page changed from \(oldPage) to \(newPage)")
                 // Trigger data loading when navigating to specific views
                 if newPage == 0 {
-                    // Navigated to Feed History - trigger refresh
-                    print("HorizontalNavigationView: Triggering Feed History refresh")
                     feedHistoryViewTrigger += 1
                 } else if newPage == 2 {
-                    // Navigated to Pumping View - trigger refresh
-                    print("HorizontalNavigationView: Triggering Pumping View refresh")
                     pumpingViewTrigger += 1
                 } else if newPage == 3 {
-                    // Navigated to Pumping History - trigger refresh
-                    print("HorizontalNavigationView: Triggering Pumping History refresh")
                     pumpingHistoryViewTrigger += 1
                 }
             }
             .gesture(
-                DragGesture()
+                DragGesture(minimumDistance: 30)
                     .updating($dragOffset) { value, state, _ in
-                        state = value.translation.width
+                        // Only allow navigation drags that are clearly horizontal and start from edge areas
+                        let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 2
+                        let isLongEnough = abs(value.translation.width) > 30
+                        if isHorizontal && isLongEnough {
+                            state = value.translation.width
+                        }
                     }
                     .onEnded { value in
                         let threshold = FeedConstants.swipeThreshold
                         let dragDistance = value.translation.width
+                        let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 2
                         
-                        if dragDistance > threshold && currentPage > 0 {
-                            // Swipe right - go to previous page
-                            currentPage -= 1
-                            // Navigation haptics removed per user feedback
-                        } else if dragDistance < -threshold && currentPage < 3 {
-                            // Swipe left - go to next page
-                            currentPage += 1
-                            // Navigation haptics removed per user feedback
+                        // Only navigate if this is clearly a horizontal swipe
+                        if isHorizontal && abs(dragDistance) > threshold {
+                            if dragDistance > threshold && currentPage > 0 {
+                                currentPage -= 1
+                            } else if dragDistance < -threshold && currentPage < 3 {
+                                currentPage += 1
+                            }
                         }
                     }
             )

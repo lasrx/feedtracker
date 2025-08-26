@@ -124,25 +124,53 @@ struct PumpingHistoryView: View {
                     }
                     Spacer()
                 } else {
-                    SwipeActionsView(
-                        items: todayPumpingSessions,
-                        rowContent: { PumpingRowView(session: $0) },
-                        onEdit: editSession,
-                        onDelete: deleteSession,
-                        editColor: .purple,
-                        editLabel: "Edit",
-                        deleteLabel: "Delete"
+                    List(todayPumpingSessions) { session in
+                        PumpingRowView(session: session)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    editSession(session)
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.purple)
+                                
+                                Button {
+                                    deleteSession(session)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                                .tint(.red)
+                            }
+                            .contextMenu {
+                                Button {
+                                    editSession(session)
+                                } label: {
+                                    Label("Edit Session", systemImage: "pencil")
+                                }
+                                
+                                Button(role: .destructive) {
+                                    deleteSession(session)
+                                } label: {
+                                    Label("Delete Session", systemImage: "trash")
+                                }
+                            }
+                    }
+                    .listStyle(PlainListStyle())
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 10)
+                            .onChanged { _ in
+                                // This gesture will compete with navigation for List area
+                            }
                     )
                 }
             }
             .navigationBarHidden(true)
         }
         .onAppear {
-            print("PumpingHistoryView: onAppear called")
             loadTodaySessions()
         }
         .onChange(of: refreshTrigger) { _, _ in
-            print("PumpingHistoryView: refreshTrigger changed, loading data")
             loadTodaySessions()
         }
         .refreshable {
@@ -215,9 +243,7 @@ struct PumpingHistoryView: View {
     }
     
     private func loadTodaySessionsAsync(forceRefresh: Bool = true) async {
-        print("PumpingHistoryView: loadTodaySessionsAsync called, isSignedIn: \(storageService.isSignedIn)")
         guard storageService.isSignedIn else {
-            print("PumpingHistoryView: Not signed in, skipping load")
             await MainActor.run {
                 isLoading = false
             }
@@ -225,27 +251,21 @@ struct PumpingHistoryView: View {
         }
         
         do {
-            print("PumpingHistoryView: Calling fetchTodayPumpingSessions...")
             let sessions = try await storageService.fetchTodayPumpingSessions(forceRefresh: forceRefresh)
-            print("PumpingHistoryView: Received \(sessions.count) sessions")
             await MainActor.run {
-                self.todayPumpingSessions = sessions.sorted { $0.fullDate > $1.fullDate } // Most recent first
+                self.todayPumpingSessions = sessions.sorted { $0.fullDate > $1.fullDate }
                 self.totalVolume = sessions.reduce(0) { $0 + $1.volume }
                 self.isLoading = false
-                print("PumpingHistoryView: Updated UI with \(self.todayPumpingSessions.count) sessions, total: \(self.totalVolume)mL")
             }
         } catch {
             await MainActor.run {
-                print("Error loading today's pumping sessions: \(error)")
                 self.isLoading = false
             }
         }
     }
     
     private func loadWeeklyTotalsAsync(forceRefresh: Bool = true) async {
-        print("PumpingHistoryView: loadWeeklyTotalsAsync called")
         guard storageService.isSignedIn else {
-            print("PumpingHistoryView: Not signed in, skipping weekly load")
             await MainActor.run {
                 isLoadingWeekly = false
             }
@@ -253,17 +273,13 @@ struct PumpingHistoryView: View {
         }
         
         do {
-            print("PumpingHistoryView: Calling fetchPast7DaysPumpingTotals...")
             let totals = try await storageService.fetchPast7DaysPumpingTotals(forceRefresh: forceRefresh)
-            print("PumpingHistoryView: Received \(totals.count) daily totals")
             await MainActor.run {
                 self.weeklyTotals = totals
                 self.isLoadingWeekly = false
-                print("PumpingHistoryView: Updated UI with weekly totals")
             }
         } catch {
             await MainActor.run {
-                print("Error loading weekly pumping totals: \(error)")
                 self.isLoadingWeekly = false
             }
         }
@@ -302,7 +318,6 @@ struct PumpingHistoryView: View {
             sessionToEdit = nil
             
         } catch {
-            print("Error updating pumping session: \(error)")
             await MainActor.run {
                 sessionToEdit = nil
             }
@@ -317,7 +332,6 @@ struct PumpingHistoryView: View {
             await loadTodaySessionsAsync(forceRefresh: true)
             
         } catch {
-            print("Error deleting pumping session: \(error)")
         }
         
         await MainActor.run {
