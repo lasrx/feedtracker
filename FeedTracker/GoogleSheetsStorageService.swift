@@ -831,7 +831,8 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                                             ["userEnteredValue": ["stringValue": "Time"]],
                                             ["userEnteredValue": ["stringValue": "Volume (mL)"]],
                                             ["userEnteredValue": ["stringValue": "Formula Type"]],
-                                            ["userEnteredValue": ["stringValue": "Waste (mL)"]]
+                                            ["userEnteredValue": ["stringValue": "Waste"]],
+                                            ["userEnteredValue": ["stringValue": "Volume (Day)"]]
                                         ]
                                     ],
                                     [
@@ -840,7 +841,8 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                                             ["userEnteredValue": ["stringValue": "09:30"]],
                                             ["userEnteredValue": ["numberValue": 120]],
                                             ["userEnteredValue": ["stringValue": "Breast milk"]],
-                                            ["userEnteredValue": ["numberValue": 0]]
+                                            ["userEnteredValue": ["numberValue": 0]],
+                                            ["userEnteredValue": ["stringValue": ""]]
                                         ]
                                     ]
                                 ]
