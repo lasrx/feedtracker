@@ -135,6 +135,8 @@ The app uses Swift Package Manager with these dependencies:
 ### Advanced Features
 - **Full CRUD Operations**: Complete edit/delete functionality for both feed entries and pumping sessions with Google Sheets synchronization
 - **Swipe-to-Edit Interface**: Native iOS swipe gestures with context menu fallback for modifying/deleting individual entries
+- **Feed ↔ Waste Conversion**: Edit sheet properly handles Feed/Waste toggle with correct negative volume storage and automatic cache invalidation
+- **Enhanced Edit UI**: Streamlined volume controls with up/down arrow buttons, removing cramped "mL" text for cleaner interface
 - **Optimized Stacked Formula Charts**: Advanced 7-day visualization with today included, smart caching, and background processing for instant rendering
 - **Intelligent Caching System**: 5-minute smart cache with 80-90% API call reduction for optimal performance
 - **Optimized API Usage**: Consolidated API calls (66% reduction in FeedHistoryView) with parallel processing for maximum speed

@@ -401,7 +401,7 @@ struct FeedHistoryView: View {
                 updatedFeed,
                 newDate: date,
                 newTime: time,
-                newVolume: String(updatedFeed.actualVolume),
+                newVolume: String(updatedFeed.volume),  // Use volume (with sign) instead of actualVolume
                 newFormulaType: updatedFeed.formulaType,
                 newWasteAmount: String(updatedFeed.wasteAmount)
             )

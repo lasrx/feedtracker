@@ -869,6 +869,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     // MARK: - Edit/Delete Operations
     
     func updateFeedEntry(_ entry: FeedEntry, newDate: String, newTime: String, newVolume: String, newFormulaType: String, newWasteAmount: String) async throws {
+        
         guard let rowIndex = entry.rowIndex else {
             throw StorageServiceError.dataFormatError
         }
@@ -882,8 +883,11 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             
-            let values = [[newDate, newTime, newVolume, newFormulaType, newWasteAmount]]
-            let body = ["values": values]
+            let body: [String: Any] = [
+                "values": [[newDate, newTime, newVolume, newFormulaType, newWasteAmount]]
+            ]
+            
+            
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
             
             let (_, response) = try await URLSession.shared.data(for: request)

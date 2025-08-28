@@ -11,7 +11,7 @@ struct FeedEditSheet: View {
     @State private var selectedTime: Date
     @State private var volume: Int
     @State private var formulaType: String
-    @State private var wasteAmount: Int
+    @State private var isWaste: Bool
     @State private var formulaTypes: [String] = []
     
     @Environment(\.dismiss) private var dismiss
@@ -25,9 +25,9 @@ struct FeedEditSheet: View {
         // Initialize state from the feed entry
         self._selectedDate = State(initialValue: feed.fullDate)
         self._selectedTime = State(initialValue: feed.fullDate)
-        self._volume = State(initialValue: feed.actualVolume)
+        self._volume = State(initialValue: feed.actualVolume)  // Always positive
         self._formulaType = State(initialValue: feed.formulaType)
-        self._wasteAmount = State(initialValue: feed.wasteAmount)
+        self._isWaste = State(initialValue: feed.isWaste)      // True if volume was negative
     }
     
     var body: some View {
@@ -42,26 +42,69 @@ struct FeedEditSheet: View {
                     DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
                         .datePickerStyle(.compact)
                     
-                    // Volume Input
+                    // Volume Input with Feed/Waste Toggle
                     HStack {
                         Text("Volume")
                         Spacer()
-                        HStack {
-                            Button("-", action: decreaseVolume)
-                                .buttonStyle(PlainButtonStyle())
-                                .foregroundColor(.accentColor)
+                        
+                        // Feed/Waste segmented control (matching main interface)
+                        HStack(spacing: 0) {
+                            Button(action: {
+                                if isWaste {
+                                    isWaste = false
+                                }
+                            }) {
+                                Text("Feed")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(isWaste ? .secondary : .white)
+                                    .frame(width: 40, height: 26)
+                                    .background(isWaste ? Color.clear : .accentColor)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            Button(action: {
+                                if !isWaste {
+                                    isWaste = true
+                                }
+                            }) {
+                                Text("Waste")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(isWaste ? .white : .secondary)
+                                    .frame(width: 40, height: 26)
+                                    .background(isWaste ? Color.orange : Color.clear)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .background(Color(.systemGray5))
+                        .cornerRadius(8)
+                        
+                        Spacer()
+                        
+                        // Volume input on the right
+                        HStack(spacing: 12) {
+                            Button(action: decreaseVolume) {
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .foregroundColor(isWaste ? .orange : .accentColor)
+                            .frame(width: 32, height: 32)
                             
                             Text("\(volume)")
                                 .font(.title2)
                                 .fontWeight(.medium)
+                                .foregroundColor(isWaste ? .orange : .accentColor)
                                 .frame(minWidth: 50)
                             
-                            Text("mL")
-                                .foregroundColor(.secondary)
-                            
-                            Button("+", action: increaseVolume)
-                                .buttonStyle(PlainButtonStyle())
-                                .foregroundColor(.accentColor)
+                            Button(action: increaseVolume) {
+                                Image(systemName: "chevron.up")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .foregroundColor(isWaste ? .orange : .accentColor)
+                            .frame(width: 32, height: 32)
                         }
                     }
                     
@@ -73,47 +116,8 @@ struct FeedEditSheet: View {
                     }
                     .pickerStyle(.menu)
                     
-                    // Waste Amount (if applicable)
-                    if wasteAmount > 0 {
-                        HStack {
-                            Text("Waste Amount")
-                            Spacer()
-                            HStack {
-                                Button("-", action: decreaseWaste)
-                                    .buttonStyle(PlainButtonStyle())
-                                    .foregroundColor(.orange)
-                                
-                                Text("\(wasteAmount)")
-                                    .font(.title2)
-                                    .fontWeight(.medium)
-                                    .frame(minWidth: 50)
-                                
-                                Text("mL")
-                                    .foregroundColor(.secondary)
-                                
-                                Button("+", action: increaseWaste)
-                                    .buttonStyle(PlainButtonStyle())
-                                    .foregroundColor(.orange)
-                            }
-                        }
-                    }
                 }
-                
-                Section {
-                    Button("Add Waste Entry") {
-                        if wasteAmount == 0 {
-                            wasteAmount = 5
-                        }
-                    }
-                    .disabled(wasteAmount > 0)
-                    
-                    if wasteAmount > 0 {
-                        Button("Remove Waste Entry") {
-                            wasteAmount = 0
-                        }
-                        .foregroundColor(.orange)
-                    }
-                }
+            
             }
             .navigationTitle("Edit Feed Entry")
             .navigationBarTitleDisplayMode(.inline)
@@ -152,17 +156,6 @@ struct FeedEditSheet: View {
         }
     }
     
-    private func decreaseWaste() {
-        if wasteAmount > 5 {
-            wasteAmount -= 5
-        }
-    }
-    
-    private func increaseWaste() {
-        if wasteAmount < 200 {
-            wasteAmount += 5
-        }
-    }
     
     private func loadFormulaTypes() {
         // Load formula types from UserDefaults or use defaults
@@ -190,23 +183,54 @@ struct FeedEditSheet: View {
         
         let combinedDate = calendar.date(from: combinedComponents) ?? Date()
         
-        // Create updated feed entry
+        // Format date and time strings
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "M/d/yyyy"
+        let dateString = dateFormatter.string(from: combinedDate)
+        
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "h:mm a"
+        let timeString = timeFormatter.string(from: combinedDate)
         
-        let updatedFeed = FeedEntry(
-            date: dateFormatter.string(from: combinedDate),
-            time: timeFormatter.string(from: combinedDate),
-            volume: volume,
-            formulaType: formulaType,
-            wasteAmount: wasteAmount,
-            rowIndex: feed.rowIndex
-        )
+        // Format volume and waste amount exactly like the main ViewModel
+        // Convert Int to String first to match main ViewModel behavior
+        let volumeString = "\(volume)"
+        let volumeForStorage = isWaste ? "-\(volumeString)" : volumeString
+        let wasteAmountForStorage = isWaste ? volumeString : "0"
         
-        onSave(updatedFeed)
-        dismiss()
+        
+        Task {
+            do {
+                try await storageService.updateFeedEntry(
+                    feed,
+                    newDate: dateString,
+                    newTime: timeString,
+                    newVolume: volumeForStorage,
+                    newFormulaType: formulaType,
+                    newWasteAmount: wasteAmountForStorage
+                )
+                
+                await MainActor.run {
+                    // Create updated feed entry for the callback
+                    let updatedFeed = FeedEntry(
+                        date: dateString,
+                        time: timeString,
+                        volume: isWaste ? -volume : volume,
+                        formulaType: formulaType,
+                        wasteAmount: isWaste ? volume : 0,
+                        rowIndex: feed.rowIndex
+                    )
+                    
+                    onSave(updatedFeed)
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    // Handle error - could show an alert here
+                    dismiss()
+                }
+            }
+        }
     }
 }
 

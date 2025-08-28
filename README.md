@@ -135,7 +135,8 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - **Swipe-to-edit** - Left swipe on any entry reveals Edit/Delete buttons
    - **Context menu fallback** - Long press for accessibility
    - **Comprehensive editing** - Modify date, time, volume, formula type, and waste amount
-   - **Modal edit forms** - Full-featured editors with native iOS controls
+   - **Feed ↔ Waste conversion** - Toggle between feed and waste entries with proper negative volume storage
+   - **Modal edit forms** - Full-featured editors with native iOS controls and streamlined arrow-based volume controls
    - **Safe deletion** - Confirmation alerts with entry details
    - **Instant sync** - Changes immediately reflected in Google Sheets
    - **Smart cache invalidation** - Automatic cache clearing after modifications
