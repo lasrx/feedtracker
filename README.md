@@ -123,6 +123,9 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - No "mL" pronunciation confusion
 
 4. **Google Sheets Integration**
+   - **Three setup options**: Create new sheets, browse existing sheets, or manual entry
+   - **Incremental permissions**: App Store ready with non-sensitive scopes, optional restricted scopes for advanced features
+   - **Sheet name persistence**: Human-readable names displayed in Settings
    - Append new rows to spreadsheet
    - Fetch today's total from all entries
    - **Full CRUD operations** - Edit and delete individual entries with row-based targeting

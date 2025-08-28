@@ -65,13 +65,20 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 - **Invalidation**: Automatic cache clearing when new data is submitted
 
 ### Google Sheets Integration
-- **Spreadsheet ID**: Configurable via Settings (stored in UserDefaults)
+- **Spreadsheet Management**: Configurable via Settings with three options:
+  - **Create New Sheet**: Uses `drive.file` scope to create properly formatted tracking sheets
+  - **Browse Existing Sheets**: Uses incremental permissions to request `drive.readonly` scope only when needed
+  - **Manual Entry**: Direct spreadsheet ID input for advanced users
+- **Sheet Name Persistence**: Human-readable sheet names saved to UserDefaults and displayed in Settings
 - **Column Structure**: A=Date (M/d/yyyy), B=Time (h:mm a), C=Volume (numeric), D=Formula Type, E=Waste Amount (Feed Log); A=Date, B=Time, C=Volume (Pumping sheet)
 - **Full CRUD Operations**: Create, Read, Update, Delete support with row-based targeting for precise modifications
 - **Row Index Tracking**: Each entry maintains its Google Sheets row position for accurate editing/deletion
 - **Atomic Updates**: Edit operations update entire rows to maintain data integrity
-- **API Scope**: `https://www.googleapis.com/auth/spreadsheets` and `https://www.googleapis.com/auth/drive.file`
-- **Authentication**: OAuth 2.0 with automatic token refresh
+- **Incremental OAuth Permissions**: 
+  - **Base Scopes**: `spreadsheets` + `drive.file` (non-sensitive, no Google verification needed)
+  - **Optional Scope**: `drive.readonly` (requested only when user browses existing sheets)
+  - **App Store Ready**: Can submit immediately with basic scopes, advanced features work with user consent
+- **Authentication**: OAuth 2.0 with automatic token refresh and scope management
 
 ### Haptic Feedback System
 - **Configurable**: Toggle in Settings with user-friendly description

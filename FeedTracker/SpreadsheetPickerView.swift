@@ -85,7 +85,7 @@ struct SpreadsheetPickerView: View {
                 .foregroundColor(.secondary)
             Text("No Sheets Found")
                 .font(.headline)
-            Text("Create a new tracking sheet using the \"Create Sheet\" button in Settings.")
+            Text("Create a new tracking sheet using the \"Create Sheet\" button in Settings, or refresh to browse existing sheets.")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -194,7 +194,12 @@ struct SpreadsheetPickerView: View {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorMessage = error.localizedDescription
+                    // Provide user-friendly error message for permission scenarios
+                    if error.localizedDescription.contains("authentication") || error.localizedDescription.contains("permission") {
+                        self.errorMessage = "Additional permissions needed to browse existing sheets. You can still create new sheets in Settings without this permission."
+                    } else {
+                        self.errorMessage = error.localizedDescription
+                    }
                     self.isLoading = false
                 }
             }

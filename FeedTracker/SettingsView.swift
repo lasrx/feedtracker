@@ -45,6 +45,115 @@ struct SettingsView: View {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
     }
     
+    // MARK: - Computed Properties
+    
+    private var currentSheetStatusView: some View {
+        Group {
+            if !spreadsheetId.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text(storageService.currentConfiguration?.name ?? "Untitled Sheet")
+                            .font(.headline)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                        Spacer()
+                    }
+                    
+                    Text("Sheet ID: \(String(spreadsheetId.prefix(16)))...")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .textSelection(.enabled)
+                }
+            } else {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                    Text("No spreadsheet selected")
+                        .font(.headline)
+                        .fontWeight(.medium)
+                    Spacer()
+                }
+            }
+        }
+    }
+    
+    private var dataStorageOptionsView: some View {
+        VStack(spacing: 12) {
+            // Create new (recommended)
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Create New Sheet")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Text("Recommended for new users")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Button(action: {
+                    newSheetTitle = "Feed Tracking"
+                    showingCreateSheetAlert = true
+                }) {
+                    if isCreatingSheet {
+                        HStack {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .scaleEffect(0.7)
+                            Text("Creating...")
+                        }
+                    } else {
+                        Text("Create")
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .disabled(!storageService.isSignedIn || isCreatingSheet)
+            }
+            
+            // Browse existing
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Browse Existing Sheets")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Text("Choose from your Google Drive")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Button("Browse") {
+                    if storageService.isSignedIn {
+                        showingSpreadsheetPicker = true
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(!storageService.isSignedIn)
+            }
+            
+            // Manual entry
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Manual Entry")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Text("Enter a spreadsheet ID directly")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Button("Enter ID") {
+                    tempSpreadsheetId = spreadsheetId
+                    showingSpreadsheetIdAlert = true
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+        }
+    }
+    
     var body: some View {
         NavigationView {
             Form {
@@ -84,73 +193,26 @@ struct SettingsView: View {
                 }
                 
                 // Data Configuration
-                Section(header: Text("Data Configuration")) {
-                    // Spreadsheet Selection
-                    VStack(alignment: .leading, spacing: 4) {
+                Section(header: Text("Data Storage")) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("MiniLog saves your feeding data to Google Sheets for backup and multi-device access.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        // Current spreadsheet status
                         HStack {
-                            Text("Active Spreadsheet")
+                            Text("Current Sheet:")
+                                .font(.headline)
                             Spacer()
-                            Button("Select") {
-                                if storageService.isSignedIn {
-                                    showingSpreadsheetPicker = true
-                                }
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                            .disabled(!storageService.isSignedIn)
                         }
                         
-                        if !spreadsheetId.isEmpty {
-                            Text(String(spreadsheetId.prefix(20)) + "...")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text("No spreadsheet selected")
-                                .font(.caption)
-                                .foregroundColor(.orange)
-                        }
+                        currentSheetStatusView
                         
-                        // Create new sheet option
-                        HStack {
-                            Text("Create new tracking sheet:")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Button(action: {
-                                newSheetTitle = "Feed Tracking"
-                                showingCreateSheetAlert = true
-                            }) {
-                                if isCreatingSheet {
-                                    HStack {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle())
-                                            .scaleEffect(0.7)
-                                        Text("Creating...")
-                                    }
-                                } else {
-                                    Text("Create Sheet")
-                                }
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.small)
-                            .disabled(!storageService.isSignedIn || isCreatingSheet)
-                        }
+                        Divider()
                         
-                        // Manual entry option
-                        HStack {
-                            Text("Or enter existing spreadsheet ID:")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Button("Manual Entry") {
-                                tempSpreadsheetId = spreadsheetId
-                                showingSpreadsheetIdAlert = true
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                        }
+                        dataStorageOptionsView
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 8)
                 }
                 
                 // Siri & Voice Commands

@@ -45,9 +45,10 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     private func loadConfiguration() {
         if let savedSpreadsheetId = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetId) {
             self.spreadsheetId = savedSpreadsheetId
+            let savedName = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetName) ?? "Untitled Sheet"
             self.currentConfiguration = StorageConfiguration(
                 identifier: savedSpreadsheetId,
-                name: "Current Spreadsheet",
+                name: savedName,
                 provider: .googleSheets
             )
         }
@@ -62,9 +63,10 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             if let newId = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetId),
                newId != self?.spreadsheetId {
                 self?.spreadsheetId = newId
+                let savedName = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetName) ?? "Untitled Sheet"
                 self?.currentConfiguration = StorageConfiguration(
                     identifier: newId,
-                    name: "Current Spreadsheet",
+                    name: savedName,
                     provider: .googleSheets
                 )
                     }
@@ -193,6 +195,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         spreadsheetId = config.identifier
         currentConfiguration = config
         UserDefaults.standard.set(config.identifier, forKey: FeedConstants.UserDefaultsKeys.spreadsheetId)
+        UserDefaults.standard.set(config.name, forKey: FeedConstants.UserDefaultsKeys.spreadsheetName)
     }
     
     // MARK: - API Request Helper
@@ -725,7 +728,36 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     
     // MARK: - Storage Management
     
+    /// Requests additional Drive scope for accessing existing spreadsheets
+    /// This is optional - users can still use the app without this permission
+    func requestDriveReadAccess() async throws {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            throw StorageServiceError.notSignedIn
+        }
+        
+        // Check if we already have the required scope
+        let driveReadScope = "https://www.googleapis.com/auth/drive.readonly"
+        if user.grantedScopes?.contains(driveReadScope) == true {
+            return // Already have permission
+        }
+        
+        // Request additional scope for Drive access
+        guard let windowScene = await UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = await windowScene.windows.first?.rootViewController else {
+            throw StorageServiceError.configurationInvalid
+        }
+        
+        do {
+            _ = try await user.addScopes([driveReadScope], presenting: rootViewController)
+        } catch {
+            throw StorageServiceError.authenticationFailed(error)
+        }
+    }
+    
     func fetchAvailableStorageOptions() async throws -> [StorageOption] {
+        // First, ensure we have the necessary permissions
+        try await requestDriveReadAccess()
+        
         return try await performAuthenticatedRequest { accessToken in
             let urlString = "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc"
             guard let url = URL(string: urlString) else {
@@ -750,7 +782,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                 return []
             }
             
-            return files.compactMap { file in
+            let storageOptions: [StorageOption] = files.compactMap { file in
                 guard let id = file["id"] as? String,
                       let name = file["name"] as? String else {
                     return nil
@@ -764,6 +796,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                     lastModified: modifiedTime
                 )
             }
+            
+            
+            return storageOptions
         }
     }
     

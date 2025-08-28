@@ -73,6 +73,7 @@ struct FeedConstants {
         static let feedQuickVolumes = "feedQuickVolumes"
         static let pumpingQuickVolumes = "pumpingQuickVolumes"
         static let spreadsheetId = "spreadsheetId"
+        static let spreadsheetName = "spreadsheetName"
         static let lastUsedFormulaType = "lastUsedFormulaType"
         static let dragSpeed = "dragSpeed"
     }
