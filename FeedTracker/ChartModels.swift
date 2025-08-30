@@ -85,10 +85,11 @@ struct ChartDataProcessor {
         var dailyTotals: [DailyTotalWithBreakdown] = []
         
         for (date, entries) in groupedByDate {
-            // Group by formula type for this day
-            let formulaVolumes = Dictionary(grouping: entries) { $0.formulaType }
+            // Group by formula type for this day (exclude waste entries from chart)
+            let feedEntries = entries.filter { !$0.isWaste }
+            let formulaVolumes = Dictionary(grouping: feedEntries) { $0.formulaType }
                 .mapValues { entriesForFormula in
-                    entriesForFormula.reduce(0) { $0 + $1.actualVolume }
+                    entriesForFormula.reduce(0) { $0 + $1.volume }
                 }
             
             // Create breakdown with consistent colors
@@ -146,10 +147,11 @@ struct ChartDataProcessor {
                 )
                 dailyTotals.append(dailyTotal)
             } else {
-                // Process entries for this day
-                let formulaVolumes = Dictionary(grouping: dateEntries) { $0.formulaType }
+                // Process entries for this day (exclude waste entries from chart)
+                let feedEntries = dateEntries.filter { !$0.isWaste }
+                let formulaVolumes = Dictionary(grouping: feedEntries) { $0.formulaType }
                     .mapValues { entriesForFormula in
-                        entriesForFormula.reduce(0) { $0 + $1.actualVolume }
+                        entriesForFormula.reduce(0) { $0 + $1.volume }
                     }
                 
                 let breakdown = formulaVolumes.map { formulaType, volume in

@@ -48,6 +48,19 @@ for word in "${SENSITIVE_WORDS[@]}"; do
 done
 
 echo ""
+echo "🔍 Checking for unwanted co-author tags..."
+
+# Check for Claude co-author tags that user doesn't want
+CLAUDE_COAUTHOR_RESULTS=$(git log --all --grep="Co-Authored-By: Claude" --oneline 2>/dev/null | head -5)
+if [ -n "$CLAUDE_COAUTHOR_RESULTS" ]; then
+    echo "🚨 BLOCKED: Found Claude co-author tags in commit messages:"
+    echo "$CLAUDE_COAUTHOR_RESULTS" | sed 's/^/   /'
+    echo "   User has requested no Claude co-author tags in commits"
+    echo "   Please rewrite commit messages to remove these tags"
+    ((ISSUES_FOUND++))
+fi
+
+echo ""
 echo "🔍 Scanning current files for API key patterns..."
 
 # Common API key patterns
