@@ -340,6 +340,7 @@ Updated chart data range to include today's partial progress:
 ### Multi-Layer Protection:
 - **GitHub Actions Secrets Scanner** - Server-side enforcement on every commit
 - **Pre-commit hooks** - Local protection with automatic cleaning
+- **Commit message filtering** - Blocks unwanted attribution and co-author tags
 - **Enhanced .gitignore** - Comprehensive pattern blocking
 - **Template file support** - Allows `.env.local.template` and `.env.example`
 
@@ -351,6 +352,7 @@ Updated chart data range to include today's partial progress:
 
 ### Security Status:
 - ✅ **Secrets Scanner**: Fully operational, scans 13+ credential patterns
+- ✅ **Commit Message Filter**: Active `commit-msg` hook blocks unwanted attribution patterns
 - ✅ **Template files**: Properly allowed (.env.local.template, .env.example)
 - ✅ **Self-aware**: Security workflow excludes its own patterns
 - ✅ **Auto-cleanup**: Pre-commit hooks clean sensitive data automatically
