@@ -314,12 +314,7 @@ struct FeedHistoryView: View {
         }
         
         return groupedByDate.map { date, dateEntries in
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "M/d/yyyy"
-            let dateString = dateFormatter.string(from: date)
-            
             let totalVolume = dateEntries.reduce(0) { $0 + $1.volume }
-            
             return DailyTotal(date: date, volume: totalVolume)
         }.sorted { $0.date < $1.date }
     }
