@@ -89,7 +89,7 @@ struct FeedConstants {
     
     // MARK: - Google Sheets Constants
     struct GoogleSheets {
-        static let feedRange = "A:D"  // Date, Time, Volume (mL), Formula Type
+        static let feedRange = "A:E"  // Date, Time, Volume (mL), Formula Type, Waste Amount - all rows
         static let pumpingRange = "Pumping!A:C"  // Date, Time, Volume (mL)
         static let scopes = [
             "https://www.googleapis.com/auth/spreadsheets",

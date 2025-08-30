@@ -141,7 +141,9 @@ The app uses Swift Package Manager with these dependencies:
 
 ### Advanced Features
 - **Full CRUD Operations**: Complete edit/delete functionality for both feed entries and pumping sessions with Google Sheets synchronization
-- **Swipe-to-Edit Interface**: Native iOS swipe gestures with context menu fallback for modifying/deleting individual entries
+- **Optimized Swipe Gestures**: Left-to-right swipe for edit/delete actions (avoids navigation gesture conflicts)
+- **Accurate Weekly Summary**: Chart calculations include waste as negative values for precise net consumption tracking
+- **Enhanced Google Sheets Integration**: Extended range (A:E) includes waste data column for complete data retrieval
 - **Feed ↔ Waste Conversion**: Edit sheet properly handles Feed/Waste toggle with correct negative volume storage and automatic cache invalidation
 - **Enhanced Edit UI**: Streamlined volume controls with up/down arrow buttons, removing cramped "mL" text for cleaner interface
 - **Optimized Stacked Formula Charts**: Advanced 7-day visualization with today included, smart caching, and background processing for instant rendering

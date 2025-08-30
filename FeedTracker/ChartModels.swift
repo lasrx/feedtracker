@@ -85,8 +85,8 @@ struct ChartDataProcessor {
         var dailyTotals: [DailyTotalWithBreakdown] = []
         
         for (date, entries) in groupedByDate {
-            // Group by formula type for this day (exclude waste entries from chart)
-            let feedEntries = entries.filter { !$0.isWaste }
+            // Group by formula type for this day (include all entries, waste as negative values)
+            let feedEntries = entries  // Include all entries including waste
             let formulaVolumes = Dictionary(grouping: feedEntries) { $0.formulaType }
                 .mapValues { entriesForFormula in
                     entriesForFormula.reduce(0) { $0 + $1.volume }
@@ -147,8 +147,9 @@ struct ChartDataProcessor {
                 )
                 dailyTotals.append(dailyTotal)
             } else {
-                // Process entries for this day (exclude waste entries from chart)
-                let feedEntries = dateEntries.filter { !$0.isWaste }
+                // Process entries for this day (include all entries, waste as negative values)
+                let feedEntries = dateEntries  // Include all entries including waste
+                
                 let formulaVolumes = Dictionary(grouping: feedEntries) { $0.formulaType }
                     .mapValues { entriesForFormula in
                         entriesForFormula.reduce(0) { $0 + $1.volume }
