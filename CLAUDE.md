@@ -40,6 +40,7 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - UserDefaults keys centralized for consistency
 
 ### Intelligent Caching Strategy
+**Network considerate**: 80-90% API call reduction to minimize Google Sheets API usage
 **Cache-first navigation**: `forceRefresh: false` for instant UI (onAppear, navigation)
 **User-controlled refresh**: `forceRefresh: true` for pull-to-refresh, user actions
 **Smart invalidation**: Cache cleared automatically after data mutations (add/edit/delete)
