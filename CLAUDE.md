@@ -31,6 +31,14 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 **Views**: Pure UI presentation, bind to ViewModel `@Published` properties  
 **Service Injection**: ViewModels receive services via initializers for testability
 
+### User-Configurable UX Pattern
+**FeedConstants.swift**: Centralized defaults with user customization support
+**@AppStorage integration**: Settings persist user preferences (daily goals, quick volumes, drag speed, formula types)
+**Design philosophy**: Avoid hardcoding UX values, allow user control where beneficial
+- Daily volume goals, quick volume buttons, drag sensitivity all configurable
+- Formula types customizable vs. rigid predefined lists  
+- UserDefaults keys centralized for consistency
+
 ## Google Sheets Integration
 
 **Column Structure**:
@@ -62,9 +70,12 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - Business logic → create ViewModel with `@Published` properties
 - Haptic feedback → use `HapticHelper.shared`
 - Caching → use `DataCache` actor via service layer
+- User preferences → add to `FeedConstants.UserDefaultsKeys` & `SettingsView`
 
 **Key Files**:
 - `StorageService.swift`: Protocol definitions and caching infrastructure
+- `FeedConstants.swift`: Centralized defaults and user preference patterns
 - `SwipeActionsView.swift`: Generic reusable UI components
+- `SettingsView.swift`: User customization patterns with @AppStorage
 - `*ViewModel.swift`: Business logic patterns and service injection
 - `README.md`: Complete project details and features
