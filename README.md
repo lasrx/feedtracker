@@ -43,30 +43,30 @@ feedtracker/
 └── FeedTracker/               # Source code directory
     ├── FeedTrackerApp.swift           # App entry point & configuration (29 lines)
     ├── HorizontalNavigationView.swift # Four-pane swipe navigation (125 lines)
-    ├── ContentView.swift              # Main feed entry (32 lines - 97% reduction!)
+    ├── ContentView.swift              # Main feed entry (34 lines - 97% reduction!)
     │
     ├── 🎯 Shared Components (MVVM Architecture)
-    ├── FeedEntryForm.swift            # Shared UI component (287 lines)
-    ├── FeedEntryViewModel.swift       # Feed business logic with app lifecycle (306 lines)
-    ├── PumpingEntryViewModel.swift    # Pumping business logic with app lifecycle (240 lines)
-    ├── FeedConstants.swift            # Centralized constants (75 lines)
-    ├── HapticHelper.swift             # Multi-tier haptic system (230 lines)
+    ├── FeedEntryForm.swift            # Shared UI component (312 lines)
+    ├── FeedEntryViewModel.swift       # Feed business logic with app lifecycle (318 lines)
+    ├── PumpingEntryViewModel.swift    # Pumping business logic with app lifecycle (266 lines)
+    ├── FeedConstants.swift            # Centralized constants (103 lines)
+    ├── HapticHelper.swift             # Multi-tier haptic system (246 lines)
     ├── SwipeActionsView.swift         # Generic swipe-to-edit/delete component (91 lines)
     ├── FeedEditSheet.swift            # Modal feed entry editor (180+ lines)
     ├── PumpingEditSheet.swift         # Modal pumping session editor (120+ lines)
     │
     ├── 📊 Views & Features
-    ├── FeedHistoryView.swift          # Feed analytics with stacked charts & edit/delete (400+ lines)
+    ├── FeedHistoryView.swift          # Feed analytics with stacked charts & edit/delete (493 lines)
     ├── PumpingView.swift              # Pumping session logger with MVVM pattern (180 lines)
     ├── PumpingHistoryView.swift       # Pumping analytics & insights with edit/delete (350+ lines)
     ├── WeeklySummaryView.swift        # Reusable trend analysis (189 lines)
-    ├── StackedWeeklySummaryView.swift # Advanced stacked bar charts (262 lines)
+    ├── StackedWeeklySummaryView.swift # Advanced stacked bar charts (303 lines)
     ├── SettingsView.swift             # App configuration (372 lines)
     ├── SpreadsheetPickerView.swift    # Google Sheets browser (249 lines)
     │
     ├── 🔧 Services & Models
     ├── StorageService.swift           # Protocol abstraction with CRUD operations (174 lines)
-    ├── GoogleSheetsStorageService.swift # Google Sheets API integration with full CRUD (1000+ lines)
+    ├── GoogleSheetsStorageService.swift # Google Sheets API integration with full CRUD (1039 lines)
     ├── Models.swift                   # Core data models with row tracking (90+ lines)
     ├── ChartModels.swift              # Chart-specific models and processing (120+ lines)
     ├── Utilities.swift                # Shared utilities (11 lines)
@@ -135,7 +135,7 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - Browse and select from available spreadsheets
 
 5. **Edit/Delete Operations**
-   - **Swipe-to-edit** - Left swipe on any entry reveals Edit/Delete buttons
+   - **Swipe-to-edit** - Left-to-right swipe on any entry reveals Edit/Delete buttons
    - **Context menu fallback** - Long press for accessibility
    - **Comprehensive editing** - Modify date, time, volume, formula type, and waste amount
    - **Feed ↔ Waste conversion** - Toggle between feed and waste entries with proper negative volume storage
@@ -164,7 +164,7 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 
 #### ✏️ Complete Edit/Delete System
 - **Full CRUD operations** - Edit and delete individual feed entries and pumping sessions
-- **Native iOS swipe gestures** - Left swipe reveals Edit/Delete buttons with context menu fallback
+- **Native iOS swipe gestures** - Left-to-right swipe reveals Edit/Delete buttons with context menu fallback
 - **Gesture conflict resolution** - Competing gesture priorities allow both list swipes and navigation to work reliably
 - **Row-based Google Sheets targeting** - Precise modifications with 1-based row indexing
 - **Comprehensive modal editors** - Full-featured forms with date/time pickers and volume controls
@@ -182,7 +182,7 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 - **Clean component separation** - Chart logic moved to chart components for better maintainability
 
 #### 🏗️ Latest: Complete MVVM Architecture & Configurable UX
-- **Complete MVVM Pattern** - Added `PumpingEntryViewModel` (240 lines) for full architectural consistency across all entry views
+- **Complete MVVM Pattern** - Added `PumpingEntryViewModel` (266 lines) for full architectural consistency across all entry views
 - **Configurable Drag Speed** - User-selectable speed (Slow/Default/Fast) in Settings with optimized sensitivity curves
 - **Unified App Lifecycle** - Both Feed and Pumping views auto-reset date/time after 1+ hour inactivity using shared lifecycle patterns
 - **Centralized Haptic System** - All views use `HapticHelper.shared` for consistent tactile feedback with 5mL precision
@@ -191,8 +191,8 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 
 #### 🏗️ Previous: Architectural Refactor & Security Overhaul
 - **955+ lines eliminated** - Removed all code duplication through shared components
-- **ContentView: 987 → 32 lines** (96.8% reduction!)
-- **Created 4 shared components** - `FeedEntryForm` (287), `FeedEntryViewModel` (306), `FeedConstants` (75), `HapticHelper` (230)
+- **ContentView: 987 → 34 lines** (96.6% reduction!)
+- **Created 4 shared components** - `FeedEntryForm` (312), `FeedEntryViewModel` (318), `FeedConstants` (103), `HapticHelper` (246)
 - **Enterprise Security System** - GitHub Actions secrets scanner with multi-layer protection
 
 ### Previous Improvements (Pre-Refactor)
