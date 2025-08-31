@@ -80,7 +80,6 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - **NEVER manually remove** Info.plist from staging - hooks handle this automatically
 - **Read hook messages carefully** - they contain specific guidance for AI assistants
 - **If blocked**: Follow the hook guidance exactly, don't try to bypass
-- **Fresh setup**: Run `./git-hooks/install-hooks.sh` in new environments
 
 ### Resources:
 - `git-hooks/` - Version-controlled hooks and installer
