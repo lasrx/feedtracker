@@ -12,12 +12,24 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - Cmd+B to build, Cmd+R to run
 - No test target configured
 
-## Architecture
+## Architecture & Design Patterns
 
-**MVVM Pattern**: ViewModels handle business logic, Views handle UI
-**4-Pane Navigation**: Feed Overview → Feed Entry → Pumping Entry → Pumping Overview  
-**Google Sheets**: Full CRUD via GoogleSheetsStorageService with 5-minute caching
-**Swipe Gestures**: Context-aware (.leading for left panes, .trailing for right panes)
+### Service Layer Pattern
+**StorageServiceProtocol**: Abstract interface for data operations enabling multiple providers
+- `GoogleSheetsStorageService`: Current implementation with OAuth & caching
+- `StorageProvider` enum: Ready for Firebase, AWS expansion
+- **Thread-safe caching**: `DataCache` actor with 5-minute TTL
+
+### Reusable Components
+**SwipeActionsView<RowContent, Item>**: Generic component for edit/delete across all list views
+**HapticHelper.shared**: Centralized haptic feedback with intensity levels
+**FeedEntryViewModel/PumpingEntryViewModel**: Business logic separation from Views
+**DeleteAlertModifier**: Reusable confirmation dialogs
+
+### MVVM + Dependency Injection
+**ViewModels**: Handle all business logic, API calls, lifecycle management
+**Views**: Pure UI presentation, bind to ViewModel `@Published` properties  
+**Service Injection**: ViewModels receive services via initializers for testability
 
 ## Google Sheets Integration
 
@@ -41,9 +53,18 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - `git-hooks/` - Version-controlled hooks and installer
 - `SECURITY_IMPLEMENTATION.md` - Complete implementation guide
 
-## Code Navigation
+## Code Navigation & Patterns
 
 **MARK comments**: All files have extensive MARK sections - use them for navigation
-**MVVM pattern**: ViewModels contain business logic, Views handle UI only
-**Existing patterns**: Check similar components before creating new ones
-**README.md**: Complete project details, features, and implementation status
+**Follow existing patterns**: Check similar components before creating new ones
+- New list views → use `SwipeActionsView<RowContent, Item>` 
+- New services → implement `StorageServiceProtocol`
+- Business logic → create ViewModel with `@Published` properties
+- Haptic feedback → use `HapticHelper.shared`
+- Caching → use `DataCache` actor via service layer
+
+**Key Files**:
+- `StorageService.swift`: Protocol definitions and caching infrastructure
+- `SwipeActionsView.swift`: Generic reusable UI components
+- `*ViewModel.swift`: Business logic patterns and service injection
+- `README.md`: Complete project details and features
