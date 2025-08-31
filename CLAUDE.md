@@ -93,6 +93,7 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - New list views → use `SwipeActionsView<RowContent, Item>` 
 - New services → implement `StorageServiceProtocol`
 - Business logic → create ViewModel with `@Published` properties
+- CRUD operations → always route through service layer (never direct API calls in views)
 - Haptic feedback → use `HapticHelper.shared`
 - Caching → use `DataCache` actor via service layer with `forceRefresh` pattern
 - User preferences → add to `FeedConstants.UserDefaultsKeys` & `SettingsView`

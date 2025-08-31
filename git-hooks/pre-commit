@@ -121,7 +121,7 @@ for file in $STAGED_FILES; do
     if [ -f "$file" ]; then
         # Skip security configuration files, template files, and documentation
         case "$file" in
-            *security-check.yml|*security-check.sh|*.gitignore)
+            *security-check.yml|*security-check.sh|*.gitignore|git-hooks/*)
                 echo "🔧 Skipping security config file: $file"
                 continue
                 ;;
