@@ -46,6 +46,23 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 **5-minute TTL**: Configurable via `FeedConstants.cacheMaxAge`
 **Thread-safe**: DataCache actor prevents race conditions
 
+### Concurrency & Performance Patterns
+**MainActor.run**: All UI updates from background tasks use `await MainActor.run`
+**Background processing**: Heavy computations moved off main thread with Task{}
+**Parallel API calls**: `async let` for concurrent operations (80-90% performance improvement)
+**DEBUG compilation**: Extensive debug logging stripped in production builds (`#if DEBUG`)
+
+### App Lifecycle Management  
+**Background/Foreground handling**: NotificationCenter observers in all entry views
+**1-hour refresh threshold**: Interface auto-resets after extended absence
+**Time tracking**: ViewModels track `lastActiveTime` for smart refresh decisions
+
+### UI Consistency Patterns
+**Semantic colors**: Feed=accentColor, Pumping=purple, Waste=orange throughout app
+**System color palette**: Uses iOS system colors for theme/accessibility support
+**Configurable animations**: Spring stiffness/damping values centralized in FeedConstants
+**44pt minimum targets**: All interactive elements meet accessibility guidelines
+
 ## Google Sheets Integration
 
 **Column Structure**:
@@ -79,11 +96,18 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - Caching → use `DataCache` actor via service layer with `forceRefresh` pattern
 - User preferences → add to `FeedConstants.UserDefaultsKeys` & `SettingsView`
 - Cache invalidation → call `dataCache.clear(forKey:)` after mutations
+- Background tasks → use `Task{}` then `await MainActor.run` for UI updates
+- App lifecycle → add NotificationCenter observers for background/foreground
+- Debug logging → wrap in `#if DEBUG` blocks for production builds
+- Error handling → create LocalizedError enums with user-friendly descriptions
 
 **Key Files**:
 - `StorageService.swift`: Protocol definitions and caching infrastructure
-- `FeedConstants.swift`: Centralized defaults and user preference patterns
+- `FeedConstants.swift`: Centralized defaults, user preferences, and UI constants
 - `SwipeActionsView.swift`: Generic reusable UI components
-- `SettingsView.swift`: User customization patterns with @AppStorage
-- `*ViewModel.swift`: Business logic patterns and service injection
+- `Models.swift`: Data modeling with computed properties and row tracking
+- `ChartModels.swift`: Consistent color assignment and chart data processing
+- `HapticHelper.swift`: Centralized haptic feedback with intensity levels
+- `*ViewModel.swift`: MVVM patterns, app lifecycle, and service injection
+- `*EditSheet.swift`: Modal form patterns with callback architecture
 - `README.md`: Complete project details and features
