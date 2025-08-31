@@ -240,6 +240,9 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 
 ### Protected Files
 - **GoogleService-Info.plist** - Contains OAuth client secrets
+- **Environment files** - `.env*` files (except `.env.example` and `.env.local.template`)
+- **Key files** - `*.key`, `*.pem`, `*.p12` certificates and private keys
+- **Secret files** - `secrets.*`, `api_keys.*`, `credentials.*`, `config.local.*`
 - **Any .xcconfig files** - May contain API keys or build secrets
 - **Provisioning profiles** - Contain certificates and team IDs
 
