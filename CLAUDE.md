@@ -82,7 +82,6 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - **If blocked**: Follow the hook guidance exactly, don't try to bypass
 
 ### Resources:
-- `git-hooks/` - Version-controlled hooks and installer
 - `SECURITY_IMPLEMENTATION.md` - Complete implementation guide
 
 ## Code Navigation & Patterns
