@@ -207,8 +207,6 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 ## TODO / Roadmap
 
 ### High Priority
-- [ ] Premium Analytics tier development (AWS infrastructure)
-- [ ] Implement last feed details (volume + formula type, not just time)
 - [ ] Add data validation (prevent future dates, negative volumes)
 - [ ] Offline queue for entries when no connection
 
@@ -309,113 +307,19 @@ The project uses Swift Package Manager with these dependencies (automatically re
 
 ## Future Considerations
 
-### Dual-Strategy Cloud Migration Plan
-**Approach**: Solve current OAuth pain points with simplified onboarding while maintaining privacy-focused Sheets option.
+### Current Architecture
+The app successfully uses Google Sheets as a free, reliable backend that provides:
+- Zero infrastructure costs
+- Complete user data ownership
+- Built-in export capabilities
+- Multi-device synchronization
+- No server maintenance required
 
-#### Current Challenge: OAuth User Experience
-- Complex Google Sign-In flow with scary permission dialogs
-- Frequent re-authentication required (token expiry issues)
-- Users getting signed out periodically 
-- High friction onboarding deterring adoption
-
-#### Proposed Solution: Dual-Tier Strategy
-
-### Tier 1: Firebase Anonymous Auth (Default - Simplified UX)
-**Immediate Solution for OAuth Problems:**
-- **Instant onboarding** - "Start Tracking" button, no sign-up required
-- **Anonymous Firebase users** - Automatic device syncing via persistent user ID
-- **Cross-device sync** - Data follows user across devices seamlessly
-- **Optional account linking** - Upgrade to Google account for backup later
-- **Cost**: $0-3/month for 1000+ users (Firebase free tier coverage)
-
-**User Experience:**
-```
-1. App opens → "Start Tracking" button
-2. Immediate logging (no authentication friction)
-3. Data automatically syncs across user's devices
-4. Optional: "Link Google account" for backup/export
-```
-
-### Tier 2: Google Sheets (Privacy Pro Mode)
-**Keep Current Implementation as Premium Option:**
-- **Market as "Advanced Privacy Mode"** - For users who want spreadsheet control
-- **Full data ownership** - Data stays in user's Google account
-- **Power user features** - Direct spreadsheet access, custom formulas
-- **Zero infrastructure costs** - Maintain current $0 hosting model
-- **Target audience**: Privacy-conscious users, data analysts, spreadsheet power users
-
-### Infrastructure as Code + Learning Path
-
-#### Phase 1: Firebase Foundation (Immediate - 2-3 months)
-**Technology Stack:**
-- **Firebase Auth** - Anonymous users + optional Google linking
-- **Firestore** - Real-time database with offline sync
-- **Cloud Functions** - Serverless processing
-- **Firebase Hosting** - Web dashboard (optional)
-
-**Development Benefits:**
-- **Terraform support** - Full IaC for Firebase project setup
-- **GCP ecosystem integration** - Leverage existing Google Sign-In knowledge
-- **Lower migration complexity** - Keep authentication patterns
-- **Free tier advantages** - 50K reads/20K writes daily free
-
-#### Phase 2: AWS + Kubernetes Learning (Future - when ready)
-**Learning-Focused Infrastructure:**
-- **Amazon EKS** - Real Kubernetes cluster management experience
-- **Terraform modules** - Complete infrastructure as code
-- **DynamoDB** - Cost-effective database with single-table design
-- **Container architecture** - API services running in K8s pods
-
-**Cost-Optimized K8s Setup:**
-- **EKS Fargate** - Pay-per-pod, no EC2 management (~$100/month)
-- **Spot instances** - Cost reduction for development workloads
-- **Full DevOps stack** - CI/CD, monitoring, service mesh learning
-
-#### Long-term Architecture Vision
-
-**Three-Tier Strategy:**
-1. **Firebase Tier** - Simplified UX, $0-5/month operational costs
-2. **Google Sheets Tier** - Privacy-focused, zero infrastructure costs  
-3. **AWS K8s Tier** - Learning environment, advanced analytics (~$100/month)
-
-**Premium Analytics Capabilities (Future):**
-- **Machine Learning Insights** - Feeding pattern recognition, growth predictions
-- **Peer Comparisons** - Anonymous age-appropriate benchmarking
-- **Health Integration** - Pediatric milestone tracking
-- **Professional Reports** - Automated pediatrician summaries
-- **Advanced Notifications** - Predictive feeding reminders
-
-#### Migration Timeline
-**Immediate (Next 1-2 months):**
-- Add Firebase Anonymous Auth as default onboarding
-- Keep Google Sheets as "Pro Mode" option
-- Solve current OAuth friction problems
-
-**Medium-term (3-6 months):**
-- Terraform Firebase infrastructure 
-- Advanced analytics on Firebase data
-- Enhanced user dashboard
-
-**Long-term (6+ months):**
-- AWS EKS learning environment
-- Kubernetes-based microservices
-- Advanced ML analytics pipeline
-
-### Privacy & Security
-
-#### Current (Google Sheets)
-- All data stays in user's own Google account
-- No data collected by the app itself
-- Direct user-to-Google API communication
-
-#### Future (AWS Infrastructure)
-- **Encryption at rest and in transit** - All data encrypted using AWS KMS
-- **HIPAA compliance considerations** - For health data protection
-- **User data isolation** - Each user's data in separate logical partitions
-- **Face ID/Touch ID** - Biometric app access for sensitive health data
-- **Data retention policies** - Configurable retention with automatic cleanup
-- **Audit logging** - CloudTrail for all data access and modifications
-- **Privacy controls** - User data export, deletion, and consent management
+### Potential Improvements
+- **Enhanced offline capabilities** - Local data queuing when network unavailable
+- **Improved OAuth flow** - Streamlined authentication experience
+- **Advanced analytics** - Built-in insights and trend analysis within the app
+- **Additional integrations** - Health app connectivity, Apple Watch support
 
 ## Contributing
 
