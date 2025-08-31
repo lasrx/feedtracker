@@ -40,7 +40,7 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - UserDefaults keys centralized for consistency
 
 ### Intelligent Caching Strategy
-**Network considerate**: 80-90% API call reduction to minimize Google Sheets API usage
+**⚠️ CRITICAL**: 80-90% API call reduction - this is core to the app's performance
 **Cache-first navigation**: `forceRefresh: false` for instant UI (onAppear, navigation)
 **User-controlled refresh**: `forceRefresh: true` for pull-to-refresh, user actions
 **Smart invalidation**: Cache cleared automatically after data mutations (add/edit/delete)
@@ -74,13 +74,13 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 
 ## 🔒 SECURITY SYSTEM - CRITICAL FOR AI ASSISTANTS
 
-**IMPORTANT**: This repo has multi-layer security that automatically handles OAuth tokens.
+**⚠️ READ FIRST**: This repo has automatic security that handles OAuth tokens - don't fight it!
 
 ### For AI Tools:
-- **DO NOT manually remove** Info.plist from staging
-- **Let the hooks work**: They clean, backup, commit clean version, restore for development  
-- **If blocked**: Follow hook guidance, don't bypass the security system
-- **New environments**: Run `./git-hooks/install-hooks.sh`
+- **NEVER manually remove** Info.plist from staging - hooks handle this automatically
+- **Read hook messages carefully** - they contain specific guidance for AI assistants
+- **If blocked**: Follow the hook guidance exactly, don't try to bypass
+- **Fresh setup**: Run `./git-hooks/install-hooks.sh` in new environments
 
 ### Resources:
 - `git-hooks/` - Version-controlled hooks and installer
@@ -88,12 +88,13 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 
 ## Code Navigation & Patterns
 
-**MARK comments**: All files have extensive MARK sections - use them for navigation
-**Follow existing patterns**: Check similar components before creating new ones
+**CRITICAL FOR FRESH SESSIONS**: Always read MARK comments first - all files have extensive MARK sections
+**Component reuse**: Check similar components before creating new ones - this codebase has mature patterns
 - New list views → use `SwipeActionsView<RowContent, Item>` 
 - New services → implement `StorageServiceProtocol`
 - Business logic → create ViewModel with `@Published` properties
-- CRUD operations → always route through service layer (never direct API calls in views)
+- **CRUD operations → ALWAYS route through service layer** (never direct API calls in views)  
+- **Data mutations → invalidate cache** immediately after success
 - Haptic feedback → use `HapticHelper.shared`
 - Caching → use `DataCache` actor via service layer with `forceRefresh` pattern
 - User preferences → add to `FeedConstants.UserDefaultsKeys` & `SettingsView`
