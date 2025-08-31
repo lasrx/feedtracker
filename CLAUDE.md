@@ -39,6 +39,13 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - Formula types customizable vs. rigid predefined lists  
 - UserDefaults keys centralized for consistency
 
+### Intelligent Caching Strategy
+**Cache-first navigation**: `forceRefresh: false` for instant UI (onAppear, navigation)
+**User-controlled refresh**: `forceRefresh: true` for pull-to-refresh, user actions
+**Smart invalidation**: Cache cleared automatically after data mutations (add/edit/delete)
+**5-minute TTL**: Configurable via `FeedConstants.cacheMaxAge`
+**Thread-safe**: DataCache actor prevents race conditions
+
 ## Google Sheets Integration
 
 **Column Structure**:
@@ -69,8 +76,9 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - New services → implement `StorageServiceProtocol`
 - Business logic → create ViewModel with `@Published` properties
 - Haptic feedback → use `HapticHelper.shared`
-- Caching → use `DataCache` actor via service layer
+- Caching → use `DataCache` actor via service layer with `forceRefresh` pattern
 - User preferences → add to `FeedConstants.UserDefaultsKeys` & `SettingsView`
+- Cache invalidation → call `dataCache.clear(forKey:)` after mutations
 
 **Key Files**:
 - `StorageService.swift`: Protocol definitions and caching infrastructure
