@@ -103,6 +103,7 @@ The app implements enterprise-grade security to protect sensitive OAuth credenti
 - **Post-Commit Restoration** - OAuth client ID automatically restored for development after each commit
 - **Template File Support** - Allows `.env.example` and `.env.local.template` for documentation
 - **Commit Message Filtering** - Blocks unwanted AI attribution patterns per user preference
+- **AI Assistant Guidance** - Blocking messages educate AI tools about automatic OAuth handling
 
 #### GitHub Actions Security Scanning
 - **Server-side enforcement** that cannot be bypassed locally
