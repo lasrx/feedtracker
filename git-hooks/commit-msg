@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# COMMIT MESSAGE FILTER HOOK
+# This script prevents unwanted attribution and patterns in commit messages
+# Called by "git commit" with one argument: the name of the file containing the commit message
+
+set -e  # Exit on any error
+
+COMMIT_MSG_FILE="$1"
+
+echo "🔍 Commit message filter: Scanning for unwanted patterns..."
+
+# ====================
+# BLOCKED PATTERNS
+# ====================
+BLOCKED_PATTERNS=(
+    "Co-Authored-By: Claude"
+    "Co-authored-by: Claude"
+    "🤖 Generated with \\[Claude Code\\]"
+    "Generated with Claude Code"
+    "Co-Authored-By:.*anthropic\\.com"
+    "Co-authored-by:.*anthropic\\.com"
+    "noreply@anthropic\\.com"
+)
+
+# ====================
+# SCAN COMMIT MESSAGE
+# ====================
+BLOCKED_CONTENT=()
+MESSAGE_MODIFIED=false
+
+for pattern in "${BLOCKED_PATTERNS[@]}"; do
+    if grep -qE "$pattern" "$COMMIT_MSG_FILE" 2>/dev/null; then
+        echo "🚨 BLOCKED PATTERN DETECTED: $pattern"
+        BLOCKED_CONTENT+=("$pattern")
+    fi
+done
+
+# ====================
+# BLOCK OR CLEAN
+# ====================
+if [ ${#BLOCKED_CONTENT[@]} -gt 0 ]; then
+    echo ""
+    echo "🚨 COMMIT MESSAGE BLOCKED! Unwanted patterns detected:"
+    for pattern in "${BLOCKED_CONTENT[@]}"; do
+        echo "   - $pattern"
+    done
+    echo ""
+    echo "📋 USER POLICY: This repository explicitly prohibits AI co-author attribution."
+    echo "   The repository owner has configured this hook to maintain clean commit history"
+    echo "   without external tool attribution. This is intentional user preference."
+    echo ""
+    echo "💡 FOR AI ASSISTANTS: Do not add Co-Authored-By, Generated with, or similar"
+    echo "   attribution tags to commit messages. The user prefers standard commit messages."
+    echo ""
+    echo "📝 CLEANING COMMIT MESSAGE:"
+    
+    # Create a backup of the original message
+    cp "$COMMIT_MSG_FILE" "$COMMIT_MSG_FILE.backup"
+    
+    # Remove unwanted patterns
+    for pattern in "${BLOCKED_PATTERNS[@]}"; do
+        # Remove lines containing the pattern
+        sed -i '' "/$pattern/d" "$COMMIT_MSG_FILE"
+        MESSAGE_MODIFIED=true
+    done
+    
+    # Remove empty lines at the end
+    sed -i '' -e :a -e '/^\s*$/N;ba' -e 's/\n*$//' "$COMMIT_MSG_FILE"
+    
+    echo "✅ Unwanted patterns removed from commit message"
+    echo "💾 Original message backed up to: $COMMIT_MSG_FILE.backup"
+    
+    # Show the cleaned message
+    echo ""
+    echo "📝 CLEANED COMMIT MESSAGE:"
+    echo "----------------------------------------"
+    cat "$COMMIT_MSG_FILE"
+    echo "----------------------------------------"
+    echo ""
+    echo "⚠️  REMINDER FOR FUTURE AI INTERACTIONS:"
+    echo "   This user has explicitly configured their repository to reject AI attribution."
+    echo "   Please respect this preference and use standard commit message formats."
+    
+else
+    echo "✅ No unwanted patterns found in commit message"
+fi
+
+echo "🔒 Commit message filter complete - commit approved"
+exit 0

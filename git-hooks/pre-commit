@@ -1,0 +1,218 @@
+#!/bin/bash
+
+# ENHANCED MULTI-LAYER SECURITY PROTECTION
+# This script prevents sensitive data from being committed to the repository
+# AND prevents unauthorized commits to master branch
+
+set -e  # Exit on any error
+
+echo "🔍 ENHANCED Pre-commit: Multi-layer security check..."
+
+# ====================
+# LAYER 1: FILE PATTERN BLOCKING
+# ====================
+SETTINGS_FILE="FeedTracker/SettingsView.swift"
+INFO_PLIST_FILE="FeedTracker/Info.plist"
+BACKUP_FILE=".git/sensitive_backup"
+FOUND_SENSITIVE=false
+BLOCKED_FILES=()
+
+# Initialize backup file
+touch "$BACKUP_FILE"
+
+# ====================
+# LAYER 1: FILE PATTERN BLOCKING
+# ====================
+echo "🛡️  Layer 1: Checking for forbidden file patterns..."
+
+FORBIDDEN_PATTERNS=(
+    "**/GoogleService-Info.plist"
+    "GoogleService-Info.plist"
+    "*/GoogleService-Info.plist"
+    "**/secrets.*"
+    "**/api_keys.*"
+    "**/credentials.*"
+    "**/*.key"
+    "**/*.pem"
+    "**/*.p12"
+    "**/config.local.*"
+)
+
+# Get list of files being committed
+STAGED_FILES=$(git diff --cached --name-only)
+DELETED_FILES=$(git diff --cached --name-only --diff-filter=D)
+
+for pattern in "${FORBIDDEN_PATTERNS[@]}"; do
+    for file in $STAGED_FILES; do
+        case "$file" in
+            $pattern)
+                # Skip template and example files
+                case "$file" in
+                    *.env.template|*.env.example|*/.env.template|*/.env.example|.env.example|.env.local.template|*/.env.local.template)
+                        echo "✅ Allowing template/example file: $file"
+                        continue
+                        ;;
+                    *.env*|.env*|*/.env*)
+                        echo "❌ BLOCKED: Environment file detected: $file"
+                        BLOCKED_FILES+=("$file")
+                        ;;
+                    *)
+                        echo "❌ BLOCKED: Forbidden file pattern detected: $file"
+                        BLOCKED_FILES+=("$file")
+                        ;;
+                esac
+                ;;
+        esac
+    done
+done
+
+# Additional check for .env files with explicit template/example allowance
+for file in $STAGED_FILES; do
+    case "$file" in
+        *.env*|.env*|*/.env*)
+            # Allow deletions of env files (we want to remove them from tracking)
+            if echo "$DELETED_FILES" | grep -q "^$file$"; then
+                echo "✅ Allowing deletion of environment file: $file"
+                continue
+            fi
+            
+            case "$file" in
+                *.env.template|*.env.example|*/.env.template|*/.env.example|.env.example|.env.local.template|*/.env.local.template)
+                    echo "✅ Allowing template/example env file: $file"
+                    ;;
+                *)
+                    echo "❌ BLOCKED: Environment file detected: $file"
+                    BLOCKED_FILES+=("$file")
+                    ;;
+            esac
+            ;;
+    esac
+done
+
+# ====================
+# LAYER 2: CONTENT SCANNING  
+# ====================
+echo "🔍 Layer 2: Scanning file contents for sensitive data..."
+
+SENSITIVE_PATTERNS=(
+    "AIzaSy[A-Za-z0-9_-]{33}"  # Google API keys
+    "ya29\.[A-Za-z0-9_-]+"     # Google OAuth tokens
+    "sk-[A-Za-z0-9]{48}"       # OpenAI API keys
+    "xoxb-[0-9]+-[0-9]+-[A-Za-z0-9]+" # Slack bot tokens
+    "ghp_[A-Za-z0-9]{36}"      # GitHub personal access tokens
+    "gho_[A-Za-z0-9]{36}"      # GitHub OAuth tokens
+    "github_pat_[A-Za-z0-9_]{82}" # GitHub fine-grained tokens
+    "glpat-[A-Za-z0-9_-]{20}"  # GitLab personal access tokens
+    "AKIA[0-9A-Z]{16}"         # AWS access keys
+    "[0-9]+-[a-zA-Z0-9]+\.apps\.googleusercontent\.com" # OAuth client IDs
+    "com\.googleusercontent\.apps\.[a-zA-Z0-9-]+" # OAuth client IDs alt format
+    "postgres://.*:.*@"        # Database URLs with credentials
+    "mysql://.*:.*@"           # MySQL URLs with credentials
+    "mongodb://.*:.*@"         # MongoDB URLs with credentials
+)
+
+for file in $STAGED_FILES; do
+    # Skip deleted files - we can't scan content of files being deleted
+    if echo "$DELETED_FILES" | grep -q "^$file$"; then
+        echo "🔧 Skipping content scan for deleted file: $file"
+        continue
+    fi
+    
+    if [ -f "$file" ]; then
+        # Skip security configuration files, template files, and documentation
+        case "$file" in
+            *security-check.yml|*security-check.sh|*.gitignore)
+                echo "🔧 Skipping security config file: $file"
+                continue
+                ;;
+            *.env.template|*.env.example|*/.env.template|*/.env.example|.env.example|.env.local.template|*/.env.local.template)
+                echo "🔧 Skipping template/example file: $file"
+                continue
+                ;;
+            *.md|*.MD)
+                echo "🔧 Skipping documentation file: $file"
+                continue
+                ;;
+        esac
+        
+        for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+            if grep -qE "$pattern" "$file" 2>/dev/null; then
+                echo "❌ BLOCKED: Sensitive pattern detected in $file"
+                echo "   Pattern: $pattern"
+                BLOCKED_FILES+=("$file")
+                break
+            fi
+        done
+    fi
+done
+
+# ====================
+# LAYER 3: SPECIFIC FILE CLEANING
+# ====================
+echo "🧹 Layer 3: Cleaning specific development files..."
+
+# Clean SettingsView.swift
+if [ -f "$SETTINGS_FILE" ]; then
+    CURRENT_ID=$(grep -o 'spreadsheetId = "[^"]*"' "$SETTINGS_FILE" | sed 's/spreadsheetId = "\(.*\)"/\1/')
+    
+    if [ -n "$CURRENT_ID" ] && [ "$CURRENT_ID" != "" ]; then
+        echo "🔐 Found sensitive spreadsheet ID - cleaning for commit..."
+        echo "SPREADSHEET_ID=$CURRENT_ID" > "$BACKUP_FILE"
+        sed -i '' 's/@AppStorage("spreadsheetId") private var spreadsheetId = "[^"]*"/@AppStorage("spreadsheetId") private var spreadsheetId = ""/' "$SETTINGS_FILE"
+        git add "$SETTINGS_FILE"
+        FOUND_SENSITIVE=true
+    fi
+fi
+
+# Clean Info.plist
+if [ -f "$INFO_PLIST_FILE" ]; then
+    CURRENT_OAUTH_ID=$(grep -A 2 "CFBundleURLSchemes" "$INFO_PLIST_FILE" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | head -1)
+    
+    if [ -n "$CURRENT_OAUTH_ID" ] && [ "$CURRENT_OAUTH_ID" != "YOUR_OAUTH_CLIENT_ID_HERE" ]; then
+        echo "🔐 Found sensitive OAuth client ID - cleaning for commit..."
+        echo "OAUTH_CLIENT_ID=$CURRENT_OAUTH_ID" >> "$BACKUP_FILE"
+        sed -i '' 's/<string>com\.googleusercontent\.apps\.[^<]*<\/string>/<string>YOUR_OAUTH_CLIENT_ID_HERE<\/string>/' "$INFO_PLIST_FILE"
+        sed -i '' 's/<string>[0-9][0-9]*-[a-zA-Z0-9]*\.apps\.googleusercontent\.com<\/string>/<string>YOUR_OAUTH_CLIENT_ID_HERE<\/string>/' "$INFO_PLIST_FILE"
+        git add "$INFO_PLIST_FILE"
+        FOUND_SENSITIVE=true
+    fi
+fi
+
+# ====================
+# LAYER 4: HARD BLOCK CHECK
+# ====================
+if [ ${#BLOCKED_FILES[@]} -gt 0 ]; then
+    echo ""
+    echo "🚨 COMMIT BLOCKED! Sensitive files detected:"
+    for file in "${BLOCKED_FILES[@]}"; do
+        echo "   - $file"
+    done
+    echo ""
+    echo "📋 TO FIX THIS ISSUE:"
+    echo "   1. Remove these files from staging: git reset HEAD <file>"
+    echo "   2. Add them to .gitignore if they should never be committed"
+    echo "   3. Use git rm --cached <file> if they're already tracked"
+    echo "   4. For environment files, use .env.example templates instead"
+    echo ""
+    echo "🤖 FOR AI ASSISTANTS:"
+    echo "   The hooks automatically handle OAuth tokens in Info.plist - don't manually"
+    echo "   remove them from staging. Let the security system clean, backup, and"
+    echo "   restore them automatically. This ensures development workflow continuity."
+    echo ""
+    echo "💡 SECURITY TIP: Rotate any exposed credentials immediately!"
+    echo ""
+    exit 1
+fi
+
+# ====================
+# SUCCESS REPORTING
+# ====================
+if [ "$FOUND_SENSITIVE" = true ]; then
+    echo "✅ Sensitive data cleaned and backup created"
+    echo "📝 Commit will proceed with clean code"
+else
+    echo "✅ No sensitive data found, proceeding with commit"
+fi
+
+echo "🔒 Security check complete - commit approved"
+exit 0

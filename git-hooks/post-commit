@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Automatic post-commit hook: Restore sensitive data after commit
+echo "🔄 Post-commit: Restoring development configuration..."
+
+SETTINGS_FILE="FeedTracker/SettingsView.swift"
+INFO_PLIST_FILE="FeedTracker/Info.plist"
+BACKUP_FILE=".git/sensitive_backup"
+
+# Check if we have a backup to restore
+if [ -f "$BACKUP_FILE" ] && [ -s "$BACKUP_FILE" ]; then
+    source "$BACKUP_FILE"
+    
+    # Restore spreadsheet ID
+    if [ -n "$SPREADSHEET_ID" ] && [ -f "$SETTINGS_FILE" ]; then
+        sed -i '' "s/@AppStorage(\"spreadsheetId\") private var spreadsheetId = \"\"/@AppStorage(\"spreadsheetId\") private var spreadsheetId = \"$SPREADSHEET_ID\"/" "$SETTINGS_FILE"
+        echo "✅ Development configuration restored: ${SPREADSHEET_ID:0:20}..."
+    fi
+    
+    # Restore OAuth client ID
+    if [ -n "$OAUTH_CLIENT_ID" ] && [ -f "$INFO_PLIST_FILE" ]; then
+        sed -i '' "s/YOUR_OAUTH_CLIENT_ID_HERE/$OAUTH_CLIENT_ID/" "$INFO_PLIST_FILE"
+        echo "✅ OAuth client ID restored: ${OAUTH_CLIENT_ID:0:30}..."
+    fi
+    
+    # Clean up the backup
+    rm -f "$BACKUP_FILE"
+else
+    echo "ℹ️  No sensitive data to restore"
+fi
+
+echo "💻 Ready to continue development!"

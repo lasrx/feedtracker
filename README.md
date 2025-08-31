@@ -39,7 +39,8 @@ feedtracker/
 ├── SECURITY_IMPLEMENTATION.md  # Complete guide to implementing the security system
 ├── Privacy.md                  # Privacy policy and data handling
 ├── LICENSE                     # Apache 2.0 license
-├── .github/workflows/          # GitHub Actions security enforcement
+├── .github/workflows/          # GitHub Actions security enforcement  
+├── git-hooks/                  # Multi-layer security git hooks and installer
 └── FeedTracker/               # Source code directory
     ├── FeedTrackerApp.swift           # App entry point & configuration (29 lines)
     ├── HorizontalNavigationView.swift # Four-pane swipe navigation (125 lines)
