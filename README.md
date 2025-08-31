@@ -39,7 +39,7 @@ feedtracker/
 ├── Privacy.md                  # Privacy policy and data handling
 ├── LICENSE                     # Apache 2.0 license
 ├── .github/workflows/          # GitHub Actions security enforcement
-├── scripts/                    # Security audit and development tools
+├── scripts/                    # Manual security audit script and test runner
 └── FeedTracker/               # Source code directory
     ├── FeedTrackerApp.swift           # App entry point & configuration (29 lines)
     ├── HorizontalNavigationView.swift # Four-pane swipe navigation (125 lines)
@@ -94,11 +94,20 @@ feedtracker/
 ### Security Architecture
 The app implements enterprise-grade security to protect sensitive OAuth credentials and API keys:
 
-- **🛡️ GitHub Actions Security Scanning** - Server-side enforcement that cannot be bypassed
-- **🔒 Multi-Layer Pre-Commit Protection** - Local hooks with pattern detection and content scanning
-- **📋 Enhanced .gitignore** - Comprehensive patterns for all sensitive file types  
-- **🔍 Security Audit Tools** - Regular monitoring and incident response capabilities
-- **📚 Complete Documentation** - Security guidelines and incident response procedures
+#### Multi-Layer Pre-Commit Protection
+- **File Pattern Blocking** - Prevents commits of `GoogleService-Info.plist`, `*.key`, `*.pem`, `.env` files (except templates)
+- **Content Pattern Scanning** - Detects 13+ credential patterns (API keys, tokens, OAuth clients, database URLs)
+
+#### Automatic Data Protection
+- **Smart Backup System** - Sensitive values stored in `.git/sensitive_backup` before removal
+- **Post-Commit Restoration** - OAuth client ID automatically restored for development after each commit
+- **Template File Support** - Allows `.env.example` and `.env.local.template` for documentation
+- **Commit Message Filtering** - Blocks unwanted AI attribution patterns per user preference
+
+#### GitHub Actions Security Scanning
+- **Server-side enforcement** that cannot be bypassed locally
+- **Pattern matching** for the same 13+ credential types as local hooks
+- **Automatic PR blocking** if sensitive data detected
 
 All commits are automatically scanned for API keys, OAuth credentials, and sensitive files before being allowed into the repository.
 
