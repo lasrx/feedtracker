@@ -127,7 +127,7 @@ struct PumpingHistoryView: View {
                     List(todayPumpingSessions) { session in
                         PumpingRowView(session: session)
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button {
                                     editSession(session)
                                 } label: {

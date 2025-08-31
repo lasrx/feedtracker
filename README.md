@@ -135,7 +135,7 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - Browse and select from available spreadsheets
 
 5. **Edit/Delete Operations**
-   - **Swipe-to-edit** - Left-to-right swipe on any entry reveals Edit/Delete buttons
+   - **Swipe-to-edit** - Context-aware swipe gestures on entries reveal Edit/Delete buttons
    - **Context menu fallback** - Long press for accessibility
    - **Comprehensive editing** - Modify date, time, volume, formula type, and waste amount
    - **Feed ↔ Waste conversion** - Toggle between feed and waste entries with proper negative volume storage
@@ -164,7 +164,7 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 
 #### ✏️ Complete Edit/Delete System
 - **Full CRUD operations** - Edit and delete individual feed entries and pumping sessions
-- **Native iOS swipe gestures** - Left-to-right swipe reveals Edit/Delete buttons with context menu fallback
+- **Optimized swipe gestures** - Context-aware swipe directions (left-to-right on left panes, right-to-left on right panes) with context menu fallback
 - **Gesture conflict resolution** - Competing gesture priorities allow both list swipes and navigation to work reliably
 - **Row-based Google Sheets targeting** - Precise modifications with 1-based row indexing
 - **Comprehensive modal editors** - Full-featured forms with date/time pickers and volume controls

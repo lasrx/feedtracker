@@ -15,7 +15,7 @@ struct SwipeActionsView<RowContent: View, Item>: View where Item: Identifiable {
         List(items) { item in
             rowContent(item)
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button {
                         onEdit(item)
                     } label: {
