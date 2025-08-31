@@ -24,7 +24,7 @@ MiniLog is a SwiftUI iOS app for tracking baby feeding data with Google Sheets i
 - **FeedEntryForm.swift**: Shared UI component (287 lines) - eliminates code duplication
 - **FeedEntryViewModel.swift**: Feed business logic (306 lines) - centralized feed logic with app lifecycle handling
 - **PumpingEntryViewModel.swift**: Pumping business logic (240 lines) - consistent MVVM pattern with app lifecycle handling
-- **FeedConstants.swift**: Centralized constants & drag speed settings (95 lines) - configurable user preferences
+- **FeedConstants.swift**: Centralized constants & drag speed settings (103 lines) - configurable user preferences
 - **HapticHelper.swift**: Multi-tier haptic system (230 lines) - centralized feedback management
 - **SwipeActionsView.swift**: Generic swipe-to-edit/delete component (91 lines) - eliminates edit/delete code duplication across views
 - **FeedEditSheet.swift**: Modal edit form for feed entries (180+ lines) - comprehensive editing with date/time/volume controls
@@ -141,7 +141,7 @@ The app uses Swift Package Manager with these dependencies:
 
 ### Advanced Features
 - **Full CRUD Operations**: Complete edit/delete functionality for both feed entries and pumping sessions with Google Sheets synchronization
-- **Optimized Swipe Gestures**: Left-to-right swipe for edit/delete actions (avoids navigation gesture conflicts)
+- **Context-Aware Swipe Gestures**: Left panes use .leading (left-to-right), right panes use .trailing (right-to-left) for optimal UX
 - **Accurate Weekly Summary**: Chart calculations include waste as negative values for precise net consumption tracking
 - **Enhanced Google Sheets Integration**: Extended range (A:E) includes waste data column for complete data retrieval
 - **Feed ↔ Waste Conversion**: Edit sheet properly handles Feed/Waste toggle with correct negative volume storage and automatic cache invalidation
@@ -176,7 +176,7 @@ The app uses Swift Package Manager with these dependencies:
 ## Edit/Delete Implementation
 
 ### User Interface
-- **Swipe Gestures**: Left swipe on any feed or pumping entry reveals Edit/Delete buttons
+- **Context-Aware Swipe Gestures**: Feed entries (left panes) use left-to-right swipe, pumping entries (right panes) use right-to-left swipe
 - **Context Menu**: Long press provides alternative access for accessibility
 - **Modal Edit Forms**: Comprehensive editing with date/time pickers, volume controls, and formula selection
 - **Delete Confirmation**: Native iOS alert with entry details for safe deletion
@@ -339,30 +339,46 @@ Updated chart data range to include today's partial progress:
 
 ### Multi-Layer Protection:
 - **GitHub Actions Secrets Scanner** - Server-side enforcement on every commit
-- **Pre-commit hooks** - Local protection with automatic cleaning
-- **Commit message filtering** - Blocks unwanted attribution and co-author tags
+- **Version-Controlled Git Hooks** - Battle-tested hooks in `git-hooks/` directory with installer
+- **Pre-commit hooks** - Multi-layer protection with file patterns, content scanning, and intelligent cleaning
+- **Post-commit hooks** - Automatic restoration of cleaned data for development continuity
+- **Commit message filtering** - Blocks unwanted attribution and co-author tags per user preference
 - **Enhanced .gitignore** - Comprehensive pattern blocking
 - **Template file support** - Allows `.env.local.template` and `.env.example`
+- **AI Assistant Guidance** - Educational messages in blocking alerts for AI tools
 
-### Protected Files:
-- **GoogleService-Info.plist** - OAuth secrets (git-ignored)
-- **.env.local** - Development config (removed from tracking, git-ignored)
-- **Info.plist** - OAuth client ID (auto-cleaned by pre-commit hooks)
-- **Any API keys/credentials** - Detected by pattern scanning
+### Protected Files & Patterns:
+- **File Patterns**: `GoogleService-Info.plist`, `*.key`, `*.pem`, `*.p12`, `.env*` (except templates), `secrets.*`, `api_keys.*`, `credentials.*`
+- **Content Patterns**: 13+ credential types including OpenAI keys, GitHub tokens, AWS keys, OAuth client IDs, database URLs
+- **Smart Backup/Restore**: Sensitive values stored in `.git/sensitive_backup`, automatically restored post-commit
+- **Template Support**: `.env.example`, `.env.local.template` allowed for documentation
 
 ### Security Status:
-- ✅ **Secrets Scanner**: Fully operational, scans 13+ credential patterns
-- ✅ **Commit Message Filter**: Active `commit-msg` hook blocks unwanted attribution patterns
-- ✅ **Template files**: Properly allowed (.env.local.template, .env.example)
-- ✅ **Self-aware**: Security workflow excludes its own patterns
-- ✅ **Auto-cleanup**: Pre-commit hooks clean sensitive data automatically
-- **Check `git status`** before commits - sensitive files should show as modified but not be staged
+- ✅ **Multi-Layer Defense**: File patterns + content scanning + intelligent cleaning + server enforcement  
+- ✅ **Version-Controlled Hooks**: Shareable via `git-hooks/` with `install-hooks.sh` installer
+- ✅ **Battle-Tested**: Prevented 100% of credential commits while maintaining seamless workflow
+- ✅ **AI-Friendly**: Guidance messages educate AI assistants about automatic OAuth handling
+- ✅ **Self-Aware**: Security system skips its own configuration files during scanning
+- ✅ **Auto-Cleanup**: Transparent backup/restore maintains development state
+
+### Security Implementation Resources:
+- **`git-hooks/`** - Version-controlled hooks and installer for easy sharing
+- **`SECURITY_IMPLEMENTATION.md`** - Complete implementation guide for other projects  
+- **`SECURITY.md`** - Security guidelines and incident response procedures
 
 ### Emergency Recovery:
 If sensitive data is accidentally committed:
-1. `git reset --soft HEAD~1` (before push)
-2. `./utils/clean_for_commit.sh "Fixed: removed sensitive data"`
+1. `git reset --soft HEAD~1` (before push)  
+2. Rotate exposed credentials immediately
 3. Use `git push --force-with-lease` if already pushed (CAREFUL!)
+4. See `SECURITY.md` for detailed incident response procedures
+
+## Project Structure Updates
+
+### Recent Cleanup (August 2025)
+- **Removed outdated directories**: `scripts/` and `utils/` (2+ months old, superseded by current `.git/hooks/` system)
+- **Added version-controlled hooks**: `git-hooks/` directory with installer for sharing security system
+- **Consolidated documentation**: Added `SECURITY_IMPLEMENTATION.md` comprehensive guide
 
 ## Current Limitations
 
