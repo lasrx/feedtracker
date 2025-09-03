@@ -336,6 +336,12 @@ The app successfully uses Google Sheets as a free, reliable backend that provide
 - **Advanced analytics** - Built-in insights and trend analysis within the app
 - **Additional integrations** - Health app connectivity, Apple Watch support
 
+## Support & Contact
+
+For questions, feedback, or support:
+- **Email:** minilog-feedtracker@googlegroups.com
+- **Issues:** https://github.com/lasrx/feedtracker/issues
+
 ## Contributing
 
 This is a personal project, but if you'd like to contribute:

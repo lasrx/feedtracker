@@ -132,7 +132,8 @@ MiniLog can be used globally. Your data is stored in Google's global infrastruct
 
 If you have questions about this Privacy Policy or our privacy practices:
 
-**Developer Contact:** For privacy-related inquiries, please contact us through:  
+**Developer Contact:** For privacy-related inquiries, please contact us:  
+**Email:** minilog-feedtracker@googlegroups.com  
 **GitHub Issues:** https://github.com/lasrx/feedtracker/issues  
 **Project Repository:** https://github.com/lasrx/feedtracker
 

@@ -126,6 +126,7 @@ If any provision of these Terms is found to be unenforceable, the remaining prov
 ## Contact Information
 
 Questions about these Terms should be directed to:  
+**Email:** minilog-feedtracker@googlegroups.com  
 **GitHub Issues:** https://github.com/lasrx/feedtracker/issues  
 **Project Repository:** https://github.com/lasrx/feedtracker
 
