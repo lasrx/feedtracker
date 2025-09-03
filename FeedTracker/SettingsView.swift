@@ -186,6 +186,8 @@ struct SettingsView: View {
                             Spacer()
                             Button("Sign Out") {
                                 try? storageService.signOut()
+                                // Clear stored spreadsheet ID when signing out
+                                spreadsheetId = ""
                             }
                             .buttonStyle(.bordered)
                         }
