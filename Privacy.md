@@ -1,7 +1,7 @@
 # MiniLog – Feed Tracker - Privacy Policy
 
-**Last Updated:** June 28, 2025  
-**Effective Date:** June 28, 2025
+**Last Updated:** September 3, 2025  
+**Effective Date:** September 3, 2025
 
 ## Overview
 
@@ -132,10 +132,13 @@ MiniLog can be used globally. Your data is stored in Google's global infrastruct
 
 If you have questions about this Privacy Policy or our privacy practices:
 
+**Developer Contact:** For privacy-related inquiries, please contact us through:  
 **GitHub Issues:** https://github.com/lasrx/feedtracker/issues  
 **Project Repository:** https://github.com/lasrx/feedtracker
 
 For questions about Google's data handling, please refer to [Google's Privacy Policy](https://policies.google.com/privacy) and [Google Cloud Privacy](https://cloud.google.com/privacy).
+
+**Response Time:** We aim to respond to privacy inquiries within 30 days.
 
 ## Technical Implementation
 
