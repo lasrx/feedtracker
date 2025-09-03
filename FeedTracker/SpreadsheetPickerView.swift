@@ -25,7 +25,16 @@ struct SpreadsheetPickerView: View {
     
     var body: some View {
         NavigationView {
-            contentView
+            VStack(alignment: .leading, spacing: 8) {
+                // Filter explanation
+                Text("Showing spreadsheets with 'tracker' in the name")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                
+                contentView
+            }
         }
         .navigationTitle("Select Spreadsheet")
         .onAppear {
