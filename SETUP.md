@@ -37,22 +37,7 @@ MiniLog follows a clean MVVM (Model-View-ViewModel) architecture with complete c
 
 ## Required Configuration Files
 
-### 1. Environment File Setup
-
-Create your local environment configuration:
-
-```bash
-# Copy the template file
-cp .env.local.template .env.local
-
-# Edit with your actual values
-# SPREADSHEET_ID=your_actual_spreadsheet_id_here
-# GOOGLE_CLIENT_ID=your_oauth_client_id_here
-```
-
-⚠️ **Important**: The `.env.local` file is automatically git-ignored and should NEVER be committed.
-
-### 2. Google OAuth Setup
+### 1. Google OAuth Setup
 
 You'll need to create your own Google OAuth credentials:
 
@@ -66,6 +51,21 @@ You'll need to create your own Google OAuth credentials:
 - Add the downloaded `GoogleService-Info.plist` to your Xcode project
 - Make sure it's added to the target
 - **NEVER commit this file to git** (it's already in .gitignore)
+
+### 2. Security System Verification
+
+Test that the automated security system is working:
+
+```bash
+# Test that security hooks work (should be blocked)
+git add FeedTracker/GoogleService-Info.plist
+git commit -m "test"  # Should fail with security warning
+```
+
+The security system will automatically:
+- Block commits of sensitive files
+- Clean OAuth client IDs from Info.plist during commits
+- Restore development configuration after commits
 
 ### 3. Update Info.plist
 
