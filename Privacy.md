@@ -160,6 +160,4 @@ MiniLog requests permissions in two tiers:
 
 ---
 
-## Summary
-
-MiniLog is built on a foundation of data privacy and user control. Your feeding and pumping data stays in your Google account, we have no access to it, and you maintain complete control over your information. We believe this approach provides the best balance of functionality and privacy for tracking your baby's important health information.
+*Last Updated: September 3, 2025*
