@@ -143,9 +143,14 @@ For questions about Google's data handling, please refer to [Google's Privacy Po
 ## Technical Implementation
 
 ### OAuth Scopes
-MiniLog requests the following minimal permissions:
-- `https://www.googleapis.com/auth/spreadsheets` - Read and write access to Google Sheets
-- `https://www.googleapis.com/auth/drive.file` - Create new files in Google Drive (limited scope)
+MiniLog requests permissions in two tiers:
+
+**Base Permissions (always requested):**
+- `https://www.googleapis.com/auth/spreadsheets` - Read and write access to Google Sheets for data logging
+- `https://www.googleapis.com/auth/drive.file` - Create new tracking sheets in Google Drive (limited to app-created files only)
+
+**Optional Permission (requested only when browsing existing sheets):**
+- `https://www.googleapis.com/auth/drive.readonly` - Browse existing spreadsheets in your Google Drive for selection via SpreadsheetPickerView
 
 ### Data Minimization
 - Only collects feeding and pumping data necessary for the app's functionality

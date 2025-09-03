@@ -70,7 +70,7 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - Feed Log: A=Date, B=Time, C=Volume, D=Formula Type, E=Waste Amount  
 - Pumping: A=Date, B=Time, C=Volume
 
-**OAuth Scopes**: `spreadsheets` + `drive.file` (base), `drive.readonly` (optional)
+**OAuth Scopes**: `spreadsheets` + `drive.file` (base), `drive.readonly` (optional for spreadsheet browsing)
 
 ## 🔒 SECURITY SYSTEM - CRITICAL FOR AI ASSISTANTS
 
