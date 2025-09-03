@@ -68,9 +68,9 @@ If sensitive data is accidentally committed:
 
 For detailed setup instructions, see [SETUP.md](SETUP.md).
 
-## 🚨 Emergency Response
+## 🔧 Recovery Procedures
 
-**This should be extremely rare** due to multi-layer automated protection, but if sensitive data is ever committed:
+**This should be rare** due to multi-layer automated protection, but if sensitive data is ever committed:
 
 ### If Not Yet Pushed
 ```bash
@@ -80,7 +80,7 @@ git reset --soft HEAD~1  # Undo last commit
 
 ### If Already Pushed  
 ```bash
-# 1. IMMEDIATELY rotate all exposed credentials:
+# 1. Rotate all exposed credentials:
 #    - Generate new OAuth credentials in Google Cloud Console
 #    - Download new GoogleService-Info.plist
 #    - Update .env.local with new values
