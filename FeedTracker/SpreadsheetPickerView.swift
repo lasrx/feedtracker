@@ -188,7 +188,10 @@ struct SpreadsheetPickerView: View {
             do {
                 let fetchedSpreadsheets = try await storageService.fetchAvailableStorageOptions()
                 await MainActor.run {
-                    self.allSpreadsheets = fetchedSpreadsheets
+                    // Filter to only show spreadsheets with "tracker" in the name (case-insensitive)
+                    self.allSpreadsheets = fetchedSpreadsheets.filter { spreadsheet in
+                        spreadsheet.name.lowercased().contains("tracker")
+                    }
                     self.updateDisplayedSheets()
                     self.isLoading = false
                 }
