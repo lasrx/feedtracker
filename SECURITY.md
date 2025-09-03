@@ -83,6 +83,7 @@ git reset --soft HEAD~1  # Undo last commit
 # 1. IMMEDIATELY rotate all exposed credentials:
 #    - Generate new OAuth credentials in Google Cloud Console
 #    - Download new GoogleService-Info.plist
+#    - Update .env.local with new values
 # 2. Force push cleaned history (coordinate with team):
 git push --force-with-lease origin main
 ```
