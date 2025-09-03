@@ -74,10 +74,11 @@ jobs:
         SECRETS_FOUND=false
         
         for pattern in "${PATTERNS[@]}"; do
-          # Skip scanning documentation files and this security workflow file itself
+          # Skip scanning documentation files, workflow files, and git hooks (which contain these patterns)
           SCAN_RESULTS=$(grep -r -E "$pattern" . \
             --exclude-dir=.git \
             --exclude-dir=node_modules \
+            --exclude-dir=git-hooks \
             --exclude="*.md" \
             --exclude="security-check.yml" \
             2>/dev/null || true)
