@@ -144,7 +144,8 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - **Row index tracking** - Maintain Google Sheets row positions for precise modifications
    - Handle API errors gracefully
    - Create new tracking sheets with proper template
-   - Browse and select from available spreadsheets
+   - Browse and select from available spreadsheets with smart filtering
+   - **Tracker filter** - Automatically filters spreadsheet list to show only feeding-related sheets (containing "tracker" in name)
 
 5. **Edit/Delete Operations**
    - **Swipe-to-edit** - Context-aware swipe gestures on entries reveal Edit/Delete buttons

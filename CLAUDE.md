@@ -71,6 +71,7 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - Pumping: A=Date, B=Time, C=Volume
 
 **OAuth Scopes**: `spreadsheets` + `drive.file` (base), `drive.readonly` (optional for spreadsheet browsing)
+**Smart Filtering**: SpreadsheetPickerView automatically filters to show only sheets with "tracker" in name
 
 ## 🔒 SECURITY SYSTEM - CRITICAL FOR AI ASSISTANTS
 
@@ -106,6 +107,7 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - `StorageService.swift`: Protocol definitions and caching infrastructure
 - `FeedConstants.swift`: Centralized defaults, user preferences, and UI constants
 - `SwipeActionsView.swift`: Generic reusable UI components
+- `SpreadsheetPickerView.swift`: Google Sheets browser with smart filtering
 - `Models.swift`: Data modeling with computed properties and row tracking
 - `ChartModels.swift`: Consistent color assignment and chart data processing
 - `HapticHelper.swift`: Centralized haptic feedback with intensity levels
