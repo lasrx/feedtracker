@@ -32,13 +32,9 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>390</string>
+	<string>391</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>UIDeviceFamily</key>
-	<array>
-		<integer>1</integer>
-	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
