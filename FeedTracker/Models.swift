@@ -28,7 +28,8 @@ struct FeedEntry: Identifiable {
     
     var fullDate: Date {
         let formatter = DateFormatter()
-        formatter.dateFormat = "M/d/yyyy h:mm a"  // 12-hour format with AM/PM
+        formatter.dateFormat = FeedConstants.DateFormats.combinedDateTime
+        formatter.locale = Locale(identifier: "en_US_POSIX")  // Ensure consistent parsing
         let combinedString = "\(date) \(time)"
         return formatter.date(from: combinedString) ?? Date.distantPast
     }
@@ -43,7 +44,8 @@ struct PumpingEntry: Identifiable {
     
     var fullDate: Date {
         let formatter = DateFormatter()
-        formatter.dateFormat = "M/d/yyyy h:mm a"  // 12-hour format with AM/PM
+        formatter.dateFormat = FeedConstants.DateFormats.combinedDateTime
+        formatter.locale = Locale(identifier: "en_US_POSIX")  // Ensure consistent parsing
         let combinedString = "\(date) \(time)"
         return formatter.date(from: combinedString) ?? Date.distantPast
     }

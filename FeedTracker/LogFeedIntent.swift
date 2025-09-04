@@ -34,11 +34,13 @@ struct LogFeedIntent: AppIntent {
         // Get current date and time
         let now = Date()
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "M/d/yyyy"
+        dateFormatter.dateFormat = FeedConstants.DateFormats.sheetDate
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         let dateString = dateFormatter.string(from: now)
         
         let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
+        timeFormatter.dateFormat = FeedConstants.DateFormats.displayTime
+        timeFormatter.locale = Locale(identifier: "en_US_POSIX")
         let timeString = timeFormatter.string(from: now)
         
         do {

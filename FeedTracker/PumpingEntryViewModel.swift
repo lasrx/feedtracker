@@ -212,10 +212,12 @@ class PumpingEntryViewModel: ObservableObject {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = FeedConstants.DateFormats.sheetDate
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         let dateString = dateFormatter.string(from: selectedDate)
         
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = FeedConstants.DateFormats.displayTime
+        timeFormatter.locale = Locale(identifier: "en_US_POSIX")
         let timeString = timeFormatter.string(from: selectedTime)
         
         Task {
