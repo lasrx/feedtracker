@@ -186,8 +186,9 @@ struct SettingsView: View {
                             Spacer()
                             Button("Sign Out") {
                                 try? storageService.signOut()
-                                // Clear stored spreadsheet ID when signing out
+                                // Clear stored spreadsheet configuration when signing out
                                 spreadsheetId = ""
+                                UserDefaults.standard.removeObject(forKey: FeedConstants.UserDefaultsKeys.spreadsheetName)
                             }
                             .buttonStyle(.bordered)
                         }
