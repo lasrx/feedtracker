@@ -53,6 +53,22 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 **Parallel API calls**: `async let` for concurrent operations (80-90% performance improvement)
 **DEBUG compilation**: Extensive debug logging stripped in production builds (`#if DEBUG`)
 
+### Swift 6 Concurrency Compliance
+**@MainActor isolation**: `StorageServiceProtocol` and `GoogleSheetsStorageService` are @MainActor-isolated for thread safety
+**Async/await patterns**: All Google Sign-In callbacks converted to modern async/await APIs
+**Nonisolated init**: Service initialization uses `nonisolated init()` with Task wrapper for external instantiation
+**@Sendable closures**: NotificationCenter observers wrapped in `Task { @MainActor }` for proper isolation
+**Published properties**: All UI-facing properties guaranteed to run on MainActor
+
+### iOS 26 Visual Enhancements (Backward Compatible)
+**Liquid Glass materials**: `.regularMaterial` backgrounds throughout (iOS 15+ compatible)
+**Hierarchical symbols**: `.symbolRenderingMode(.hierarchical)` for SF Symbol depth
+**Symbol effects**: `.symbolEffect(.bounce)` for success states, `.pulse` for empty states (iOS 17+, graceful fallback)
+**Modern navigation**: `NavigationStack` replaces deprecated `NavigationView` (iOS 16+)
+**Button animations**: Scale effects (0.95) on press with easeInOut timing
+**List transitions**: Asymmetric slide + fade animations for feed/pumping entries
+**Deployment target**: Maintains iOS 18.5+ support while optimizing for iOS 26
+
 ### App Lifecycle Management  
 **Background/Foreground handling**: NotificationCenter observers in all entry views
 **1-hour refresh threshold**: Interface auto-resets after extended absence
@@ -98,7 +114,7 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - Caching → use `DataCache` actor via service layer with `forceRefresh` pattern
 - User preferences → add to `FeedConstants.UserDefaultsKeys` & `SettingsView`
 - Cache invalidation → call `dataCache.clear(forKey:)` after mutations
-- Background tasks → use `Task{}` then `await MainActor.run` for UI updates
+- Background tasks → use `Task { @MainActor }` for UI property access
 - App lifecycle → add NotificationCenter observers for background/foreground
 - Debug logging → wrap in `#if DEBUG` blocks for production builds
 - Error handling → create LocalizedError enums with user-friendly descriptions

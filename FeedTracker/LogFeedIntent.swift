@@ -24,10 +24,11 @@ struct LogFeedIntent: AppIntent {
         
         // Use last used formula type, fallback to default
         let lastFormulaType = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.lastUsedFormulaType) ?? "Breast milk"
-        
+
         // Check if user is signed in - if not, require opening the app
-        let storageService = GoogleSheetsStorageService()
-        guard storageService.isSignedIn else {
+        let storageService = await MainActor.run { GoogleSheetsStorageService() }
+        let isSignedIn = await MainActor.run { storageService.isSignedIn }
+        guard isSignedIn else {
             throw LogFeedError.notSignedIn
         }
         

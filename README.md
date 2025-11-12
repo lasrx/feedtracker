@@ -22,12 +22,19 @@ MiniLog is designed to help parents log baby feeding information quickly and eff
 ## Technical Architecture
 
 ### Core Technologies
-- **SwiftUI** - Modern declarative UI framework
-- **Google Sign-In SDK** - OAuth authentication with enhanced token refresh
+- **SwiftUI** - Modern declarative UI framework with iOS 26 visual enhancements
+- **Google Sign-In SDK** - OAuth authentication with async/await APIs
 - **Google Sheets API v4** - Data persistence with intelligent caching
 - **App Intents Framework** - Natural language Siri integration (iOS 16+)
-- **Async/await** - Modern concurrency with actor-based caching
+- **Async/await** - Modern concurrency with @MainActor isolation
 - **Thread-Safe Caching** - DataCache actor with configurable expiration
+- **Swift 6 Concurrency** - Full compliance with strict concurrency checking
+
+### Visual Design Language
+- **iOS 26 Liquid Glass** - Translucent material backgrounds with depth effects
+- **Hierarchical SF Symbols** - Enhanced icon rendering for visual depth
+- **Adaptive Animations** - Contextual symbol effects and smooth transitions
+- **Backward Compatible** - Graceful degradation to iOS 18.5+
 
 ### Project Structure
 ```

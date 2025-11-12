@@ -3,6 +3,7 @@ import GoogleSignIn
 import Security
 
 /// Google Sheets implementation of StorageServiceProtocol with enhanced OAuth handling
+@MainActor
 class GoogleSheetsStorageService: StorageServiceProtocol {
     @Published var isSignedIn = false
     @Published var userEmail: String?
@@ -25,14 +26,14 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     // Debug data capture (optional - only used in debug builds)
     weak var dataCaptureService: DataCaptureService?
     
-    init() {
-        loadConfiguration()
-        setupSpreadsheetIdObservation()
-        setupTokenMonitoring()
-        
-        // Attempt to restore previous sign-in
-        Task {
-            await restorePreviousSignIn()
+    nonisolated init() {
+        Task { @MainActor in
+            self.loadConfiguration()
+            self.setupSpreadsheetIdObservation()
+            self.setupTokenMonitoring()
+
+            // Attempt to restore previous sign-in
+            await self.restorePreviousSignIn()
         }
     }
     
@@ -60,16 +61,19 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            if let newId = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetId),
-               newId != self?.spreadsheetId {
-                self?.spreadsheetId = newId
-                let savedName = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetName) ?? "Untitled Sheet"
-                self?.currentConfiguration = StorageConfiguration(
-                    identifier: newId,
-                    name: savedName,
-                    provider: .googleSheets
-                )
-                    }
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                if let newId = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetId),
+                   newId != self.spreadsheetId {
+                    self.spreadsheetId = newId
+                    let savedName = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.spreadsheetName) ?? "Untitled Sheet"
+                    self.currentConfiguration = StorageConfiguration(
+                        identifier: newId,
+                        name: savedName,
+                        provider: .googleSheets
+                    )
+                }
+            }
         }
     }
     
@@ -82,50 +86,46 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            Task {
+            Task { @MainActor [weak self] in
                 await self?.validateAndRefreshTokenIfNeeded()
             }
         }
     }
     
     private func restorePreviousSignIn() async {
-        await MainActor.run {
-            GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, error in
-                if let user = user {
-                    self?.isSignedIn = true
-                    self?.userEmail = user.profile?.email
-                    
-                    // Validate token immediately
-                    Task {
-                        await self?.validateAndRefreshTokenIfNeeded()
-                    }
-                } else if let error = error {
-                    self?.error = StorageServiceError.authenticationFailed(error)
-                }
-            }
+        do {
+            // Use async alternative for modern concurrency
+            let user = try await GIDSignIn.sharedInstance.restorePreviousSignIn()
+
+            self.isSignedIn = true
+            self.userEmail = user.profile?.email
+
+            // Validate token immediately
+            await self.validateAndRefreshTokenIfNeeded()
+        } catch {
+            // Restore failed - user needs to sign in manually
+            self.isSignedIn = false
+            self.userEmail = nil
+            // Don't set error here - silent failure is expected if no previous sign-in
         }
     }
     
     private func validateAndRefreshTokenIfNeeded() async {
         guard let user = GIDSignIn.sharedInstance.currentUser else {
-            await MainActor.run {
-                self.isSignedIn = false
-                self.userEmail = nil
-            }
+            self.isSignedIn = false
+            self.userEmail = nil
             return
         }
-        
+
         // Check if token needs proactive refresh
         let expirationDate = user.accessToken.expirationDate
         let timeUntilExpiry = expirationDate?.timeIntervalSinceNow ?? 0
-        
+
         if timeUntilExpiry < tokenRefreshThreshold {
             do {
                 try await performTokenRefreshWithRetry(user: user)
             } catch {
-                await MainActor.run {
-                    self.error = StorageServiceError.authenticationFailed(error)
-                }
+                self.error = StorageServiceError.authenticationFailed(error)
             }
         }
     }
@@ -184,9 +184,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         guard let rootViewController = rootViewController else {
             throw StorageServiceError.configurationInvalid
         }
-        
+
         // Find the top-most view controller for proper presentation
-        let presentingViewController = await findTopViewController(from: rootViewController)
+        let presentingViewController = findTopViewController(from: rootViewController)
         
         let scopes = self.scopes
         
@@ -197,14 +197,12 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                 hint: nil,
                 additionalScopes: scopes
             )
-            
-            // Update properties on main actor
-            await MainActor.run {
-                self.isSignedIn = true
-                self.userEmail = result.user.profile?.email
-                self.error = nil
-            }
-            
+
+            // Update properties (already on MainActor)
+            self.isSignedIn = true
+            self.userEmail = result.user.profile?.email
+            self.error = nil
+
         } catch {
             throw StorageServiceError.authenticationFailed(error)
         }
@@ -333,9 +331,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return totalVolume
         }
-        
+
         // Capture data for testing if capture service is available
-        await dataCaptureService?.captureFeedTotal(total: total, source: "fetchTodayFeedTotal")
+        dataCaptureService?.captureFeedTotal(total: total, source: "fetchTodayFeedTotal")
         
         // Cache the result
         await dataCache.store(total, forKey: CacheKeys.todayFeedTotal)
@@ -395,9 +393,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return todayFeeds
         }
-        
+
         // Capture data for testing if capture service is available
-        await dataCaptureService?.captureFeedData(feeds: feeds, source: "fetchTodayFeeds")
+        dataCaptureService?.captureFeedData(feeds: feeds, source: "fetchTodayFeeds")
         
         // Cache the result
         await dataCache.store(feeds, forKey: CacheKeys.todayFeeds)
@@ -530,9 +528,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return dailyTotals.sorted { $0.date < $1.date }
         }
-        
-        // Capture data for testing if capture service is available  
-        await dataCaptureService?.captureWeeklyTotals(totals: totals, source: "fetchPast7DaysFeedTotals")
+
+        // Capture data for testing if capture service is available
+        dataCaptureService?.captureWeeklyTotals(totals: totals, source: "fetchPast7DaysFeedTotals")
         
         // Cache the result
         await dataCache.store(totals, forKey: CacheKeys.past7DaysFeedTotals)
@@ -621,9 +619,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return totalVolume
         }
-        
+
         // Capture data for testing if capture service is available
-        await dataCaptureService?.capturePumpingTotal(total: total, source: "fetchTodayPumpingTotal")
+        dataCaptureService?.capturePumpingTotal(total: total, source: "fetchTodayPumpingTotal")
         
         // Cache the result
         await dataCache.store(total, forKey: CacheKeys.todayPumpingTotal)
@@ -679,9 +677,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return todaySessions
         }
-        
+
         // Capture data for testing if capture service is available
-        await dataCaptureService?.capturePumpingData(sessions: sessions, source: "fetchTodayPumpingSessions")
+        dataCaptureService?.capturePumpingData(sessions: sessions, source: "fetchTodayPumpingSessions")
         
         // Cache the result
         await dataCache.store(sessions, forKey: CacheKeys.todayPumpingSessions)
@@ -747,9 +745,9 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             
             return dailyTotals.sorted { $0.date < $1.date }
         }
-        
+
         // Capture data for testing if capture service is available
-        await dataCaptureService?.captureWeeklyTotals(totals: totals, source: "fetchPast7DaysPumpingTotals")
+        dataCaptureService?.captureWeeklyTotals(totals: totals, source: "fetchPast7DaysPumpingTotals")
         
         // Cache the result
         await dataCache.store(totals, forKey: CacheKeys.past7DaysPumpingTotals)
@@ -772,8 +770,8 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         }
         
         // Request additional scope for Drive access
-        guard let windowScene = await UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootViewController = await windowScene.windows.first?.rootViewController else {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
             throw StorageServiceError.configurationInvalid
         }
         
