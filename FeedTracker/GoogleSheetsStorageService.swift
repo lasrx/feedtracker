@@ -154,23 +154,34 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     
     func signIn() async throws {
         // Enhanced iPad compatibility - find the correct window and view controller
-        guard let windowScene = await UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first(where: { $0.activationState == .foregroundActive }) ??
-            await UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first else {
+        let windowScene = await MainActor.run {
+            return UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first { $0.activationState == .foregroundActive } ??
+            UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first
+        }
+        
+        guard let windowScene = windowScene else {
             throw StorageServiceError.configurationInvalid
         }
         
         // Find the key window or first available window
-        guard let window = await windowScene.windows.first(where: { $0.isKeyWindow }) ??
-              await windowScene.windows.first else {
+        let window = await MainActor.run {
+            return windowScene.windows.first { $0.isKeyWindow } ?? windowScene.windows.first
+        }
+        
+        guard let window = window else {
             throw StorageServiceError.configurationInvalid
         }
         
         // Ensure we have a root view controller
-        guard let rootViewController = await window.rootViewController else {
+        let rootViewController = await MainActor.run {
+            return window.rootViewController
+        }
+        
+        guard let rootViewController = rootViewController else {
             throw StorageServiceError.configurationInvalid
         }
         
