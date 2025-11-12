@@ -50,22 +50,24 @@ struct HorizontalNavigationView: View {
                 }
             }
             .simultaneousGesture(
-                DragGesture(minimumDistance: 20)
+                DragGesture(minimumDistance: 25)
                     .updating($dragOffset) { value, state, _ in
-                        // Allow horizontal navigation gestures to work alongside vertical scrolling
-                        let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 1.5
-                        let isLongEnough = abs(value.translation.width) > 20
-                        if isHorizontal && isLongEnough {
+                        // Require strongly horizontal gestures to avoid interfering with volume drag
+                        // Volume drag is typically more vertical or diagonal, navigation is horizontal
+                        let isStronglyHorizontal = abs(value.translation.width) > abs(value.translation.height) * 3.0
+                        let isLongEnough = abs(value.translation.width) > 30
+                        if isStronglyHorizontal && isLongEnough {
                             state = value.translation.width
                         }
                     }
                     .onEnded { value in
                         let threshold = FeedConstants.swipeThreshold
                         let dragDistance = value.translation.width
-                        let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 1.5
+                        // Require very horizontal swipes (3:1 ratio) to avoid volume input conflicts
+                        let isStronglyHorizontal = abs(value.translation.width) > abs(value.translation.height) * 3.0
 
                         // Only navigate if this is clearly a horizontal swipe
-                        if isHorizontal && abs(dragDistance) > threshold {
+                        if isStronglyHorizontal && abs(dragDistance) > threshold {
                             if dragDistance > threshold && currentPage > 0 {
                                 currentPage -= 1
                             } else if dragDistance < -threshold && currentPage < 3 {
