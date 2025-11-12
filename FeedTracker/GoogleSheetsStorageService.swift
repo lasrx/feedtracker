@@ -153,17 +153,36 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     // MARK: - StorageServiceProtocol Implementation
     
     func signIn() async throws {
-        guard let windowScene = await UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootViewController = await windowScene.windows.first?.rootViewController else {
+        // Enhanced iPad compatibility - find the correct window and view controller
+        guard let windowScene = await UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive }) ??
+            await UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first else {
             throw StorageServiceError.configurationInvalid
         }
+        
+        // Find the key window or first available window
+        guard let window = await windowScene.windows.first(where: { $0.isKeyWindow }) ??
+              await windowScene.windows.first else {
+            throw StorageServiceError.configurationInvalid
+        }
+        
+        // Ensure we have a root view controller
+        guard let rootViewController = await window.rootViewController else {
+            throw StorageServiceError.configurationInvalid
+        }
+        
+        // Find the top-most view controller for proper presentation
+        let presentingViewController = await findTopViewController(from: rootViewController)
         
         let scopes = self.scopes
         
         // Use async alternative for modern concurrency
         do {
             let result = try await GIDSignIn.sharedInstance.signIn(
-                withPresenting: rootViewController,
+                withPresenting: presentingViewController,
                 hint: nil,
                 additionalScopes: scopes
             )
@@ -1036,5 +1055,29 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         await dataCache.clear(forKey: CacheKeys.todayPumpingTotal)
         await dataCache.clear(forKey: CacheKeys.todayPumpingSessions)
         await dataCache.clear(forKey: CacheKeys.past7DaysPumpingTotals)
+    }
+    
+    // MARK: - iPad Compatibility Helper
+    
+    @MainActor
+    private func findTopViewController(from rootViewController: UIViewController) -> UIViewController {
+        var topViewController = rootViewController
+        
+        // Navigate through the view controller hierarchy to find the top-most controller
+        while let presentedViewController = topViewController.presentedViewController {
+            topViewController = presentedViewController
+        }
+        
+        // Handle navigation controllers
+        if let navigationController = topViewController as? UINavigationController {
+            topViewController = navigationController.visibleViewController ?? navigationController
+        }
+        
+        // Handle tab bar controllers
+        if let tabBarController = topViewController as? UITabBarController {
+            topViewController = tabBarController.selectedViewController ?? tabBarController
+        }
+        
+        return topViewController
     }
 }
