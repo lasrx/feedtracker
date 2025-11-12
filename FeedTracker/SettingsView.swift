@@ -2,12 +2,12 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var storageService: GoogleSheetsStorageService
-    @AppStorage("spreadsheetId") private var spreadsheetId = ""
-    @AppStorage("dailyVolumeGoal") private var dailyVolumeGoal = 1000
-    @AppStorage("formulaTypes") private var formulaTypesData = ""
-    @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
-    @AppStorage("feedQuickVolumes") private var feedQuickVolumesData = "40,60,130,150"
-    @AppStorage("pumpingQuickVolumes") private var pumpingQuickVolumesData = "130,140,150,170"
+    @AppStorage(FeedConstants.UserDefaultsKeys.spreadsheetId) private var spreadsheetId = ""
+    @AppStorage(FeedConstants.UserDefaultsKeys.dailyVolumeGoal) private var dailyVolumeGoal = 1000
+    @AppStorage(FeedConstants.UserDefaultsKeys.formulaTypes) private var formulaTypesData = ""
+    @AppStorage(FeedConstants.UserDefaultsKeys.hapticFeedbackEnabled) private var hapticFeedbackEnabled = true
+    @AppStorage(FeedConstants.UserDefaultsKeys.feedQuickVolumes) private var feedQuickVolumesData = "40,60,130,150"
+    @AppStorage(FeedConstants.UserDefaultsKeys.pumpingQuickVolumes) private var pumpingQuickVolumesData = "130,140,150,170"
     @AppStorage("dragSpeed") private var dragSpeedRawValue = FeedConstants.DragSpeed.default.rawValue
     
     @State private var showingSpreadsheetIdAlert = false

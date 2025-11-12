@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SpreadsheetPickerView: View {
     @ObservedObject var storageService: GoogleSheetsStorageService
-    @AppStorage("spreadsheetId") private var spreadsheetId = ""
+    @AppStorage(FeedConstants.UserDefaultsKeys.spreadsheetId) private var spreadsheetId = ""
     
     @State private var spreadsheets: [StorageOption] = []
     @State private var allSpreadsheets: [StorageOption] = []

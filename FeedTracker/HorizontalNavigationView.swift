@@ -4,7 +4,7 @@ import Foundation
 struct HorizontalNavigationView: View {
     @State private var currentPage: Int = 1 // Start at center (feed logging)
     @GestureState private var dragOffset: CGFloat = 0
-    @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
+    @AppStorage(FeedConstants.UserDefaultsKeys.hapticFeedbackEnabled) private var hapticFeedbackEnabled = true
     @StateObject private var storageService = GoogleSheetsStorageService()
     @State private var pumpingViewTrigger: Int = 0
     @State private var feedHistoryViewTrigger: Int = 0

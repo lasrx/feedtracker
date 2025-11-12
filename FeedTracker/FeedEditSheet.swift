@@ -158,9 +158,15 @@ struct FeedEditSheet: View {
     
     
     private func loadFormulaTypes() {
-        // Load formula types from UserDefaults or use defaults
-        formulaTypes = UserDefaults.standard.stringArray(forKey: "formulaTypes") ?? 
-            FeedConstants.defaultFormulaTypes
+        // Load formula types using the same approach as FeedEntryViewModel
+        let formulaTypesData = UserDefaults.standard.string(forKey: FeedConstants.UserDefaultsKeys.formulaTypes) ?? ""
+        
+        if formulaTypesData.isEmpty {
+            formulaTypes = FeedConstants.defaultFormulaTypes
+        } else {
+            formulaTypes = formulaTypesData.components(separatedBy: ",")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+        }
         
         // Ensure current formula type is in the list
         if !formulaTypes.contains(formulaType) {
