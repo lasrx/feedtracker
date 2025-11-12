@@ -475,7 +475,7 @@ struct FeedRowView: View {
             HStack {
                 if feed.isWaste {
                     Image(systemName: "trash.circle.fill")
-                        .font(.caption)
+                        .font(.title3)
                         .foregroundColor(.orange)
                         .symbolRenderingMode(.hierarchical)
                 }
