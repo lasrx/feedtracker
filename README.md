@@ -164,7 +164,7 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - Loading states during API calls
    - Pull-to-refresh for totals
    - Auto-refresh interface after returning from 1+ hour absence
-   - Enhanced Settings page with haptic preferences and UI controls
+   - Enhanced Settings page with native iOS list editors for formula types and volumes
 
 ### Latest Release: Performance-Optimized Full CRUD Operations & Advanced Analytics
 
@@ -194,7 +194,14 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
 - **Generic storage methods** - Flexible data fetching with configurable day ranges
 - **Clean component separation** - Chart logic moved to chart components for better maintainability
 
-#### 🏗️ Latest: Complete MVVM Architecture & Configurable UX
+#### 🏗️ Latest: iOS-Native Editors & Critical Bug Fixes
+- **Native List Editors** - Replaced raw CSV text fields with proper iOS list interfaces for formula types and quick volumes
+- **Add/Remove/Reorder** - Full editing capabilities with swipe-to-delete, drag-to-reorder, and validation
+- **Date Parsing Bug Fix** - Resolved critical "2,024y ago" display issue caused by time format inconsistencies  
+- **Unified Data Storage** - All @AppStorage keys now use centralized FeedConstants for consistency
+- **Swift 6 Compliance** - Updated for latest Xcode 16 requirements with @Previewable annotations
+
+#### 🏗️ Previous: Complete MVVM Architecture & Configurable UX
 - **Complete MVVM Pattern** - Added `PumpingEntryViewModel` (266 lines) for full architectural consistency across all entry views
 - **Configurable Drag Speed** - User-selectable speed (Slow/Default/Fast) in Settings with optimized sensitivity curves
 - **Unified App Lifecycle** - Both Feed and Pumping views auto-reset date/time after 1+ hour inactivity using shared lifecycle patterns

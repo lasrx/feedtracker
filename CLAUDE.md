@@ -108,6 +108,8 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - `FeedConstants.swift`: Centralized defaults, user preferences, and UI constants
 - `SwipeActionsView.swift`: Generic reusable UI components
 - `SpreadsheetPickerView.swift`: Google Sheets browser with smart filtering
+- `FormulaTypesEditorView.swift`: iOS-native list editor for formula types with add/remove/reorder
+- `QuickVolumesEditorView.swift`: Dedicated volume preset editor with validation and sorting
 - `Models.swift`: Data modeling with computed properties and row tracking
 - `ChartModels.swift`: Consistent color assignment and chart data processing
 - `HapticHelper.swift`: Centralized haptic feedback with intensity levels
