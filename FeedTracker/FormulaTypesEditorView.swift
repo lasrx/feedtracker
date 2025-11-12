@@ -127,7 +127,7 @@ struct FormulaTypesEditorView: View {
 // MARK: - Preview
 
 #Preview {
-    @State var sampleData = "Breast milk,Similac 360,Enfamil Neuropro"
+    @Previewable @State var sampleData = "Breast milk,Similac 360,Enfamil Neuropro"
     
     return FormulaTypesEditorView(formulaTypesData: $sampleData)
 }

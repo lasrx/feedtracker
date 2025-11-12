@@ -144,7 +144,7 @@ struct QuickVolumesEditorView: View {
 // MARK: - Preview
 
 #Preview {
-    @State var sampleData = "40,60,130,150"
+    @Previewable @State var sampleData = "40,60,130,150"
     
     return QuickVolumesEditorView(
         title: "Feed Quick Volumes",
