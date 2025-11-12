@@ -49,12 +49,12 @@ struct HorizontalNavigationView: View {
                     pumpingHistoryViewTrigger += 1
                 }
             }
-            .gesture(
-                DragGesture(minimumDistance: 30)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 20)
                     .updating($dragOffset) { value, state, _ in
-                        // Only allow navigation drags that are clearly horizontal and start from edge areas
-                        let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 2
-                        let isLongEnough = abs(value.translation.width) > 30
+                        // Allow horizontal navigation gestures to work alongside vertical scrolling
+                        let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 1.5
+                        let isLongEnough = abs(value.translation.width) > 20
                         if isHorizontal && isLongEnough {
                             state = value.translation.width
                         }
@@ -62,8 +62,8 @@ struct HorizontalNavigationView: View {
                     .onEnded { value in
                         let threshold = FeedConstants.swipeThreshold
                         let dragDistance = value.translation.width
-                        let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 2
-                        
+                        let isHorizontal = abs(value.translation.width) > abs(value.translation.height) * 1.5
+
                         // Only navigate if this is clearly a horizontal swipe
                         if isHorizontal && abs(dragDistance) > threshold {
                             if dragDistance > threshold && currentPage > 0 {
