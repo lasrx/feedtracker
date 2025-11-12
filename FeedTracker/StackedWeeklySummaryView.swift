@@ -93,7 +93,7 @@ struct StackedWeeklySummaryView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(.regularMaterial)
         .cornerRadius(12)
         .onAppear {
             updateCachedData()

@@ -24,7 +24,7 @@ struct SpreadsheetPickerView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(alignment: .leading, spacing: 8) {
                 // Filter explanation
                 Text("Showing spreadsheets with 'tracker' in the name")
@@ -72,6 +72,7 @@ struct SpreadsheetPickerView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle)
                 .foregroundColor(.orange)
+                .symbolRenderingMode(.hierarchical)
             Text("Error loading spreadsheets")
                 .font(.headline)
             Text(message)
@@ -83,6 +84,7 @@ struct SpreadsheetPickerView: View {
                 loadSpreadsheets()
             }
             .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
         }
         .padding()
     }
@@ -92,6 +94,8 @@ struct SpreadsheetPickerView: View {
             Image(systemName: "doc.text")
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
+                .symbolRenderingMode(.hierarchical)
+                .symbolEffect(.pulse.byLayer, options: .repeating)
             Text("No Sheets Found")
                 .font(.headline)
             Text("Create a new tracking sheet using the \"Create Sheet\" button in Settings, or refresh to browse existing sheets.")

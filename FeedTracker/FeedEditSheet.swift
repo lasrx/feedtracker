@@ -31,7 +31,7 @@ struct FeedEditSheet: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Feed Details")) {
                     // Date Picker

@@ -115,8 +115,8 @@ struct FeedLoggingView: View {
     
     // MARK: - Body
     var body: some View {
-        // Use the shared FeedEntryForm component wrapped in NavigationView
-        NavigationView {
+        // Use the shared FeedEntryForm component wrapped in NavigationStack
+        NavigationStack {
             FeedEntryForm(
                 viewModel: viewModel,
                 storageService: storageService

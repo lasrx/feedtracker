@@ -85,7 +85,7 @@ struct WeeklySummaryView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(.regularMaterial)
         .cornerRadius(12)
     }
     

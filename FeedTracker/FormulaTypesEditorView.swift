@@ -9,7 +9,7 @@ struct FormulaTypesEditorView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 Section {
                     ForEach(formulaTypes.indices, id: \.self) { index in

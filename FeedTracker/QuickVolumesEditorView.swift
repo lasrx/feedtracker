@@ -11,7 +11,7 @@ struct QuickVolumesEditorView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 Section {
                     ForEach(volumes.indices, id: \.self) { index in

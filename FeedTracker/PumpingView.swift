@@ -19,7 +19,7 @@ struct PumpingView: View {
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 // Sign-in prompt if not signed in
                 if !storageService.isSignedIn {
@@ -28,6 +28,7 @@ struct PumpingView: View {
                             Image(systemName: "drop.triangle")
                                 .font(.largeTitle)
                                 .foregroundColor(.secondary)
+                                .symbolRenderingMode(.hierarchical)
                             Text("Sign in to save pumping sessions")
                                 .font(.headline)
                                 .multilineTextAlignment(.center)
@@ -46,6 +47,7 @@ struct PumpingView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Label("Today's Pumping", systemImage: "drop.triangle.fill")
                             .font(.headline)
+                            .symbolRenderingMode(.hierarchical)
                         
                         HStack(alignment: .bottom) {
                             Text("\(viewModel.totalVolumeToday) mL")
@@ -68,7 +70,7 @@ struct PumpingView: View {
                 }
                 .listRowBackground(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray6))
+                        .fill(.regularMaterial)
                 )
                 
                 Section(header: Text("Pumping Session")) {
@@ -116,10 +118,11 @@ struct PumpingView: View {
                             if viewModel.isSubmitting {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle())
-                                    .scaleEffect(0.8)
+                                    .tint(.white)
                                 Text("Saving...")
                             } else {
                                 Image(systemName: "drop.triangle.fill")
+                                    .symbolRenderingMode(.hierarchical)
                                 Text("Log Pumping Session")
                             }
                         }
@@ -128,8 +131,11 @@ struct PumpingView: View {
                         .frame(height: 50)
                     }
                     .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
                     .disabled(!viewModel.isFormValid)
                     .accentColor(.purple)
+                    .scaleEffect(viewModel.isSubmitting ? 0.95 : 1.0)
+                    .animation(.easeInOut(duration: 0.1), value: viewModel.isSubmitting)
                 }
                 
                 Section(header: Text("Quick Actions")) {

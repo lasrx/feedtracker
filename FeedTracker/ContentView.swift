@@ -18,7 +18,7 @@ struct ContentView: View {
     // MARK: - Body
     var body: some View {
         // Use the shared FeedEntryForm component
-        NavigationView {
+        NavigationStack {
             FeedEntryForm(
                 viewModel: viewModel,
                 storageService: storageService

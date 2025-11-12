@@ -51,6 +51,8 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
+                            .symbolRenderingMode(.hierarchical)
+                            .symbolEffect(.bounce, value: spreadsheetId)
                         Text(storageService.currentConfiguration?.name ?? "Untitled Sheet")
                             .font(.headline)
                             .fontWeight(.medium)
@@ -67,6 +69,7 @@ struct SettingsView: View {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundColor(.orange)
+                        .symbolRenderingMode(.hierarchical)
                     Text("No spreadsheet selected")
                         .font(.headline)
                         .fontWeight(.medium)
@@ -105,6 +108,7 @@ struct SettingsView: View {
                     }
                 }
                 .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
                 .controlSize(.small)
                 .disabled(!storageService.isSignedIn || isCreatingSheet)
             }
@@ -152,7 +156,7 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 // Account Section
                 Section(header: Text("Account")) {
@@ -169,6 +173,8 @@ struct SettingsView: View {
                                     .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.borderedProminent)
+                            .buttonBorderShape(.capsule)
+                            .symbolEffect(.bounce, value: storageService.isSignedIn)
                         }
                         .padding(.vertical, 8)
                     } else {
@@ -221,6 +227,7 @@ struct SettingsView: View {
                         HStack {
                             Image(systemName: "mic.fill")
                                 .foregroundColor(.blue)
+                                .symbolRenderingMode(.hierarchical)
                             Text("Hey Siri")
                                 .font(.headline)
                             Spacer()

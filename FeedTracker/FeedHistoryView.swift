@@ -15,7 +15,7 @@ struct FeedHistoryView: View {
     @State private var showDeleteAlert = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Today's Summary Header
                 VStack(spacing: 8) {
@@ -122,6 +122,8 @@ struct FeedHistoryView: View {
                         Image(systemName: "drop.circle")
                             .font(.system(size: 60))
                             .foregroundColor(.secondary)
+                            .symbolRenderingMode(.hierarchical)
+                            .symbolEffect(.pulse.byLayer, options: .repeating)
                         Text("No feeds logged today")
                             .font(.headline)
                             .foregroundColor(.secondary)
@@ -134,6 +136,10 @@ struct FeedHistoryView: View {
                     List(todayFeeds) { feed in
                         FeedRowView(feed: feed)
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
+                            ))
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                 Button {
                                     editFeed(feed)
@@ -471,6 +477,7 @@ struct FeedRowView: View {
                     Image(systemName: "trash.circle.fill")
                         .font(.caption)
                         .foregroundColor(.orange)
+                        .symbolRenderingMode(.hierarchical)
                 }
                 Text(feed.formulaType)
                     .font(.subheadline)

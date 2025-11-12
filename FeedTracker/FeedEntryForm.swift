@@ -38,6 +38,7 @@ struct FeedEntryForm: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: viewModel.showSettings) {
                     Image(systemName: "gear")
+                        .symbolRenderingMode(.hierarchical)
                 }
             }
         }
@@ -74,6 +75,7 @@ struct FeedEntryForm: View {
                 Image(systemName: "person.badge.key")
                     .font(.largeTitle)
                     .foregroundColor(.secondary)
+                    .symbolRenderingMode(.hierarchical)
                 Text("Sign in to Google to save feeds")
                     .font(.headline)
                     .multilineTextAlignment(.center)
@@ -94,6 +96,7 @@ struct FeedEntryForm: View {
             VStack(alignment: .leading, spacing: 4) {
                 Label("Today's Feed Total", systemImage: "chart.bar.fill")
                     .font(.headline)
+                    .symbolRenderingMode(.hierarchical)
                 
                 HStack(alignment: .bottom) {
                     Text("\(viewModel.totalVolumeToday) mL")
@@ -122,7 +125,7 @@ struct FeedEntryForm: View {
         }
         .listRowBackground(
             RoundedRectangle(cornerRadius: 10)
-                .fill(colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray6))
+                .fill(.regularMaterial)
         )
     }
     
@@ -249,10 +252,11 @@ struct FeedEntryForm: View {
                     if viewModel.isSubmitting {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle())
-                            .scaleEffect(0.8)
+                            .tint(.white)
                         Text("Saving...")
                     } else {
                         Image(systemName: viewModel.isWaste ? "trash.circle.fill" : "plus.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
                         Text(viewModel.isWaste ? "Log Waste Entry" : "Add Feed Entry")
                     }
                 }
@@ -261,8 +265,11 @@ struct FeedEntryForm: View {
                 .frame(height: FeedConstants.submitButtonHeight)
             }
             .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
             .tint(viewModel.isWaste ? .orange : .accentColor)
             .disabled(!viewModel.isFormValid)
+            .scaleEffect(viewModel.isSubmitting ? 0.95 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: viewModel.isSubmitting)
         }
     }
     
@@ -304,7 +311,7 @@ struct FeedEntryForm: View {
 
 // MARK: - Preview
 #Preview {
-    NavigationView {
+    NavigationStack {
         FeedEntryForm(
             viewModel: FeedEntryViewModel(storageService: GoogleSheetsStorageService()),
             storageService: GoogleSheetsStorageService()

@@ -14,7 +14,7 @@ struct PumpingHistoryView: View {
     @State private var showDeleteAlert = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Today's Summary Header
                 VStack(spacing: 8) {
@@ -115,6 +115,8 @@ struct PumpingHistoryView: View {
                         Image(systemName: "drop.triangle")
                             .font(.system(size: 60))
                             .foregroundColor(.purple.opacity(0.6))
+                            .symbolRenderingMode(.hierarchical)
+                            .symbolEffect(.pulse.byLayer, options: .repeating)
                         Text("No pumping sessions today")
                             .font(.headline)
                             .foregroundColor(.secondary)
@@ -127,6 +129,10 @@ struct PumpingHistoryView: View {
                     List(todayPumpingSessions) { session in
                         PumpingRowView(session: session)
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .leading).combined(with: .opacity),
+                                removal: .move(edge: .trailing).combined(with: .opacity)
+                            ))
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button {
                                     editSession(session)
@@ -409,6 +415,7 @@ struct PumpingRowView: View {
             Image(systemName: "drop.triangle.fill")
                 .font(.title2)
                 .foregroundColor(.purple.opacity(0.6))
+                .symbolRenderingMode(.hierarchical)
         }
         .padding(.vertical, 4)
     }

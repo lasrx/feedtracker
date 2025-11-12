@@ -7,13 +7,14 @@ struct DataCaptureView: View {
     @ObservedObject var storageService: GoogleSheetsStorageService
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 20) {
                 // Header
                 VStack(spacing: 8) {
                     Image(systemName: "externaldrive.badge.plus")
                         .font(.system(size: 50))
                         .foregroundColor(.blue)
+                        .symbolRenderingMode(.hierarchical)
                     
                     Text("Test Data Capture")
                         .font(.title)
@@ -51,7 +52,7 @@ struct DataCaptureView: View {
                     }
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(.regularMaterial)
                 .cornerRadius(12)
                 
                 // Controls
@@ -130,7 +131,7 @@ struct DataCaptureView: View {
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
-                .background(Color(.systemGray6))
+                .background(.regularMaterial)
                 .cornerRadius(12)
                 
                 Spacer()
