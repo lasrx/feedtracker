@@ -12,16 +12,13 @@ struct SettingsView: View {
     
     @State private var showingSpreadsheetIdAlert = false
     @State private var tempSpreadsheetId = ""
-    @State private var showingFormulaTypesAlert = false
-    @State private var tempFormulaTypes = ""
+    @State private var showingFormulaTypesEditor = false
     @State private var showingSpreadsheetPicker = false
     @State private var showingCreateSheetAlert = false
     @State private var newSheetTitle = "Feed Tracking"
     @State private var isCreatingSheet = false
-    @State private var showingFeedQuickVolumesAlert = false
-    @State private var tempFeedQuickVolumes = ""
-    @State private var showingPumpingQuickVolumesAlert = false
-    @State private var tempPumpingQuickVolumes = ""
+    @State private var showingFeedQuickVolumesEditor = false
+    @State private var showingPumpingQuickVolumesEditor = false
     
     // Default formula types
     private let defaultFormulaTypes = ["Breast milk", "Similac 360", "Emfamil Neuropro"]
@@ -276,8 +273,7 @@ struct SettingsView: View {
                             Text("Formula Types")
                             Spacer()
                             Button("Edit") {
-                                tempFormulaTypes = formulaTypes.joined(separator: ", ")
-                                showingFormulaTypesAlert = true
+                                showingFormulaTypesEditor = true
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
@@ -321,8 +317,7 @@ struct SettingsView: View {
                             Text("Feed Quick Volumes")
                             Spacer()
                             Button("Edit") {
-                                tempFeedQuickVolumes = feedQuickVolumesData
-                                showingFeedQuickVolumesAlert = true
+                                showingFeedQuickVolumesEditor = true
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
@@ -339,8 +334,7 @@ struct SettingsView: View {
                             Text("Pumping Quick Volumes")
                             Spacer()
                             Button("Edit") {
-                                tempPumpingQuickVolumes = pumpingQuickVolumesData
-                                showingPumpingQuickVolumesAlert = true
+                                showingPumpingQuickVolumesEditor = true
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
@@ -406,17 +400,8 @@ struct SettingsView: View {
             } message: {
                 Text("Enter the Google Sheets ID from your spreadsheet URL")
             }
-            .alert("Edit Formula Types", isPresented: $showingFormulaTypesAlert) {
-                TextField("Formula Types", text: $tempFormulaTypes)
-                Button("Cancel", role: .cancel) { }
-                Button("Save") {
-                    formulaTypesData = tempFormulaTypes
-                }
-                Button("Reset to Default", role: .destructive) {
-                    formulaTypesData = ""
-                }
-            } message: {
-                Text("Enter formula types separated by commas")
+            .sheet(isPresented: $showingFormulaTypesEditor) {
+                FormulaTypesEditorView(formulaTypesData: $formulaTypesData)
             }
             .sheet(isPresented: $showingSpreadsheetPicker) {
                 SpreadsheetPickerView(storageService: storageService)
@@ -430,29 +415,19 @@ struct SettingsView: View {
             } message: {
                 Text("This will create a new Google Sheet with the proper column headers for feed tracking.")
             }
-            .alert("Edit Feed Quick Volumes", isPresented: $showingFeedQuickVolumesAlert) {
-                TextField("Feed Quick Volumes", text: $tempFeedQuickVolumes)
-                Button("Cancel", role: .cancel) { }
-                Button("Save") {
-                    feedQuickVolumesData = tempFeedQuickVolumes
-                }
-                Button("Reset to Default", role: .destructive) {
-                    feedQuickVolumesData = "40,60,130,150"
-                }
-            } message: {
-                Text("Enter 4 volume amounts separated by commas (e.g., 40,60,130,150)")
+            .sheet(isPresented: $showingFeedQuickVolumesEditor) {
+                QuickVolumesEditorView(
+                    title: "Feed Quick Volumes",
+                    unit: "mL",
+                    quickVolumesData: $feedQuickVolumesData
+                )
             }
-            .alert("Edit Pumping Quick Volumes", isPresented: $showingPumpingQuickVolumesAlert) {
-                TextField("Pumping Quick Volumes", text: $tempPumpingQuickVolumes)
-                Button("Cancel", role: .cancel) { }
-                Button("Save") {
-                    pumpingQuickVolumesData = tempPumpingQuickVolumes
-                }
-                Button("Reset to Default", role: .destructive) {
-                    pumpingQuickVolumesData = "130,140,150,170"
-                }
-            } message: {
-                Text("Enter 4 volume amounts separated by commas (e.g., 130,140,150,170)")
+            .sheet(isPresented: $showingPumpingQuickVolumesEditor) {
+                QuickVolumesEditorView(
+                    title: "Pumping Quick Volumes", 
+                    unit: "mL",
+                    quickVolumesData: $pumpingQuickVolumesData
+                )
             }
         }
     }
