@@ -443,36 +443,37 @@ struct FeedRowView: View {
     let feed: FeedEntry
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             // Time
             VStack(alignment: .leading, spacing: 2) {
                 Text(feed.time)
                     .font(.headline)
                     .fontWeight(.medium)
-                
+                    .fixedSize(horizontal: true, vertical: false)
+
                 Text(timeAgo)
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
-            .frame(width: 60, alignment: .leading)
-            
+            .frame(minWidth: 70, alignment: .leading)
+
             // Volume
             VStack(spacing: 2) {
                 Text("\(feed.actualVolume)")
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(feed.isWaste ? .orange : .accentColor)
-                
+
                 Text(feed.isWaste ? "waste" : "mL")
                     .font(.caption2)
                     .foregroundColor(feed.isWaste ? .orange : .secondary)
             }
             .frame(width: 50)
-            
-            Spacer()
-            
+
+            Spacer(minLength: 8)
+
             // Formula Type and feed/waste indicator
-            HStack {
+            HStack(spacing: 6) {
                 Image(systemName: feed.isWaste ? "trash.circle.fill" : "drop.circle.fill")
                     .font(.title3)
                     .foregroundColor(feed.isWaste ? .orange : .accentColor)
@@ -482,6 +483,7 @@ struct FeedRowView: View {
                     .font(.subheadline)
                     .foregroundColor(.primary)
                     .multilineTextAlignment(.trailing)
+                    .lineLimit(1)
             }
         }
         .padding(.vertical, 4)

@@ -208,7 +208,7 @@ struct FeedEntryForm: View {
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(viewModel.isWaste ? .primary : .white)
-                        .frame(width: 45, height: 28)
+                        .frame(width: 42, height: 28)
                         .background {
                             if !viewModel.isWaste {
                                 RoundedRectangle(cornerRadius: 6)
@@ -227,7 +227,7 @@ struct FeedEntryForm: View {
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(viewModel.isWaste ? .white : .primary)
-                        .frame(width: 45, height: 28)
+                        .frame(width: 42, height: 28)
                         .background {
                             if viewModel.isWaste {
                                 RoundedRectangle(cornerRadius: 6)
