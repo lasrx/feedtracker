@@ -308,12 +308,21 @@ struct FeedEntryForm: View {
                         }) {
                             Text(amount)
                                 .font(.system(size: 16, weight: .medium))
+                                .foregroundStyle(.primary)
                                 .frame(
                                     width: FeedConstants.quickVolumeButtonWidth,
                                     height: FeedConstants.quickVolumeButtonHeight
                                 )
+                                .background {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(.regularMaterial)
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 1)
+                                        }
+                                }
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.plain)
                     }
                     
                 }
