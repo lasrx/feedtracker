@@ -61,10 +61,13 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 **Published properties**: All UI-facing properties guaranteed to run on MainActor
 
 ### iOS 26 Visual Enhancements (Backward Compatible)
-**Liquid Glass materials**: `.regularMaterial` backgrounds throughout (iOS 15+ compatible)
+**Liquid Glass materials**: `.regularMaterial` for in-app surfaces, `.ultraThinMaterial` for modal sheets (iOS 15+ compatible)
+**Presentation detents**: Fixed-height modal sheets - `.medium` for compact editors, `.large` for content-heavy views (iOS 16+)
+**Glass button styling**: Filled glass effect with color-tinted backgrounds (70% opacity) and state-aware disabled styling
 **Hierarchical symbols**: `.symbolRenderingMode(.hierarchical)` for SF Symbol depth
 **Symbol effects**: `.symbolEffect(.bounce)` for success states, `.pulse` for empty states (iOS 17+, graceful fallback)
 **Modern navigation**: `NavigationStack` replaces deprecated `NavigationView` (iOS 16+)
+**Chart gradients**: LinearGradient fills with depth shadows on bar charts and progress bars
 **Button animations**: Scale effects (0.95) on press with easeInOut timing
 **List transitions**: Asymmetric slide + fade animations for feed/pumping entries
 **Deployment target**: Maintains iOS 18.5+ support while optimizing for iOS 26
@@ -123,12 +126,13 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 - `StorageService.swift`: Protocol definitions and caching infrastructure
 - `FeedConstants.swift`: Centralized defaults, user preferences, and UI constants
 - `SwipeActionsView.swift`: Generic reusable UI components
-- `SpreadsheetPickerView.swift`: Google Sheets browser with smart filtering
-- `FormulaTypesEditorView.swift`: iOS-native list editor for formula types with add/remove/reorder
-- `QuickVolumesEditorView.swift`: Dedicated volume preset editor with validation and sorting
+- `SpreadsheetPickerView.swift`: Google Sheets browser with smart filtering and `.large` detent
+- `FormulaTypesEditorView.swift`: iOS-native list editor with `.medium` detent and glass styling
+- `QuickVolumesEditorView.swift`: Volume preset editor with `.medium` detent and glass styling
+- `FeedEditSheet.swift` / `PumpingEditSheet.swift`: Modal editors with `.medium` detent and ultraThinMaterial
+- `SettingsView.swift`: Full settings interface with `.large` detent and glass transparency
 - `Models.swift`: Data modeling with computed properties and row tracking
 - `ChartModels.swift`: Consistent color assignment and chart data processing
 - `HapticHelper.swift`: Centralized haptic feedback with intensity levels
 - `*ViewModel.swift`: MVVM patterns, app lifecycle, and service injection
-- `*EditSheet.swift`: Modal form patterns with callback architecture
 - `README.md`: Complete project details and features
