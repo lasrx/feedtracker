@@ -49,7 +49,7 @@ struct HorizontalNavigationView: View {
                     pumpingHistoryViewTrigger += 1
                 }
             }
-            .simultaneousGesture(
+            .gesture(
                 DragGesture(minimumDistance: 30)
                     .updating($dragOffset) { value, state, _ in
                         // Require strongly horizontal gestures to avoid interfering with volume drag
