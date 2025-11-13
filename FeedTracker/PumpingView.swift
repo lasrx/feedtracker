@@ -135,18 +135,23 @@ struct PumpingView: View {
                                 .fill(.regularMaterial)
                                 .overlay {
                                     RoundedRectangle(cornerRadius: 25)
-                                        .fill(Color.purple.opacity(0.7))
+                                        .fill(viewModel.isFormValid ?
+                                              Color.purple.opacity(0.7) :
+                                              Color.gray.opacity(0.3))
                                 }
                                 .overlay {
                                     RoundedRectangle(cornerRadius: 25)
-                                        .strokeBorder(Color.purple.opacity(0.5), lineWidth: 1)
+                                        .strokeBorder(viewModel.isFormValid ?
+                                                      Color.purple.opacity(0.5) :
+                                                      Color.gray.opacity(0.3), lineWidth: 1)
                                 }
-                                .shadow(color: Color.purple.opacity(0.3), radius: 8, y: 4)
+                                .shadow(color: viewModel.isFormValid ?
+                                        Color.purple.opacity(0.3) :
+                                        Color.clear, radius: 8, y: 4)
                         }
                     }
                     .buttonStyle(.plain)
                     .disabled(!viewModel.isFormValid)
-                    .opacity(viewModel.isFormValid ? 1.0 : 0.5)
                     .scaleEffect(viewModel.isSubmitting ? 0.95 : 1.0)
                     .animation(.easeInOut(duration: 0.1), value: viewModel.isSubmitting)
                 }
