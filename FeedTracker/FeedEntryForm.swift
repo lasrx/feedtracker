@@ -18,10 +18,12 @@ struct FeedEntryForm: View {
             // Sign-in prompt if not signed in
             if !storageService.isSignedIn {
                 signInPromptSection
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
             }
-            
+
             // Today's Summary Card
             todaySummarySection
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
             
             // Feed Details Form
             feedDetailsSection

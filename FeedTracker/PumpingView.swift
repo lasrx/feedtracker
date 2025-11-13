@@ -40,8 +40,9 @@ struct PumpingView: View {
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
                     }
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                 }
-                
+
                 // Today's Pumping Summary
                 Section {
                     VStack(alignment: .leading, spacing: 4) {
@@ -72,6 +73,7 @@ struct PumpingView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(.regularMaterial)
                 )
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                 
                 Section(header: Text("Pumping Session")) {
                     // Date Picker
