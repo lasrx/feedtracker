@@ -111,22 +111,46 @@ struct StackedWeeklySummaryView: View {
     @ViewBuilder
     private func stackedBar(for daily: DailyTotalWithBreakdown) -> some View {
         if daily.formulaBreakdown.isEmpty {
-            // Empty day - show gray placeholder
+            // Empty day - show gray placeholder with glass effect
             RoundedRectangle(cornerRadius: 2)
-                .fill(Color.gray.opacity(0.3))
+                .fill(.regularMaterial)
                 .frame(width: 24, height: 2)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.gray.opacity(0.2))
+                }
         } else {
-            // Stacked segments
+            // Stacked segments with gradient and depth
             VStack(spacing: 0) {
                 ForEach(Array(daily.formulaBreakdown.enumerated()), id: \.offset) { index, formula in
                     let segmentHeight = calculateSegmentHeight(formula: formula, totalVolume: daily.totalVolume)
-                    
-                    RoundedRectangle(cornerRadius: index == 0 ? 2 : 0) // Only round the top segment
-                        .fill(formula.color)
+
+                    RoundedRectangle(cornerRadius: index == 0 ? 3 : 0) // Only round the top segment
+                        .fill(
+                            LinearGradient(
+                                colors: [formula.color, formula.color.opacity(0.8)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                         .frame(width: 24, height: segmentHeight)
+                        .overlay {
+                            if index == 0 {
+                                // Subtle highlight on top segment
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.3), Color.clear],
+                                            startPoint: .top,
+                                            endPoint: .center
+                                        )
+                                    )
+                            }
+                        }
                 }
             }
             .frame(height: totalBarHeight(for: daily))
+            .shadow(color: color.opacity(0.2), radius: 2, y: 1)
         }
     }
     

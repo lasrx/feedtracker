@@ -61,11 +61,28 @@ struct PumpingView: View {
                                 .foregroundColor(.secondary)
                         }
                         
-                        // Progress bar (using same goal as feeding for now)
-                        ProgressView(value: viewModel.progressPercentage)
-                            .progressViewStyle(LinearProgressViewStyle())
-                            .scaleEffect(y: 1.5)
-                            .accentColor(.purple)
+                        // Progress bar with glass gradient
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                // Background track
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.regularMaterial)
+                                    .frame(height: 8)
+
+                                // Progress fill with gradient
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.purple, Color.purple.opacity(0.7)],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .frame(width: geometry.size.width * CGFloat(viewModel.progressPercentage), height: 8)
+                                    .shadow(color: Color.purple.opacity(0.3), radius: 4, y: 2)
+                            }
+                        }
+                        .frame(height: 8)
                     }
                     .padding(.vertical, 4)
                 }

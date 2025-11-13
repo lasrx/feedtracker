@@ -111,10 +111,28 @@ struct FeedEntryForm: View {
                         .foregroundColor(.secondary)
                 }
                 
-                // Progress bar
-                ProgressView(value: viewModel.progressPercentage)
-                    .progressViewStyle(LinearProgressViewStyle())
-                    .scaleEffect(y: FeedConstants.progressBarScaleY)
+                // Progress bar with glass gradient
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        // Background track
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(.regularMaterial)
+                            .frame(height: 8)
+
+                        // Progress fill with gradient
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: geometry.size.width * CGFloat(viewModel.progressPercentage), height: 8)
+                            .shadow(color: Color.accentColor.opacity(0.3), radius: 4, y: 2)
+                    }
+                }
+                .frame(height: 8)
                 
                 if let lastTime = viewModel.lastFeedTime {
                     let timeAgo = RelativeTimeFormatter.shared.string(from: lastTime)
