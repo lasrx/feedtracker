@@ -271,7 +271,7 @@ struct FeedEntryForm: View {
                             RoundedRectangle(cornerRadius: 25)
                                 .strokeBorder(viewModel.isWaste ? Color.orange.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1.5)
                         }
-                        .shadow(color: (viewModel.isWaste ? .orange : .accentColor).opacity(0.2), radius: 8, y: 4)
+                        .shadow(color: (viewModel.isWaste ? Color.orange : Color.accentColor).opacity(0.2), radius: 8, y: 4)
                 }
             }
             .buttonStyle(.plain)
