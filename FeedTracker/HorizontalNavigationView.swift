@@ -50,13 +50,20 @@ struct HorizontalNavigationView: View {
                 }
             }
             .simultaneousGesture(
-                DragGesture(minimumDistance: 25)
+                DragGesture(minimumDistance: 30)
                     .updating($dragOffset) { value, state, _ in
                         // Require strongly horizontal gestures to avoid interfering with volume drag
                         // Volume drag is typically more vertical or diagonal, navigation is horizontal
-                        let isStronglyHorizontal = abs(value.translation.width) > abs(value.translation.height) * 3.0
-                        let isLongEnough = abs(value.translation.width) > 30
-                        if isStronglyHorizontal && isLongEnough {
+                        let horizontalDistance = abs(value.translation.width)
+                        let verticalDistance = abs(value.translation.height)
+
+                        // Absolute exclusion: if vertical movement > 15px, this is likely volume adjustment
+                        let isLikelyVolumeGesture = verticalDistance > 15
+                        let isStronglyHorizontal = horizontalDistance > verticalDistance * 3.0
+                        let isLongEnough = horizontalDistance > 30
+
+                        if isStronglyHorizontal && isLongEnough && !isLikelyVolumeGesture {
+                            // Use full translation for natural feel (no dead-zone subtraction)
                             state = value.translation.width
                         }
                     }

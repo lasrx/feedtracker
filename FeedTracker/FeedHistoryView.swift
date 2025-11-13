@@ -471,14 +471,13 @@ struct FeedRowView: View {
             
             Spacer()
             
-            // Formula Type and waste indicator
+            // Formula Type and feed/waste indicator
             HStack {
-                if feed.isWaste {
-                    Image(systemName: "trash.circle.fill")
-                        .font(.title3)
-                        .foregroundColor(.orange)
-                        .symbolRenderingMode(.hierarchical)
-                }
+                Image(systemName: feed.isWaste ? "trash.circle.fill" : "drop.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(feed.isWaste ? .orange : .accentColor)
+                    .symbolRenderingMode(.hierarchical)
+
                 Text(feed.formulaType)
                     .font(.subheadline)
                     .foregroundColor(.primary)
