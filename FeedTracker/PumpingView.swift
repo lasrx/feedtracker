@@ -158,20 +158,22 @@ struct PumpingView: View {
                 
                 Section(header: Text("Quick Actions")) {
                     // Common volume buttons for quick entry
-                    VStack(spacing: 8) {
+                    VStack(spacing: 12) {
                         Text("Quick Volume Selection (mL)")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
-                        HStack(spacing: 8) {
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        HStack(spacing: 12) {
                             ForEach(viewModel.quickVolumes, id: \.self) { amount in
                                 Button(action: {
                                     viewModel.selectQuickVolume(amount)
                                 }) {
                                     Text("\(amount)")
-                                        .font(.system(size: 16, weight: .medium))
+                                        .font(.system(size: 16, weight: .semibold))
                                         .foregroundStyle(.primary)
-                                        .frame(width: 50, height: 40)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 40)
                                         .background {
                                             RoundedRectangle(cornerRadius: 12)
                                                 .fill(.regularMaterial)
@@ -184,12 +186,13 @@ struct PumpingView: View {
                                 .buttonStyle(.plain)
                             }
                         }
-                        
+
                         Text("Tip: Swipe up/down on volume field to adjust")
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding(.vertical, 2)
+                    .padding(.vertical, 8)
                 }
                 
             }

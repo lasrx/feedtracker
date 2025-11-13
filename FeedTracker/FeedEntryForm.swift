@@ -295,24 +295,23 @@ struct FeedEntryForm: View {
     
     private var quickActionsSection: some View {
         Section(header: Text("Quick Actions")) {
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 Text("Quick Volume Selection (mL)")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                
-                HStack(spacing: FeedConstants.pageIndicatorSpacing) {
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                HStack(spacing: 12) {
                     // Quick volume buttons
                     ForEach(viewModel.quickVolumes, id: \.self) { amount in
                         Button(action: {
                             viewModel.selectQuickVolume(amount)
                         }) {
                             Text(amount)
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.primary)
-                                .frame(
-                                    width: FeedConstants.quickVolumeButtonWidth,
-                                    height: FeedConstants.quickVolumeButtonHeight
-                                )
+                                .frame(maxWidth: .infinity)
+                                .frame(height: FeedConstants.quickVolumeButtonHeight)
                                 .background {
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(.regularMaterial)
@@ -324,14 +323,14 @@ struct FeedEntryForm: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    
                 }
-                
+
                 Text("Tip: Swipe up/down on volume field to adjust")
                     .font(.caption2)
                     .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, 8)
         }
     }
 }
