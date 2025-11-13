@@ -64,7 +64,7 @@ struct PumpingEditSheet: View {
             .navigationTitle("Edit Pumping Session")
             .navigationBarTitleDisplayMode(.inline)
             .scrollContentBackground(.hidden)
-            .background(.regularMaterial)
+            .presentationBackground(.ultraThinMaterial)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {

@@ -50,7 +50,7 @@ struct QuickVolumesEditorView: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .scrollContentBackground(.hidden)
-            .background(.regularMaterial)
+            .presentationBackground(.ultraThinMaterial)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {

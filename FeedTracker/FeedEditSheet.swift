@@ -122,7 +122,7 @@ struct FeedEditSheet: View {
             .navigationTitle("Edit Feed Entry")
             .navigationBarTitleDisplayMode(.inline)
             .scrollContentBackground(.hidden)
-            .background(.regularMaterial)
+            .presentationBackground(.ultraThinMaterial)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
