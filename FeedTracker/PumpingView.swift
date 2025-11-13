@@ -118,7 +118,7 @@ struct PumpingView: View {
                             if viewModel.isSubmitting {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle())
-                                    .tint(.white)
+                                    .tint(.purple)
                                 Text("Saving...")
                             } else {
                                 Image(systemName: "drop.triangle.fill")
@@ -126,14 +126,23 @@ struct PumpingView: View {
                                 Text("Log Pumping Session")
                             }
                         }
-                        .fontWeight(.medium)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.purple)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
+                        .background {
+                            RoundedRectangle(cornerRadius: 25)
+                                .fill(.regularMaterial)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .strokeBorder(Color.purple.opacity(0.3), lineWidth: 1.5)
+                                }
+                                .shadow(color: Color.purple.opacity(0.2), radius: 8, y: 4)
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
+                    .buttonStyle(.plain)
                     .disabled(!viewModel.isFormValid)
-                    .accentColor(.purple)
+                    .opacity(viewModel.isFormValid ? 1.0 : 0.5)
                     .scaleEffect(viewModel.isSubmitting ? 0.95 : 1.0)
                     .animation(.easeInOut(duration: 0.1), value: viewModel.isSubmitting)
                 }

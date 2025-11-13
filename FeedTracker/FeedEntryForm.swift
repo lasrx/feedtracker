@@ -252,7 +252,7 @@ struct FeedEntryForm: View {
                     if viewModel.isSubmitting {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle())
-                            .tint(.white)
+                            .tint(viewModel.isWaste ? .orange : .accentColor)
                         Text("Saving...")
                     } else {
                         Image(systemName: viewModel.isWaste ? "trash.circle.fill" : "plus.circle.fill")
@@ -260,14 +260,23 @@ struct FeedEntryForm: View {
                         Text(viewModel.isWaste ? "Log Waste Entry" : "Add Feed Entry")
                     }
                 }
-                .fontWeight(.medium)
+                .fontWeight(.semibold)
+                .foregroundStyle(viewModel.isWaste ? .orange : .accentColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: FeedConstants.submitButtonHeight)
+                .background {
+                    RoundedRectangle(cornerRadius: 25)
+                        .fill(.regularMaterial)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 25)
+                                .strokeBorder(viewModel.isWaste ? Color.orange.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1.5)
+                        }
+                        .shadow(color: (viewModel.isWaste ? .orange : .accentColor).opacity(0.2), radius: 8, y: 4)
+                }
             }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
-            .tint(viewModel.isWaste ? .orange : .accentColor)
+            .buttonStyle(.plain)
             .disabled(!viewModel.isFormValid)
+            .opacity(viewModel.isFormValid ? 1.0 : 0.5)
             .scaleEffect(viewModel.isSubmitting ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: viewModel.isSubmitting)
         }
