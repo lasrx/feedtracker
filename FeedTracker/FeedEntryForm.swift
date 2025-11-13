@@ -296,7 +296,7 @@ struct FeedEntryForm: View {
     // MARK: - Quick Actions Section
     
     private var quickActionsSection: some View {
-        Section(header: Text("Quick Actions")) {
+        Section {
             VStack(spacing: 12) {
                 Text("Quick Volume Selection (mL)")
                     .font(.caption)

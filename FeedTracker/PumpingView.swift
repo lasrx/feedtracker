@@ -158,7 +158,7 @@ struct PumpingView: View {
                     .animation(.easeInOut(duration: 0.1), value: viewModel.isSubmitting)
                 }
                 
-                Section(header: Text("Quick Actions")) {
+                Section {
                     // Common volume buttons for quick entry
                     VStack(spacing: 12) {
                         Text("Quick Volume Selection (mL)")
