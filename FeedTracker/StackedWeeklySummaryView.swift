@@ -125,7 +125,7 @@ struct StackedWeeklySummaryView: View {
                 ForEach(Array(daily.formulaBreakdown.enumerated()), id: \.offset) { index, formula in
                     let segmentHeight = calculateSegmentHeight(formula: formula, totalVolume: daily.totalVolume)
 
-                    RoundedRectangle(cornerRadius: index == 0 ? 3 : 0) // Only round the top segment
+                    RoundedRectangle(cornerRadius: index == 0 ? 1.5 : 0) // Only round the top segment
                         .fill(
                             LinearGradient(
                                 colors: [formula.color, formula.color.opacity(0.8)],
@@ -137,7 +137,7 @@ struct StackedWeeklySummaryView: View {
                         .overlay {
                             if index == 0 {
                                 // Subtle highlight on top segment
-                                RoundedRectangle(cornerRadius: 3)
+                                RoundedRectangle(cornerRadius: 1.5)
                                     .fill(
                                         LinearGradient(
                                             colors: [Color.white.opacity(0.3), Color.clear],
