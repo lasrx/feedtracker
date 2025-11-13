@@ -114,10 +114,14 @@ struct FeedEntryForm: View {
                 // Progress bar with glass gradient
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
-                        // Background track
+                        // Background track with visible tint
                         RoundedRectangle(cornerRadius: 4)
                             .fill(.regularMaterial)
-                            .frame(height: 8)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.secondary.opacity(0.15))
+                            }
+                            .frame(width: geometry.size.width, height: 8)
 
                         // Progress fill with gradient
                         RoundedRectangle(cornerRadius: 4)
