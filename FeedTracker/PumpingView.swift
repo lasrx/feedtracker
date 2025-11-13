@@ -171,7 +171,7 @@ struct PumpingView: View {
                                 }) {
                                     Text("\(amount)")
                                         .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(.white)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 40)
                                         .background {
@@ -179,8 +179,13 @@ struct PumpingView: View {
                                                 .fill(.regularMaterial)
                                                 .overlay {
                                                     RoundedRectangle(cornerRadius: 12)
-                                                        .strokeBorder(Color.purple.opacity(0.3), lineWidth: 1)
+                                                        .fill(Color.purple.opacity(0.7))
                                                 }
+                                                .overlay {
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .strokeBorder(Color.purple.opacity(0.5), lineWidth: 1)
+                                                }
+                                                .shadow(color: Color.purple.opacity(0.2), radius: 4, y: 2)
                                         }
                                 }
                                 .buttonStyle(.plain)
