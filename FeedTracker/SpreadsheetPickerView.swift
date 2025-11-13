@@ -39,6 +39,7 @@ struct SpreadsheetPickerView: View {
         .navigationTitle("Select Spreadsheet")
         .scrollContentBackground(.hidden)
         .presentationBackground(.ultraThinMaterial)
+        .presentationDetents([.large])
         .onAppear {
             loadSpreadsheets()
         }
