@@ -393,6 +393,7 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .scrollContentBackground(.hidden)
             .presentationBackground(.ultraThinMaterial)
+            .presentationDetents([.large])
             .alert("Edit Spreadsheet ID", isPresented: $showingSpreadsheetIdAlert) {
                 TextField("Spreadsheet ID", text: $tempSpreadsheetId)
                 Button("Cancel", role: .cancel) { }
