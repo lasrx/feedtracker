@@ -47,6 +47,8 @@ struct FormulaTypesEditorView: View {
             }
             .navigationTitle("Formula Types")
             .navigationBarTitleDisplayMode(.inline)
+            .scrollContentBackground(.hidden)
+            .background(.regularMaterial)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {

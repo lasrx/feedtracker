@@ -391,6 +391,8 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
+            .scrollContentBackground(.hidden)
+            .background(.regularMaterial)
             .alert("Edit Spreadsheet ID", isPresented: $showingSpreadsheetIdAlert) {
                 TextField("Spreadsheet ID", text: $tempSpreadsheetId)
                 Button("Cancel", role: .cancel) { }
