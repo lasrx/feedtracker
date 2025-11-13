@@ -389,12 +389,13 @@ struct PumpingRowView: View {
                 Text(session.time)
                     .font(.headline)
                     .fontWeight(.medium)
-                
+                    .fixedSize(horizontal: true, vertical: false)
+
                 Text(timeAgo)
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
-            .frame(width: 60, alignment: .leading)
+            .frame(minWidth: 70, alignment: .leading)
             
             // Volume
             VStack(spacing: 2) {
