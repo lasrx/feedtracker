@@ -72,7 +72,29 @@ SwiftUI iOS app for baby feeding tracking with Google Sheets integration. See RE
 **List transitions**: Asymmetric slide + fade animations for feed/pumping entries
 **Deployment target**: Maintains iOS 18.5+ support while optimizing for iOS 26
 
-### App Lifecycle Management  
+### ⚠️ CRITICAL: Gesture Hierarchy System
+**DO NOT modify gesture types without understanding the priority system!**
+
+The app uses a carefully designed gesture hierarchy to allow three competing gestures:
+1. **List swipe actions** (edit/delete) - HIGHEST priority
+2. **Navigation gestures** (pane swapping) - MEDIUM priority
+3. **Volume drag** (vertical adjustment) - Protected by exclusion logic
+
+**Implementation:**
+- `HorizontalNavigationView.swift:52` - Uses `.gesture()` with 30px minimum
+- `FeedHistoryView.swift:173` - Uses `.simultaneousGesture()` with 10px minimum
+- `PumpingHistoryView.swift:166` - Uses `.simultaneousGesture()` with 10px minimum
+
+**Why this matters:**
+- `.gesture()` = higher priority gesture
+- `.simultaneousGesture()` = can compete with other gestures
+- If navigation uses `.simultaneousGesture()`, both gestures compete equally and navigation's 30px threshold wins over list's 10px, breaking edit/delete swipes
+
+**Reference commits:**
+- `ed11ded` - Original gesture hierarchy solution
+- `78c7366` - Fix for regression when accidentally changed to `.simultaneousGesture()`
+
+### App Lifecycle Management
 **Background/Foreground handling**: NotificationCenter observers in all entry views
 **1-hour refresh threshold**: Interface auto-resets after extended absence
 **Time tracking**: ViewModels track `lastActiveTime` for smart refresh decisions

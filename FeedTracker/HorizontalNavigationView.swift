@@ -49,6 +49,18 @@ struct HorizontalNavigationView: View {
                     pumpingHistoryViewTrigger += 1
                 }
             }
+            // ⚠️ CRITICAL GESTURE HIERARCHY - DO NOT CHANGE TO .simultaneousGesture()
+            // This MUST be .gesture() (not .simultaneousGesture()) to maintain proper gesture priorities:
+            //
+            // Priority Hierarchy:
+            // 1. List swipe actions (.simultaneousGesture, 10px min) - HIGHEST priority for edit/delete
+            // 2. Navigation gestures (.gesture, 30px min) - MEDIUM priority for pane swapping
+            // 3. Volume drag (15px vertical exclusion) - Protected by directional logic
+            //
+            // Using .simultaneousGesture() here breaks list swipes because both gestures compete equally
+            // and navigation's 30px threshold wins. See commit ed11ded for original solution.
+            //
+            // Related files: FeedHistoryView.swift:173, PumpingHistoryView.swift:166
             .gesture(
                 DragGesture(minimumDistance: 30)
                     .updating($dragOffset) { value, state, _ in

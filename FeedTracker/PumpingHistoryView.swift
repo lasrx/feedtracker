@@ -163,10 +163,13 @@ struct PumpingHistoryView: View {
                             }
                     }
                     .listStyle(PlainListStyle())
+                    // ⚠️ GESTURE HIERARCHY: This .simultaneousGesture() works with HorizontalNavigationView's .gesture()
+                    // DO NOT change HorizontalNavigationView to .simultaneousGesture() or list swipes will break
+                    // See HorizontalNavigationView.swift:52 for full explanation
                     .simultaneousGesture(
                         DragGesture(minimumDistance: 10)
                             .onChanged { _ in
-                                // This gesture will compete with navigation for List area
+                                // This gesture competes with navigation to prioritize list swipe actions
                             }
                     )
                 }
