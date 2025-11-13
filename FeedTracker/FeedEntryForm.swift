@@ -73,21 +73,30 @@ struct FeedEntryForm: View {
     
     private var signInPromptSection: some View {
         Section {
-            VStack(spacing: 8) {
-                Image(systemName: "person.badge.key")
-                    .font(.largeTitle)
-                    .foregroundColor(.secondary)
-                    .symbolRenderingMode(.hierarchical)
-                Text("Sign in to Google to save feeds")
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                Text("Tap the settings gear above to sign in")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
+            Button(action: {
+                Task {
+                    try? await storageService.signIn()
+                }
+            }) {
+                VStack(spacing: 8) {
+                    Image(systemName: "person.badge.key")
+                        .font(.largeTitle)
+                        .foregroundColor(.accentColor)
+                        .symbolRenderingMode(.hierarchical)
+                        .symbolEffect(.bounce, options: .repeating.speed(0.5))
+                    Text("Sign in to Google to save feeds")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .multilineTextAlignment(.center)
+                    Text("Tap here to sign in")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 16)
-            .frame(maxWidth: .infinity)
+            .buttonStyle(.plain)
         }
     }
     

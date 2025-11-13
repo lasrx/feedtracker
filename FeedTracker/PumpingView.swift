@@ -24,21 +24,30 @@ struct PumpingView: View {
                 // Sign-in prompt if not signed in
                 if !storageService.isSignedIn {
                     Section {
-                        VStack(spacing: 8) {
-                            Image(systemName: "drop.triangle")
-                                .font(.largeTitle)
-                                .foregroundColor(.secondary)
-                                .symbolRenderingMode(.hierarchical)
-                            Text("Sign in to save pumping sessions")
-                                .font(.headline)
-                                .multilineTextAlignment(.center)
-                            Text("Tap the settings gear to sign in")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
+                        Button(action: {
+                            Task {
+                                try? await storageService.signIn()
+                            }
+                        }) {
+                            VStack(spacing: 8) {
+                                Image(systemName: "drop.triangle")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.purple)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .symbolEffect(.bounce, options: .repeating.speed(0.5))
+                                Text("Sign in to save pumping sessions")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                    .multilineTextAlignment(.center)
+                                Text("Tap here to sign in")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.vertical, 16)
+                            .frame(maxWidth: .infinity)
                         }
-                        .padding(.vertical, 16)
-                        .frame(maxWidth: .infinity)
+                        .buttonStyle(.plain)
                     }
                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                 }
