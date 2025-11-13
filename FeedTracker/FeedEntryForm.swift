@@ -261,7 +261,7 @@ struct FeedEntryForm: View {
                     }
                 }
                 .fontWeight(.semibold)
-                .foregroundStyle(.white)
+                .foregroundStyle(viewModel.isFormValid ? .white : .secondary)
                 .frame(maxWidth: .infinity)
                 .frame(height: FeedConstants.submitButtonHeight)
                 .background {
@@ -271,13 +271,13 @@ struct FeedEntryForm: View {
                             RoundedRectangle(cornerRadius: 25)
                                 .fill(viewModel.isFormValid ?
                                       (viewModel.isWaste ? Color.orange : Color.accentColor).opacity(0.7) :
-                                      Color.gray.opacity(0.3))
+                                      Color.gray.opacity(0.15))
                         }
                         .overlay {
                             RoundedRectangle(cornerRadius: 25)
                                 .strokeBorder(viewModel.isFormValid ?
                                               (viewModel.isWaste ? Color.orange : Color.accentColor).opacity(0.5) :
-                                              Color.gray.opacity(0.3), lineWidth: 1)
+                                              Color.secondary.opacity(0.2), lineWidth: 1)
                         }
                         .shadow(color: viewModel.isFormValid ?
                                 (viewModel.isWaste ? Color.orange : Color.accentColor).opacity(0.3) :
