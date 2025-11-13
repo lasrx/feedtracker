@@ -175,13 +175,18 @@ struct FeedEntryForm: View {
                 }) {
                     Text("Feed")
                         .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(viewModel.isWaste ? .secondary : .white)
-                        .frame(width: 40, height: 26)
-                        .background(viewModel.isWaste ? Color.clear : .accentColor)
+                        .fontWeight(.semibold)
+                        .foregroundColor(viewModel.isWaste ? .primary : .white)
+                        .frame(width: 45, height: 28)
+                        .background {
+                            if !viewModel.isWaste {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.accentColor.opacity(0.8))
+                            }
+                        }
                 }
                 .buttonStyle(PlainButtonStyle())
-                
+
                 Button(action: {
                     if !viewModel.isWaste {
                         viewModel.toggleWasteMode()
@@ -189,15 +194,27 @@ struct FeedEntryForm: View {
                 }) {
                     Text("Waste")
                         .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(viewModel.isWaste ? .white : .secondary)
-                        .frame(width: 40, height: 26)
-                        .background(viewModel.isWaste ? Color.orange : Color.clear)
+                        .fontWeight(.semibold)
+                        .foregroundColor(viewModel.isWaste ? .white : .primary)
+                        .frame(width: 45, height: 28)
+                        .background {
+                            if viewModel.isWaste {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.orange.opacity(0.8))
+                            }
+                        }
                 }
                 .buttonStyle(PlainButtonStyle())
             }
-            .background(Color(.systemGray5))
-            .cornerRadius(8)
+            .background {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(.regularMaterial)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(Color.secondary.opacity(0.2), lineWidth: 1)
+                    }
+            }
+            .padding(2)
             
             Spacer()
             
