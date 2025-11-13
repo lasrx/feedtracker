@@ -261,7 +261,7 @@ struct FeedEntryForm: View {
                     }
                 }
                 .fontWeight(.semibold)
-                .foregroundStyle(viewModel.isWaste ? .orange : .accentColor)
+                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: FeedConstants.submitButtonHeight)
                 .background {
@@ -269,9 +269,13 @@ struct FeedEntryForm: View {
                         .fill(.regularMaterial)
                         .overlay {
                             RoundedRectangle(cornerRadius: 25)
-                                .strokeBorder(viewModel.isWaste ? Color.orange.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1.5)
+                                .fill((viewModel.isWaste ? Color.orange : Color.accentColor).opacity(0.7))
                         }
-                        .shadow(color: (viewModel.isWaste ? Color.orange : Color.accentColor).opacity(0.2), radius: 8, y: 4)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 25)
+                                .strokeBorder((viewModel.isWaste ? Color.orange : Color.accentColor).opacity(0.5), lineWidth: 1)
+                        }
+                        .shadow(color: (viewModel.isWaste ? Color.orange : Color.accentColor).opacity(0.3), radius: 8, y: 4)
                 }
             }
             .buttonStyle(.plain)

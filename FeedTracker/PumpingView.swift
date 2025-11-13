@@ -127,7 +127,7 @@ struct PumpingView: View {
                             }
                         }
                         .fontWeight(.semibold)
-                        .foregroundStyle(.purple)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .background {
@@ -135,9 +135,13 @@ struct PumpingView: View {
                                 .fill(.regularMaterial)
                                 .overlay {
                                     RoundedRectangle(cornerRadius: 25)
-                                        .strokeBorder(Color.purple.opacity(0.3), lineWidth: 1.5)
+                                        .fill(Color.purple.opacity(0.7))
                                 }
-                                .shadow(color: Color.purple.opacity(0.2), radius: 8, y: 4)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .strokeBorder(Color.purple.opacity(0.5), lineWidth: 1)
+                                }
+                                .shadow(color: Color.purple.opacity(0.3), radius: 8, y: 4)
                         }
                     }
                     .buttonStyle(.plain)
