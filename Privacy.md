@@ -1,7 +1,6 @@
 # MiniLog – Feed Tracker - Privacy Policy
 
-**Last Updated:** November 21, 2025
-**Effective Date:** September 3, 2025
+**Effective:** September 3, 2025 | **Updated:** November 21, 2025
 
 ## Overview
 
@@ -190,4 +189,4 @@ MiniLog requests permissions in two tiers:
 
 ---
 
-*Last Updated: November 21, 2025*
+*Effective: September 3, 2025 | Updated: November 21, 2025*
