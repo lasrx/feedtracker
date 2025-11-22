@@ -46,6 +46,51 @@ MiniLog collects only the information you explicitly enter:
 - Usage analytics or crash reports
 - Any data outside of what you explicitly enter
 
+## How We Use Google User Data
+
+**MiniLog's use of information received from Google APIs will adhere to [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.**
+
+### Specific Uses of Google User Data
+
+**Google Sign-In (Authentication):**
+- **Data Accessed:** Your email address and basic profile information
+- **Purpose:** To authenticate you and identify your Google account
+- **Usage:** Email is displayed in Settings to show which account is connected; not stored on our servers or shared with third parties
+- **Storage:** Authentication tokens are stored securely on your device by Google's official SDK
+
+**Google Sheets API:**
+- **Data Accessed:** Contents of spreadsheets you explicitly select or create with our app
+- **Purpose:** To read existing feeding data and write new feeding/pumping entries
+- **Usage:** Data flows directly between your device and Google's servers; we never store or access your spreadsheet data on our servers
+- **Storage:** Spreadsheet data remains in your Google account; we only store the spreadsheet ID locally on your device for quick access
+
+**Google Drive API (drive.file scope):**
+- **Data Accessed:** Files created by MiniLog in your Google Drive
+- **Purpose:** To create new tracking spreadsheets with proper column headers
+- **Usage:** Limited to creating and accessing only files that MiniLog creates; cannot access other files in your Drive
+- **Storage:** Files are stored in your Google Drive; we have no server-side storage
+
+**Google Drive API (drive.readonly scope - optional):**
+- **Data Accessed:** List of spreadsheets in your Google Drive (filename and modification date only)
+- **Purpose:** To help you find and connect to existing tracking spreadsheets shared by other users (e.g., shared between two parents)
+- **Usage:** Read-only access for browsing only; filtered to show spreadsheets with "tracker" in the name; you must explicitly select which spreadsheet to connect
+- **Storage:** Spreadsheet list is not stored; only the ID of your selected spreadsheet is saved locally on your device
+
+### Data Use Limitations
+
+**We use Google user data ONLY for the following purposes:**
+1. Authenticating you to access Google Sheets
+2. Writing feeding and pumping data you enter to your selected Google Sheet
+3. Reading your existing feeding data to display totals and analytics
+4. Creating new tracking spreadsheets in your Google Drive when requested
+5. Browsing your spreadsheets to help you connect to shared tracking sheets
+
+**We do NOT use Google user data for:**
+- Advertising or marketing purposes
+- Training machine learning models
+- Sharing with third parties (except as required to provide the service via Google's APIs)
+- Any purpose not directly related to the core feeding tracking functionality
+
 ## Third-Party Services
 
 ### Google Services
