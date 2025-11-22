@@ -1,6 +1,6 @@
 # MiniLog – Feed Tracker - Privacy Policy
 
-**Last Updated:** September 3, 2025  
+**Last Updated:** November 21, 2025
 **Effective Date:** September 3, 2025
 
 ## Overview
@@ -94,23 +94,7 @@ MiniLog collects only the information you explicitly enter:
 ## Third-Party Services
 
 ### Google Services
-MiniLog integrates with Google services for core functionality:
-
-**Google Sign-In:**
-- Used for authentication to access Google Sheets
-- Governed by [Google's Privacy Policy](https://policies.google.com/privacy)
-- We only request minimal scopes necessary for spreadsheet access
-
-**Google Sheets API:**
-- Used to read and write feeding data to your spreadsheets
-- Data flows directly between your device and Google's servers
-- We cannot access your spreadsheets or Google account data
-
-**Google Drive API (Limited):**
-- Used to create new tracking spreadsheets within your Google Drive
-- Used to browse existing spreadsheets for selection via SpreadsheetPickerView
-- Limited to `drive.file` scope (only accesses files created by the app)
-- Cannot access or modify files not created by MiniLog
+MiniLog integrates with Google services for core functionality. All Google services are governed by [Google's Privacy Policy](https://policies.google.com/privacy) and [Google Cloud Privacy](https://cloud.google.com/privacy).
 
 ## Siri and Voice Data
 
@@ -206,4 +190,4 @@ MiniLog requests permissions in two tiers:
 
 ---
 
-*Last Updated: September 3, 2025*
+*Last Updated: November 21, 2025*
