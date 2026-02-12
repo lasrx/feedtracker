@@ -111,8 +111,7 @@ The app uses a carefully designed gesture hierarchy to allow three competing ges
 - Feed Log: A=Date, B=Time, C=Volume, D=Formula Type, E=Waste Amount  
 - Pumping: A=Date, B=Time, C=Volume
 
-**OAuth Scopes**: `spreadsheets` + `drive.file` (base), `drive.readonly` (optional for spreadsheet browsing)
-**Smart Filtering**: SpreadsheetPickerView automatically filters to show only sheets with "tracker" in name
+**OAuth Scopes**: `spreadsheets` only (sensitive scope, no restricted Drive scopes needed)
 
 ## 🔒 SECURITY SYSTEM - CRITICAL FOR AI ASSISTANTS
 
@@ -148,7 +147,6 @@ The app uses a carefully designed gesture hierarchy to allow three competing ges
 - `StorageService.swift`: Protocol definitions and caching infrastructure
 - `FeedConstants.swift`: Centralized defaults, user preferences, and UI constants
 - `SwipeActionsView.swift`: Generic reusable UI components
-- `SpreadsheetPickerView.swift`: Google Sheets browser with smart filtering and `.large` detent
 - `FormulaTypesEditorView.swift`: iOS-native list editor with `.medium` detent and glass styling
 - `QuickVolumesEditorView.swift`: Volume preset editor with `.medium` detent and glass styling
 - `FeedEditSheet.swift` / `PumpingEditSheet.swift`: Modal editors with `.medium` detent and ultraThinMaterial

@@ -24,7 +24,7 @@ struct StackedWeeklySummaryView: View {
                 
                 Text(trendText)
                     .font(.caption)
-                    .foregroundColor(trendColor)
+                    .foregroundStyle(trendColor)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
                     .background(trendColor.opacity(0.1))
@@ -41,14 +41,14 @@ struct StackedWeeklySummaryView: View {
                         // Day label
                         Text(daily.dayName)
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         
                         // Volume label (only show if > 0)
                         if daily.totalVolume > 0 {
                             Text("\(daily.totalVolume)")
                                 .font(.caption2)
                                 .fontWeight(.medium)
-                                .foregroundColor(color)
+                                .foregroundStyle(color)
                         }
                     }
                 }
@@ -64,7 +64,7 @@ struct StackedWeeklySummaryView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Weekly Avg")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text("\(weeklyAverage) mL")
                         .font(.caption)
                         .fontWeight(.medium)
@@ -73,7 +73,7 @@ struct StackedWeeklySummaryView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Best Day")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text(bestDayText)
                         .font(.caption)
                         .fontWeight(.medium)
@@ -84,11 +84,11 @@ struct StackedWeeklySummaryView: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("vs Today")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text(comparisonText)
                         .font(.caption)
                         .fontWeight(.medium)
-                        .foregroundColor(comparisonColor)
+                        .foregroundStyle(comparisonColor)
                 }
             }
         }
@@ -166,7 +166,7 @@ struct StackedWeeklySummaryView: View {
                     
                     Text(formulaType)
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
         }

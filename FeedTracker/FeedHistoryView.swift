@@ -27,7 +27,7 @@ struct FeedHistoryView: View {
                             
                             Text(Date(), style: .date)
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         
                         Spacer()
@@ -36,11 +36,11 @@ struct FeedHistoryView: View {
                             Text("\(totalVolume) mL")
                                 .font(.title)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.accentColor)
+                                .foregroundStyle(Color.accentColor)
                             
                             Text("\(todayFeeds.count) feeds")
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     .padding(.horizontal)
@@ -55,7 +55,7 @@ struct FeedHistoryView: View {
                                     .fontWeight(.medium)
                                 Text("Avg Volume")
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                             
                             VStack {
@@ -64,7 +64,7 @@ struct FeedHistoryView: View {
                                     .fontWeight(.medium)
                                 Text("Since Last")
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                             
                             VStack {
@@ -73,17 +73,17 @@ struct FeedHistoryView: View {
                                     .fontWeight(.medium)
                                 Text("Most Used")
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                             
                             VStack {
                                 Text(totalWastedVolume)
                                     .font(.headline)
                                     .fontWeight(.medium)
-                                    .foregroundColor(.orange)
+                                    .foregroundStyle(.orange)
                                 Text("Wasted")
                                     .font(.caption2)
-                                    .foregroundColor(.orange)
+                                    .foregroundStyle(.orange)
                             }
                         }
                         .padding(.bottom)
@@ -121,15 +121,15 @@ struct FeedHistoryView: View {
                     VStack(spacing: 16) {
                         Image(systemName: "drop.circle")
                             .font(.system(size: 60))
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                             .symbolRenderingMode(.hierarchical)
                             .symbolEffect(.pulse.byLayer, options: .repeating)
                         Text("No feeds logged today")
                             .font(.headline)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         Text("Swipe right to log your first feed")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     Spacer()
                 } else {
@@ -456,7 +456,7 @@ struct FeedRowView: View {
 
                 Text(timeAgo)
                     .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             .frame(minWidth: 70, alignment: .leading)
 
@@ -465,11 +465,11 @@ struct FeedRowView: View {
                 Text("\(feed.actualVolume)")
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(feed.isWaste ? .orange : .accentColor)
+                    .foregroundStyle(feed.isWaste ? .orange : Color.accentColor)
 
                 Text(feed.isWaste ? "waste" : "mL")
                     .font(.caption2)
-                    .foregroundColor(feed.isWaste ? .orange : .secondary)
+                    .foregroundStyle(feed.isWaste ? Color.orange : Color.secondary)
             }
             .frame(width: 50)
 
@@ -479,12 +479,12 @@ struct FeedRowView: View {
             HStack(spacing: 6) {
                 Image(systemName: feed.isWaste ? "trash.circle.fill" : "drop.circle.fill")
                     .font(.title3)
-                    .foregroundColor(feed.isWaste ? .orange : .accentColor)
+                    .foregroundStyle(feed.isWaste ? .orange : Color.accentColor)
                     .symbolRenderingMode(.hierarchical)
 
                 Text(feed.formulaType)
                     .font(.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.trailing)
                     .lineLimit(1)
             }

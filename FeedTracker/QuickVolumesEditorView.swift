@@ -32,9 +32,9 @@ struct QuickVolumesEditorView: View {
                     }) {
                         HStack {
                             Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.green)
+                                .foregroundStyle(.green)
                             Text("Add Volume")
-                                .foregroundColor(.primary)
+                                .foregroundStyle(.primary)
                         }
                     }
                 } header: {

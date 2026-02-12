@@ -30,9 +30,9 @@ struct FormulaTypesEditorView: View {
                     }) {
                         HStack {
                             Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.green)
+                                .foregroundStyle(.green)
                             Text("Add Formula Type")
-                                .foregroundColor(.primary)
+                                .foregroundStyle(.primary)
                         }
                     }
                 } header: {

@@ -44,7 +44,7 @@ struct PumpingEditSheet: View {
                         HStack {
                             Button("-", action: decreaseVolume)
                                 .buttonStyle(PlainButtonStyle())
-                                .foregroundColor(.purple)
+                                .foregroundStyle(.purple)
                             
                             Text("\(volume)")
                                 .font(.title2)
@@ -52,11 +52,11 @@ struct PumpingEditSheet: View {
                                 .frame(minWidth: 50)
                             
                             Text("mL")
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                             
                             Button("+", action: increaseVolume)
                                 .buttonStyle(PlainButtonStyle())
-                                .foregroundColor(.purple)
+                                .foregroundStyle(.purple)
                         }
                     }
                 }

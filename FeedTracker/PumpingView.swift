@@ -32,16 +32,16 @@ struct PumpingView: View {
                             VStack(spacing: 8) {
                                 Image(systemName: "drop.triangle")
                                     .font(.largeTitle)
-                                    .foregroundColor(.purple)
+                                    .foregroundStyle(.purple)
                                     .symbolRenderingMode(.hierarchical)
                                     .symbolEffect(.bounce, options: .repeating.speed(0.5))
                                 Text("Sign in to save pumping sessions")
                                     .font(.headline)
-                                    .foregroundColor(.primary)
+                                    .foregroundStyle(.primary)
                                     .multilineTextAlignment(.center)
                                 Text("Tap here to sign in")
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
                             .padding(.vertical, 16)
@@ -63,11 +63,11 @@ struct PumpingView: View {
                             Text("\(viewModel.totalVolumeToday) mL")
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
-                                .foregroundColor(.purple)
+                                .foregroundStyle(.purple)
                             
                             Text("pumped")
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         
                         // Progress bar with glass gradient
@@ -124,7 +124,7 @@ struct PumpingView: View {
                             if viewModel.isDragging {
                                 Text("\(viewModel.dragStartVolume)")
                                     .font(.system(size: 32, weight: .bold))
-                                    .foregroundColor(.purple)
+                                    .foregroundStyle(.purple)
                                     .frame(width: 120, height: 60)
                                     .background(Color.purple.opacity(0.1))
                                     .cornerRadius(8)
@@ -137,7 +137,7 @@ struct PumpingView: View {
                             }
                             
                             Text("mL")
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         .highPriorityGesture(volumeDragGesture)
                     }
@@ -159,7 +159,7 @@ struct PumpingView: View {
                             }
                         }
                         .fontWeight(.semibold)
-                        .foregroundStyle(viewModel.isFormValid ? .white : .secondary)
+                        .foregroundStyle(viewModel.isFormValid ? Color.white : Color.secondary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .background {
@@ -193,7 +193,7 @@ struct PumpingView: View {
                     VStack(spacing: 12) {
                         Text("Quick Volume Selection (mL)")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 12) {
@@ -226,7 +226,7 @@ struct PumpingView: View {
 
                         Text("Tip: Swipe up/down on volume field to adjust")
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.vertical, 8)

@@ -756,78 +756,10 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     
     // MARK: - Storage Management
     
-    /// Requests additional Drive scope for accessing existing spreadsheets
-    /// This is optional - users can still use the app without this permission
-    func requestDriveReadAccess() async throws {
-        guard let user = GIDSignIn.sharedInstance.currentUser else {
-            throw StorageServiceError.notSignedIn
-        }
-        
-        // Check if we already have the required scope
-        let driveReadScope = "https://www.googleapis.com/auth/drive.readonly"
-        if user.grantedScopes?.contains(driveReadScope) == true {
-            return // Already have permission
-        }
-        
-        // Request additional scope for Drive access
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootViewController = windowScene.windows.first?.rootViewController else {
-            throw StorageServiceError.configurationInvalid
-        }
-        
-        do {
-            _ = try await user.addScopes([driveReadScope], presenting: rootViewController)
-        } catch {
-            throw StorageServiceError.authenticationFailed(error)
-        }
-    }
-    
     func fetchAvailableStorageOptions() async throws -> [StorageOption] {
-        // First, ensure we have the necessary permissions
-        try await requestDriveReadAccess()
-        
-        return try await performAuthenticatedRequest { accessToken in
-            let urlString = "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc"
-            guard let url = URL(string: urlString) else {
-                throw StorageServiceError.configurationInvalid
-            }
-            
-            var request = URLRequest(url: url)
-            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
-            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let files = json["files"] as? [[String: Any]] else {
-                return []
-            }
-            
-            let storageOptions: [StorageOption] = files.compactMap { file in
-                guard let id = file["id"] as? String,
-                      let name = file["name"] as? String else {
-                    return nil
-                }
-                
-                let modifiedTime = file["modifiedTime"] as? String
-                return StorageOption(
-                    id: id,
-                    name: name,
-                    provider: .googleSheets,
-                    lastModified: modifiedTime
-                )
-            }
-            
-            
-            return storageOptions
-        }
+        // Drive browsing removed to eliminate restricted OAuth scopes (drive.readonly/drive.file).
+        // Users can connect existing sheets via "Paste Link or ID" in Settings.
+        return []
     }
     
     func createNewStorage(title: String) async throws -> String {

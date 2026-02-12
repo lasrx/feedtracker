@@ -57,9 +57,9 @@ struct FeedEditSheet: View {
                                 Text("Feed")
                                     .font(.caption)
                                     .fontWeight(.medium)
-                                    .foregroundColor(isWaste ? .secondary : .white)
+                                    .foregroundStyle(isWaste ? Color.secondary : Color.white)
                                     .frame(width: 40, height: 26)
-                                    .background(isWaste ? Color.clear : .accentColor)
+                                    .background(isWaste ? Color.clear : Color.accentColor)
                             }
                             .buttonStyle(PlainButtonStyle())
                             
@@ -71,7 +71,7 @@ struct FeedEditSheet: View {
                                 Text("Waste")
                                     .font(.caption)
                                     .fontWeight(.medium)
-                                    .foregroundColor(isWaste ? .white : .secondary)
+                                    .foregroundStyle(isWaste ? Color.white : Color.secondary)
                                     .frame(width: 40, height: 26)
                                     .background(isWaste ? Color.orange : Color.clear)
                             }
@@ -89,13 +89,13 @@ struct FeedEditSheet: View {
                                     .font(.system(size: 16, weight: .medium))
                             }
                             .buttonStyle(PlainButtonStyle())
-                            .foregroundColor(isWaste ? .orange : .accentColor)
+                            .foregroundStyle(isWaste ? .orange : Color.accentColor)
                             .frame(width: 32, height: 32)
                             
                             Text("\(volume)")
                                 .font(.title2)
                                 .fontWeight(.medium)
-                                .foregroundColor(isWaste ? .orange : .accentColor)
+                                .foregroundStyle(isWaste ? .orange : Color.accentColor)
                                 .frame(minWidth: 50)
                             
                             Button(action: increaseVolume) {
@@ -103,7 +103,7 @@ struct FeedEditSheet: View {
                                     .font(.system(size: 16, weight: .medium))
                             }
                             .buttonStyle(PlainButtonStyle())
-                            .foregroundColor(isWaste ? .orange : .accentColor)
+                            .foregroundStyle(isWaste ? .orange : Color.accentColor)
                             .frame(width: 32, height: 32)
                         }
                     }

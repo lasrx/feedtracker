@@ -23,11 +23,11 @@ struct PumpingHistoryView: View {
                             Text("Pump Overview")
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
-                                .foregroundColor(.purple)
+                                .foregroundStyle(.purple)
                             
                             Text(Date(), style: .date)
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         
                         Spacer()
@@ -36,11 +36,11 @@ struct PumpingHistoryView: View {
                             Text("\(totalVolume) mL")
                                 .font(.title)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.purple)
+                                .foregroundStyle(.purple)
                             
                             Text("\(todayPumpingSessions.count) sessions")
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     .padding(.horizontal)
@@ -53,30 +53,30 @@ struct PumpingHistoryView: View {
                                 Text(averageVolume)
                                     .font(.headline)
                                     .fontWeight(.medium)
-                                    .foregroundColor(.purple)
+                                    .foregroundStyle(.purple)
                                 Text("Avg Volume")
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                             
                             VStack {
                                 Text(timeSinceLastSession)
                                     .font(.headline)
                                     .fontWeight(.medium)
-                                    .foregroundColor(.purple)
+                                    .foregroundStyle(.purple)
                                 Text("Since Last")
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                             
                             VStack {
                                 Text(totalSessions)
                                     .font(.headline)
                                     .fontWeight(.medium)
-                                    .foregroundColor(.purple)
+                                    .foregroundStyle(.purple)
                                 Text("Sessions")
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                         .padding(.bottom)
@@ -107,22 +107,22 @@ struct PumpingHistoryView: View {
                 if isLoading {
                     Spacer()
                     ProgressView("Loading today's sessions...")
-                        .foregroundColor(.purple)
+                        .foregroundStyle(.purple)
                     Spacer()
                 } else if todayPumpingSessions.isEmpty {
                     Spacer()
                     VStack(spacing: 16) {
                         Image(systemName: "drop.triangle")
                             .font(.system(size: 60))
-                            .foregroundColor(.purple.opacity(0.6))
+                            .foregroundStyle(.purple.opacity(0.6))
                             .symbolRenderingMode(.hierarchical)
                             .symbolEffect(.pulse.byLayer, options: .repeating)
                         Text("No pumping sessions today")
                             .font(.headline)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         Text("Swipe left to log your first session")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     Spacer()
                 } else {
@@ -396,7 +396,7 @@ struct PumpingRowView: View {
 
                 Text(timeAgo)
                     .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             .frame(minWidth: 70, alignment: .leading)
             
@@ -405,11 +405,11 @@ struct PumpingRowView: View {
                 Text("\(session.volume)")
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(.purple)
+                    .foregroundStyle(.purple)
                 
                 Text("mL")
                     .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             .frame(width: 50)
             
@@ -418,7 +418,7 @@ struct PumpingRowView: View {
             // Pumping icon
             Image(systemName: "drop.triangle.fill")
                 .font(.title2)
-                .foregroundColor(.purple.opacity(0.6))
+                .foregroundStyle(.purple.opacity(0.6))
                 .symbolRenderingMode(.hierarchical)
         }
         .padding(.vertical, 4)

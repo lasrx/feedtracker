@@ -81,16 +81,16 @@ struct FeedEntryForm: View {
                 VStack(spacing: 8) {
                     Image(systemName: "person.badge.key")
                         .font(.largeTitle)
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                         .symbolRenderingMode(.hierarchical)
                         .symbolEffect(.bounce, options: .repeating.speed(0.5))
                     Text("Sign in to Google to save feeds")
                         .font(.headline)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                         .multilineTextAlignment(.center)
                     Text("Tap here to sign in")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
                 .padding(.vertical, 16)
@@ -113,11 +113,11 @@ struct FeedEntryForm: View {
                     Text("\(viewModel.totalVolumeToday) mL")
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                     
                     Text("/ \(viewModel.dailyVolumeGoal) mL goal")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 
                 // Progress bar with glass gradient
@@ -151,7 +151,7 @@ struct FeedEntryForm: View {
                     let timeAgo = RelativeTimeFormatter.shared.string(from: lastTime)
                     Text("Last feed: \(timeAgo)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
             .padding(.vertical, 4)
@@ -207,7 +207,7 @@ struct FeedEntryForm: View {
                     Text("Feed")
                         .font(.caption)
                         .fontWeight(.semibold)
-                        .foregroundColor(viewModel.isWaste ? .primary : .white)
+                        .foregroundStyle(viewModel.isWaste ? Color.primary : Color.white)
                         .frame(width: 42, height: 28)
                         .background {
                             if !viewModel.isWaste {
@@ -226,7 +226,7 @@ struct FeedEntryForm: View {
                     Text("Waste")
                         .font(.caption)
                         .fontWeight(.semibold)
-                        .foregroundColor(viewModel.isWaste ? .white : .primary)
+                        .foregroundStyle(viewModel.isWaste ? Color.white : Color.primary)
                         .frame(width: 42, height: 28)
                         .background {
                             if viewModel.isWaste {
@@ -254,7 +254,7 @@ struct FeedEntryForm: View {
                 if viewModel.isDragging {
                     Text("\(viewModel.dragStartVolume)")
                         .font(.system(size: 32, weight: .bold))
-                        .foregroundColor(viewModel.isWaste ? .orange : .accentColor)
+                        .foregroundStyle(viewModel.isWaste ? .orange : Color.accentColor)
                         .frame(
                             width: FeedConstants.dragVolumeDisplayWidth,
                             height: FeedConstants.dragVolumeDisplayHeight
@@ -267,11 +267,11 @@ struct FeedEntryForm: View {
                         .multilineTextAlignment(.trailing)
                         .frame(width: FeedConstants.volumeTextFieldWidth)
                         .font(.system(size: 17))
-                        .foregroundColor(viewModel.isWaste ? .orange : .primary)
+                        .foregroundStyle(viewModel.isWaste ? Color.orange : Color.primary)
                 }
                 
                 Text("mL")
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             .highPriorityGesture(volumeDragGesture)
         }
@@ -302,7 +302,7 @@ struct FeedEntryForm: View {
                     if viewModel.isSubmitting {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle())
-                            .tint(viewModel.isWaste ? .orange : .accentColor)
+                            .tint(viewModel.isWaste ? .orange : Color.accentColor)
                         Text("Saving...")
                     } else {
                         Image(systemName: viewModel.isWaste ? "trash.circle.fill" : "plus.circle.fill")
@@ -311,7 +311,7 @@ struct FeedEntryForm: View {
                     }
                 }
                 .fontWeight(.semibold)
-                .foregroundStyle(viewModel.isFormValid ? .white : .secondary)
+                .foregroundStyle(viewModel.isFormValid ? Color.white : Color.secondary)
                 .frame(maxWidth: .infinity)
                 .frame(height: FeedConstants.submitButtonHeight)
                 .background {
@@ -348,7 +348,7 @@ struct FeedEntryForm: View {
             VStack(spacing: 12) {
                 Text("Quick Volume Selection (mL)")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 12) {
@@ -382,7 +382,7 @@ struct FeedEntryForm: View {
 
                 Text("Tip: Swipe up/down on volume field to adjust")
                     .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.vertical, 8)

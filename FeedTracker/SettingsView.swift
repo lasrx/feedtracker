@@ -13,7 +13,6 @@ struct SettingsView: View {
     @State private var showingSpreadsheetIdAlert = false
     @State private var tempSpreadsheetId = ""
     @State private var showingFormulaTypesEditor = false
-    @State private var showingSpreadsheetPicker = false
     @State private var showingCreateSheetAlert = false
     @State private var newSheetTitle = "Feed Tracking"
     @State private var isCreatingSheet = false
@@ -21,7 +20,7 @@ struct SettingsView: View {
     @State private var showingPumpingQuickVolumesEditor = false
     
     // Default formula types
-    private let defaultFormulaTypes = ["Breast milk", "Similac 360", "Emfamil Neuropro"]
+    private let defaultFormulaTypes = FeedConstants.defaultFormulaTypes
     
     var dragSpeed: FeedConstants.DragSpeed {
         return FeedConstants.DragSpeed(rawValue: dragSpeedRawValue) ?? .default
@@ -50,7 +49,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundStyle(.green)
                             .symbolRenderingMode(.hierarchical)
                             .symbolEffect(.bounce, value: spreadsheetId)
                         Text(storageService.currentConfiguration?.name ?? "Untitled Sheet")
@@ -62,13 +61,13 @@ struct SettingsView: View {
                     
                     Text("Sheet ID: \(String(spreadsheetId.prefix(16)))...")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .textSelection(.enabled)
                 }
             } else {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
+                        .foregroundStyle(.orange)
                         .symbolRenderingMode(.hierarchical)
                     Text("No spreadsheet selected")
                         .font(.headline)
@@ -89,7 +88,7 @@ struct SettingsView: View {
                         .fontWeight(.medium)
                     Text("Recommended for new users")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button(action: {
@@ -113,39 +112,18 @@ struct SettingsView: View {
                 .disabled(!storageService.isSignedIn || isCreatingSheet)
             }
             
-            // Browse existing
+            // Manual entry / paste link
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Browse Existing Sheets")
+                    Text("Connect Existing Sheet")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                    Text("Choose from your Google Drive")
+                    Text("Paste a link or spreadsheet ID")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Browse") {
-                    if storageService.isSignedIn {
-                        showingSpreadsheetPicker = true
-                    }
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .disabled(!storageService.isSignedIn)
-            }
-            
-            // Manual entry
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Manual Entry")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    Text("Enter a spreadsheet ID directly")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                Button("Enter ID") {
+                Button("Paste Link") {
                     tempSpreadsheetId = spreadsheetId
                     showingSpreadsheetIdAlert = true
                 }
@@ -182,7 +160,7 @@ struct SettingsView: View {
                             VStack(alignment: .leading) {
                                 Text("Signed in as:")
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                                 Text(storageService.userEmail ?? "Unknown")
                                     .font(.headline)
                             }
@@ -203,7 +181,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("MiniLog saves your feeding data to Google Sheets for backup and multi-device access.")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         
                         // Current spreadsheet status
                         HStack {
@@ -217,16 +195,51 @@ struct SettingsView: View {
                         Divider()
                         
                         dataStorageOptionsView
+
+                        Divider()
+
+                        DisclosureGroup("How to share a tracker") {
+                            VStack(alignment: .leading, spacing: 8) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("To share with a co-caregiver:")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                    Text("1. Open your spreadsheet in Google Sheets")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    Text("2. Tap Share and send the link")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("To connect a shared tracker:")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                    Text("1. Open the shared link you received")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    Text("2. Copy the link from your browser")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    Text("3. Tap \"Paste Link\" above and paste it")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.top, 4)
+                        }
+                        .font(.subheadline)
                     }
                     .padding(.vertical, 8)
                 }
-                
+
                 // Siri & Voice Commands
                 Section(header: Text("Siri & Voice Commands")) {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "mic.fill")
-                                .foregroundColor(.blue)
+                                .foregroundStyle(.blue)
                                 .symbolRenderingMode(.hierarchical)
                             Text("Hey Siri")
                                 .font(.headline)
@@ -235,26 +248,26 @@ struct SettingsView: View {
                         
                         Text("Try saying:")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("• \"Log 100 to MiniLog\"")
                                 .font(.caption)
-                                .foregroundColor(.primary)
+                                .foregroundStyle(.primary)
                             Text("• \"Add 150 to MiniLog\"")
                                 .font(.caption)
-                                .foregroundColor(.primary)
+                                .foregroundStyle(.primary)
                             Text("• \"Track 120 with MiniLog\"")
                                 .font(.caption)
-                                .foregroundColor(.primary)
+                                .foregroundStyle(.primary)
                             Text("• \"Log feed 980 in MiniLog\"")
                                 .font(.caption)
-                                .foregroundColor(.primary)
+                                .foregroundStyle(.primary)
                         }
                         
                         Text("Uses your last selected formula type automatically.")
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                             .italic()
                     }
                     .padding(.vertical, 4)
@@ -271,7 +284,7 @@ struct SettingsView: View {
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
                         Text("mL")
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     
                     // Formula Types
@@ -287,7 +300,7 @@ struct SettingsView: View {
                         }
                         Text(formulaTypes.joined(separator: ", "))
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
                     
@@ -297,7 +310,7 @@ struct SettingsView: View {
                     if hapticFeedbackEnabled {
                         Text("Provides precise haptic clicks when adjusting volume with drag gesture")
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     
                     // Drag Speed Picker
@@ -314,7 +327,7 @@ struct SettingsView: View {
                         
                         Text("Controls how fast the volume changes when dragging up/down on the volume field")
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
                     
@@ -331,7 +344,7 @@ struct SettingsView: View {
                         }
                         Text(feedQuickVolumesData.replacingOccurrences(of: ",", with: ", ") + " mL")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
                     
@@ -348,7 +361,7 @@ struct SettingsView: View {
                         }
                         Text(pumpingQuickVolumesData.replacingOccurrences(of: ",", with: ", ") + " mL")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
                 }
@@ -359,14 +372,14 @@ struct SettingsView: View {
                         Text("Version")
                         Spacer()
                         Text(appVersion)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     
                     HStack {
                         Text("Build")
                         Spacer()
                         Text(appBuild)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 
@@ -376,13 +389,13 @@ struct SettingsView: View {
                     NavigationLink(destination: DataCaptureView(storageService: storageService)) {
                         HStack {
                             Image(systemName: "externaldrive.badge.plus")
-                                .foregroundColor(.blue)
+                                .foregroundStyle(.blue)
                             VStack(alignment: .leading) {
                                 Text("Capture Test Data")
                                     .font(.headline)
                                 Text("Record real API responses for unit testing")
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -394,27 +407,24 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .presentationBackground(.ultraThinMaterial)
             .presentationDetents([.large])
-            .alert("Edit Spreadsheet ID", isPresented: $showingSpreadsheetIdAlert) {
-                TextField("Spreadsheet ID", text: $tempSpreadsheetId)
+            .alert("Connect Spreadsheet", isPresented: $showingSpreadsheetIdAlert) {
+                TextField("Link or Spreadsheet ID", text: $tempSpreadsheetId)
                 Button("Cancel", role: .cancel) { }
                 Button("Save") {
-                    spreadsheetId = tempSpreadsheetId
-                    // Update the service with new spreadsheet ID
+                    let resolvedId = extractSpreadsheetId(from: tempSpreadsheetId)
+                    spreadsheetId = resolvedId
                     let config = StorageConfiguration(
-                        identifier: tempSpreadsheetId,
+                        identifier: resolvedId,
                         name: "Current Spreadsheet",
                         provider: .googleSheets
                     )
                     try? storageService.updateConfiguration(config)
                 }
             } message: {
-                Text("Enter the Google Sheets ID from your spreadsheet URL")
+                Text("Paste a Google Sheets link or enter the spreadsheet ID directly")
             }
             .sheet(isPresented: $showingFormulaTypesEditor) {
                 FormulaTypesEditorView(formulaTypesData: $formulaTypesData)
-            }
-            .sheet(isPresented: $showingSpreadsheetPicker) {
-                SpreadsheetPickerView(storageService: storageService)
             }
             .alert("Create New Sheet", isPresented: $showingCreateSheetAlert) {
                 TextField("Sheet Name", text: $newSheetTitle)
@@ -442,6 +452,19 @@ struct SettingsView: View {
         }
     }
     
+    /// Extracts a spreadsheet ID from a full Google Sheets URL or returns the input as-is if already an ID.
+    /// Handles URLs like: https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit...
+    private func extractSpreadsheetId(from input: String) -> String {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let range = trimmed.range(of: "/d/"),
+           let endRange = trimmed[range.upperBound...].range(of: "/") {
+            return String(trimmed[range.upperBound..<endRange.lowerBound])
+        } else if let range = trimmed.range(of: "/d/") {
+            return String(trimmed[range.upperBound...])
+        }
+        return trimmed
+    }
+
     private func createNewSheet() {
         isCreatingSheet = true
         

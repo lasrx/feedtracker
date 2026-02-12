@@ -13,7 +13,7 @@ struct DataCaptureView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "externaldrive.badge.plus")
                         .font(.system(size: 50))
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.blue)
                         .symbolRenderingMode(.hierarchical)
                     
                     Text("Test Data Capture")
@@ -22,7 +22,7 @@ struct DataCaptureView: View {
                     
                     Text("Capture real API responses for unit testing")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
                 .padding()
@@ -36,19 +36,19 @@ struct DataCaptureView: View {
                         
                         Text(captureService.isCapturing ? "Capturing..." : "Ready to capture")
                             .font(.headline)
-                            .foregroundColor(captureService.isCapturing ? .green : .primary)
+                            .foregroundStyle(captureService.isCapturing ? Color.green : Color.primary)
                     }
                     
                     if captureService.capturedDataCount > 0 {
                         Text("\(captureService.capturedDataCount) data sets captured")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     
                     if let lastCapture = captureService.lastCaptureDate {
                         Text("Last export: \(lastCapture, style: .relative) ago")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .padding()
@@ -65,7 +65,7 @@ struct DataCaptureView: View {
                                 Text("Stop Capturing")
                             }
                             .font(.headline)
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
                             .background(Color.red)
@@ -78,7 +78,7 @@ struct DataCaptureView: View {
                                 Text("Start Capturing")
                             }
                             .font(.headline)
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
                             .background(Color.green)
@@ -93,7 +93,7 @@ struct DataCaptureView: View {
                             Text("Load Sample Data")
                         }
                         .font(.headline)
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .background(Color.blue)
@@ -108,7 +108,7 @@ struct DataCaptureView: View {
                             Text("Export & Share Data")
                         }
                         .font(.headline)
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.blue)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .background(Color.blue.opacity(0.1))
@@ -128,7 +128,7 @@ struct DataCaptureView: View {
                     Text("4. Save the file to add to unit tests")
                 }
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .background(.regularMaterial)
@@ -140,10 +140,10 @@ struct DataCaptureView: View {
                 if !storageService.isSignedIn {
                     HStack {
                         Image(systemName: "exclamationmark.triangle")
-                            .foregroundColor(.orange)
+                            .foregroundStyle(.orange)
                         Text("Sign in to Google Sheets to capture real data")
                             .font(.caption)
-                            .foregroundColor(.orange)
+                            .foregroundStyle(.orange)
                     }
                     .padding()
                     .background(Color.orange.opacity(0.1))

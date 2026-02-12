@@ -19,7 +19,7 @@ struct WeeklySummaryView: View {
                 
                 Text(trendText)
                     .font(.caption)
-                    .foregroundColor(trendColor)
+                    .foregroundStyle(trendColor)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
                     .background(trendColor.opacity(0.1))
@@ -30,22 +30,41 @@ struct WeeklySummaryView: View {
             HStack(alignment: .bottom, spacing: 4) {
                 ForEach(dailyTotals) { daily in
                     VStack(spacing: 4) {
-                        // Volume bar
+                        // Volume bar with gradient and depth
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(barColor(for: daily))
+                            .fill(
+                                LinearGradient(
+                                    colors: [barColor(for: daily), barColor(for: daily).opacity(0.8)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
                             .frame(width: 24, height: barHeight(for: daily))
+                            .overlay {
+                                if daily.volume > 0 {
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [Color.white.opacity(0.3), Color.clear],
+                                                startPoint: .top,
+                                                endPoint: .center
+                                            )
+                                        )
+                                }
+                            }
+                            .shadow(color: color.opacity(0.2), radius: 2, y: 1)
                         
                         // Day label
                         Text(daily.dayName)
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         
                         // Volume label (only show if > 0)
                         if daily.volume > 0 {
                             Text("\(daily.volume)")
                                 .font(.caption2)
                                 .fontWeight(.medium)
-                                .foregroundColor(color)
+                                .foregroundStyle(color)
                         }
                     }
                 }
@@ -56,7 +75,7 @@ struct WeeklySummaryView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Weekly Avg")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text("\(weeklyAverage) mL")
                         .font(.caption)
                         .fontWeight(.medium)
@@ -65,7 +84,7 @@ struct WeeklySummaryView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Best Day")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text(bestDayText)
                         .font(.caption)
                         .fontWeight(.medium)
@@ -76,11 +95,11 @@ struct WeeklySummaryView: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("vs Today")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text(comparisonText)
                         .font(.caption)
                         .fontWeight(.medium)
-                        .foregroundColor(comparisonColor)
+                        .foregroundStyle(comparisonColor)
                 }
             }
         }
