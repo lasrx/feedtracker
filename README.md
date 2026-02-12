@@ -71,7 +71,6 @@ feedtracker/
     ├── WeeklySummaryView.swift        # Reusable trend analysis (189 lines)
     ├── StackedWeeklySummaryView.swift # Advanced stacked bar charts (303 lines)
     ├── SettingsView.swift             # App configuration (372 lines)
-    ├── SpreadsheetPickerView.swift    # Google Sheets browser (249 lines)
     │
     ├── 🔧 Services & Models
     ├── StorageService.swift           # Protocol abstraction with CRUD operations (174 lines)
@@ -142,8 +141,8 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - No "mL" pronunciation confusion
 
 4. **Google Sheets Integration**
-   - **Three setup options**: Create new sheets, browse existing sheets, or manual entry
-   - **Incremental permissions**: App Store ready with non-sensitive scopes, optional restricted scopes for advanced features
+   - **Two setup options**: Create new sheets or paste a link/spreadsheet ID
+   - **Single OAuth scope**: Only `spreadsheets` scope needed (sensitive, not restricted)
    - **Sheet name persistence**: Human-readable names displayed in Settings
    - Append new rows to spreadsheet
    - Fetch today's total from all entries
@@ -151,8 +150,6 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - **Row index tracking** - Maintain Google Sheets row positions for precise modifications
    - Handle API errors gracefully
    - Create new tracking sheets with proper template
-   - Browse and select from available spreadsheets with smart filtering
-   - **Tracker filter** - Automatically filters spreadsheet list to show only feeding-related sheets (containing "tracker" in name)
 
 5. **Edit/Delete Operations**
    - **Swipe-to-edit** - Context-aware swipe gestures on entries reveal Edit/Delete buttons

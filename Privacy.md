@@ -1,6 +1,6 @@
 # MiniLog – Feed Tracker - Privacy Policy
 
-**Effective:** September 3, 2025 | **Updated:** November 21, 2025
+**Effective:** September 3, 2025 | **Updated:** February 11, 2026
 
 ## Overview
 
@@ -63,26 +63,13 @@ MiniLog collects only the information you explicitly enter:
 - **Usage:** Data flows directly between your device and Google's servers; we never store or access your spreadsheet data on our servers
 - **Storage:** Spreadsheet data remains in your Google account; we only store the spreadsheet ID locally on your device for quick access
 
-**Google Drive API (drive.file scope):**
-- **Data Accessed:** Files created by MiniLog in your Google Drive
-- **Purpose:** To create new tracking spreadsheets with proper column headers
-- **Usage:** Limited to creating and accessing only files that MiniLog creates; cannot access other files in your Drive
-- **Storage:** Files are stored in your Google Drive; we have no server-side storage
-
-**Google Drive API (drive.readonly scope - optional):**
-- **Data Accessed:** List of spreadsheets in your Google Drive (filename and modification date only)
-- **Purpose:** To help you find and connect to existing tracking spreadsheets shared by other users (e.g., shared between two parents)
-- **Usage:** Read-only access for browsing only; filtered to show spreadsheets with "tracker" in the name; you must explicitly select which spreadsheet to connect
-- **Storage:** Spreadsheet list is not stored; only the ID of your selected spreadsheet is saved locally on your device
-
 ### Data Use Limitations
 
 **We use Google user data ONLY for the following purposes:**
 1. Authenticating you to access Google Sheets
 2. Writing feeding and pumping data you enter to your selected Google Sheet
 3. Reading your existing feeding data to display totals and analytics
-4. Creating new tracking spreadsheets in your Google Drive when requested
-5. Browsing your spreadsheets to help you connect to shared tracking sheets
+4. Creating new tracking spreadsheets when requested
 
 **We do NOT use Google user data for:**
 - Advertising or marketing purposes
@@ -111,8 +98,7 @@ MiniLog integrates with Google services for core functionality. All Google servi
 
 The only data transmission occurs when:
 - You log a feeding or pumping entry (sent directly to your Google Sheets)
-- You create a new tracking spreadsheet (created in your Google Drive)
-- You browse existing spreadsheets (read-only access to spreadsheet list)
+- You create a new tracking spreadsheet (created in your Google account)
 
 ## Data Control and Rights
 
@@ -172,14 +158,9 @@ For questions about Google's data handling, please refer to [Google's Privacy Po
 ## Technical Implementation
 
 ### OAuth Scopes
-MiniLog requests permissions in two tiers:
+MiniLog requests a single permission:
 
-**Base Permissions (always requested):**
-- `https://www.googleapis.com/auth/spreadsheets` - Read and write access to Google Sheets for data logging
-- `https://www.googleapis.com/auth/drive.file` - Create new tracking sheets in Google Drive (limited to app-created files only)
-
-**Optional Permission (requested only when browsing existing sheets):**
-- `https://www.googleapis.com/auth/drive.readonly` - Browse existing spreadsheets in your Google Drive for selection via SpreadsheetPickerView
+- `https://www.googleapis.com/auth/spreadsheets` - Read and write access to Google Sheets for data logging and creating new tracking sheets
 
 ### Data Minimization
 - Only collects feeding and pumping data necessary for the app's functionality
@@ -189,4 +170,4 @@ MiniLog requests permissions in two tiers:
 
 ---
 
-*Effective: September 3, 2025 | Updated: November 21, 2025*
+*Effective: September 3, 2025 | Updated: February 11, 2026*
