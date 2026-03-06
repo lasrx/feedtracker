@@ -4,6 +4,8 @@ import AppIntents
 
 @main
 struct FeedTrackerApp: App {
+    @StateObject private var storageService = GoogleSheetsStorageService()
+
     init() {
         // Configure Google Sign-In
         guard let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
@@ -11,18 +13,31 @@ struct FeedTrackerApp: App {
               let clientId = plist["CLIENT_ID"] as? String else {
             fatalError("Google Sign-In configuration file not found")
         }
-        
+
         GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientId)
-        
+
         // Register App Shortcuts
         FeedTrackerShortcuts.updateAppShortcutParameters()
     }
-    
+
     var body: some Scene {
         WindowGroup {
-            HorizontalNavigationView()
+            HorizontalNavigationView(storageService: storageService)
                 .onOpenURL { url in
-                    GIDSignIn.sharedInstance.handle(url)
+                    // Try deep link first, fall back to Google Sign-In
+                    if !storageService.handleDeepLink(url: url) {
+                        GIDSignIn.sharedInstance.handle(url)
+                    }
+                }
+                .alert("Connect to Tracker", isPresented: $storageService.showingDeepLinkConfirmation) {
+                    Button("Cancel", role: .cancel) {
+                        storageService.cancelDeepLinkConnection()
+                    }
+                    Button("Connect") {
+                        storageService.confirmDeepLinkConnection()
+                    }
+                } message: {
+                    Text("Connect MiniLog to \"\(storageService.pendingDeepLinkSheetName ?? "Shared Tracker")\"?\n\nThe sheet owner must also share the spreadsheet with you in Google Sheets.")
                 }
         }
     }

@@ -70,6 +70,7 @@ MiniLog collects only the information you explicitly enter:
 2. Writing feeding and pumping data you enter to your selected Google Sheet
 3. Reading your existing feeding data to display totals and analytics
 4. Creating new tracking spreadsheets when requested
+5. Listing spreadsheets created by MiniLog so you can switch between trackers (via `drive.file` scope, which only returns files the app created)
 
 **We do NOT use Google user data for:**
 - Advertising or marketing purposes
@@ -158,9 +159,10 @@ For questions about Google's data handling, please refer to [Google's Privacy Po
 ## Technical Implementation
 
 ### OAuth Scopes
-MiniLog requests a single permission:
+MiniLog requests two permissions:
 
 - `https://www.googleapis.com/auth/spreadsheets` - Read and write access to Google Sheets for data logging and creating new tracking sheets
+- `https://www.googleapis.com/auth/drive.file` - Access only to files created by MiniLog, enabling the "My Sheets" picker to browse your trackers
 
 ### Data Minimization
 - Only collects feeding and pumping data necessary for the app's functionality

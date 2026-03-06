@@ -111,7 +111,7 @@ The app uses a carefully designed gesture hierarchy to allow three competing ges
 - Feed Log: A=Date, B=Time, C=Volume, D=Formula Type, E=Waste Amount  
 - Pumping: A=Date, B=Time, C=Volume
 
-**OAuth Scopes**: `spreadsheets` only (sensitive scope, no restricted Drive scopes needed)
+**OAuth Scopes**: `spreadsheets` + `drive.file` (both sensitive scopes, no CASA audit needed; `drive.file` only returns app-created files)
 
 ## 🔒 SECURITY SYSTEM - CRITICAL FOR AI ASSISTANTS
 
@@ -150,6 +150,7 @@ The app uses a carefully designed gesture hierarchy to allow three competing ges
 - `FormulaTypesEditorView.swift`: iOS-native list editor with `.medium` detent and glass styling
 - `QuickVolumesEditorView.swift`: Volume preset editor with `.medium` detent and glass styling
 - `FeedEditSheet.swift` / `PumpingEditSheet.swift`: Modal editors with `.medium` detent and ultraThinMaterial
+- `MySheetsPickerView.swift`: Drive-powered sheet browser with `.medium` detent and glass styling
 - `SettingsView.swift`: Full settings interface with `.large` detent and glass transparency
 - `Models.swift`: Data modeling with computed properties and row tracking
 - `ChartModels.swift`: Consistent color assignment and chart data processing

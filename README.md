@@ -70,7 +70,8 @@ feedtracker/
     ├── PumpingHistoryView.swift       # Pumping analytics & insights with edit/delete (350+ lines)
     ├── WeeklySummaryView.swift        # Reusable trend analysis (189 lines)
     ├── StackedWeeklySummaryView.swift # Advanced stacked bar charts (303 lines)
-    ├── SettingsView.swift             # App configuration (372 lines)
+    ├── MySheetsPickerView.swift        # Drive-powered sheet browser
+    ├── SettingsView.swift             # App configuration with share & deep link support
     │
     ├── 🔧 Services & Models
     ├── StorageService.swift           # Protocol abstraction with CRUD operations (174 lines)
@@ -141,8 +142,9 @@ All commits are automatically scanned for API keys, OAuth credentials, and sensi
    - No "mL" pronunciation confusion
 
 4. **Google Sheets Integration**
-   - **Two setup options**: Create new sheets or paste a link/spreadsheet ID
-   - **Single OAuth scope**: Only `spreadsheets` scope needed (sensitive, not restricted)
+   - **Three setup options**: Create new sheets, browse "My Sheets", or paste a link/spreadsheet ID
+   - **Multi-caregiver sharing**: Share Tracker sends a deep link; receiver taps to auto-connect
+   - **Sensitive OAuth scopes**: `spreadsheets` + `drive.file` (no CASA audit; `drive.file` only sees app-created files)
    - **Sheet name persistence**: Human-readable names displayed in Settings
    - Append new rows to spreadsheet
    - Fetch today's total from all entries

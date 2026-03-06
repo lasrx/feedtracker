@@ -18,6 +18,7 @@ struct SettingsView: View {
     @State private var isCreatingSheet = false
     @State private var showingFeedQuickVolumesEditor = false
     @State private var showingPumpingQuickVolumesEditor = false
+    @State private var showingMySheetsPicker = false
     
     // Default formula types
     private let defaultFormulaTypes = FeedConstants.defaultFormulaTypes
@@ -111,7 +112,26 @@ struct SettingsView: View {
                 .controlSize(.small)
                 .disabled(!storageService.isSignedIn || isCreatingSheet)
             }
-            
+
+            // Browse my sheets
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("My Sheets")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Text("Browse sheets created by MiniLog")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Browse") {
+                    showingMySheetsPicker = true
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(!storageService.isSignedIn)
+            }
+
             // Manual entry / paste link
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
@@ -191,9 +211,18 @@ struct SettingsView: View {
                         }
                         
                         currentSheetStatusView
-                        
+
+                        if !spreadsheetId.isEmpty {
+                            Button(action: shareTracker) {
+                                Label("Share Tracker", systemImage: "square.and.arrow.up")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+
                         Divider()
-                        
+
                         dataStorageOptionsView
 
                         Divider()
@@ -201,28 +230,31 @@ struct SettingsView: View {
                         DisclosureGroup("How to share a tracker") {
                             VStack(alignment: .leading, spacing: 8) {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("To share with a co-caregiver:")
+                                    Text("Owner:")
                                         .font(.caption)
                                         .fontWeight(.medium)
-                                    Text("1. Open your spreadsheet in Google Sheets")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                    Text("2. Tap Share and send the link")
+                                    Text("Tap Share Tracker to send an invite link to your co-caregiver.")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                 }
 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("To connect a shared tracker:")
+                                    Text("Receiver:")
                                         .font(.caption)
                                         .fontWeight(.medium)
-                                    Text("1. Open the shared link you received")
+                                    Text("1. Install MiniLog and sign in with Google")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
-                                    Text("2. Copy the link from your browser")
+                                    Text("2. Open the invite link you received")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
-                                    Text("3. Tap \"Paste Link\" above and paste it")
+                                }
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Important:")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                    Text("The owner must also share the spreadsheet in Google Sheets for write access.")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                 }
@@ -444,10 +476,21 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingPumpingQuickVolumesEditor) {
                 QuickVolumesEditorView(
-                    title: "Pumping Quick Volumes", 
+                    title: "Pumping Quick Volumes",
                     unit: "mL",
                     quickVolumesData: $pumpingQuickVolumesData
                 )
+            }
+            .sheet(isPresented: $showingMySheetsPicker) {
+                MySheetsPickerView(storageService: storageService) { option in
+                    spreadsheetId = option.id
+                    let config = StorageConfiguration(
+                        identifier: option.id,
+                        name: option.name,
+                        provider: .googleSheets
+                    )
+                    try? storageService.updateConfiguration(config)
+                }
             }
         }
     }
@@ -463,6 +506,35 @@ struct SettingsView: View {
             return String(trimmed[range.upperBound...])
         }
         return trimmed
+    }
+
+    private func shareTracker() {
+        let sheetName = storageService.currentConfiguration?.name ?? "Feed Tracking"
+        let encodedName = sheetName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? sheetName
+        let deepLink = "minilog://connect?id=\(spreadsheetId)&name=\(encodedName)"
+        let shareText = "Join my baby tracker \"\(sheetName)\" on MiniLog!\n\n\(deepLink)"
+
+        let activityVC = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+
+            // Walk to the topmost presented VC
+            var topVC = rootVC
+            while let presented = topVC.presentedViewController {
+                topVC = presented
+            }
+
+            // iPad popover support
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = window
+                popover.sourceRect = CGRect(x: window.bounds.midX, y: window.bounds.midY, width: 0, height: 0)
+                popover.permittedArrowDirections = []
+            }
+
+            topVC.present(activityVC, animated: true)
+        }
     }
 
     private func createNewSheet() {

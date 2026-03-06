@@ -9,6 +9,11 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     @Published var userEmail: String?
     @Published var error: Error?
     @Published var currentConfiguration: StorageConfiguration?
+
+    // Deep link state
+    @Published var pendingDeepLinkSheetId: String?
+    @Published var pendingDeepLinkSheetName: String?
+    @Published var showingDeepLinkConfirmation = false
     
     private var spreadsheetId = ""
     private let range = FeedConstants.GoogleSheets.feedRange
@@ -757,9 +762,51 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     // MARK: - Storage Management
     
     func fetchAvailableStorageOptions() async throws -> [StorageOption] {
-        // Drive browsing removed to eliminate restricted OAuth scopes (drive.readonly/drive.file).
-        // Users can connect existing sheets via "Paste Link or ID" in Settings.
-        return []
+        return try await performAuthenticatedRequest { accessToken in
+            let query = "mimeType='application/vnd.google-apps.spreadsheet' and (name contains 'Feed Tracking' or name contains 'Feed Tracker')"
+            let fields = "files(id,name,modifiedTime)"
+            let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+            let urlString = "https://www.googleapis.com/drive/v3/files?q=\(encodedQuery)&fields=\(fields)&orderBy=modifiedTime%20desc&pageSize=20"
+
+            guard let url = URL(string: urlString) else {
+                throw StorageServiceError.configurationInvalid
+            }
+
+            var request = URLRequest(url: url)
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
+            }
+
+            if httpResponse.statusCode != 200 {
+                if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let error = errorData["error"] as? [String: Any],
+                   let message = error["message"] as? String {
+                    throw StorageServiceError.providerSpecific(message)
+                }
+                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
+            }
+
+            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let files = json["files"] as? [[String: Any]] else {
+                return []
+            }
+
+            return files.compactMap { file in
+                guard let id = file["id"] as? String,
+                      let name = file["name"] as? String else { return nil }
+                let modifiedTime = file["modifiedTime"] as? String
+                return StorageOption(
+                    id: id,
+                    name: name,
+                    provider: .googleSheets,
+                    lastModified: modifiedTime
+                )
+            }
+        }
     }
     
     func createNewStorage(title: String) async throws -> String {
@@ -998,6 +1045,48 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         await dataCache.clear(forKey: CacheKeys.past7DaysPumpingTotals)
     }
     
+    // MARK: - Deep Link Handling
+
+    /// Parses a `minilog://connect?id=ID&name=NAME` URL and stages a confirmation.
+    /// Returns `true` if the URL was handled.
+    func handleDeepLink(url: URL) -> Bool {
+        guard url.scheme == "minilog",
+              url.host == "connect",
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let queryItems = components.queryItems,
+              let sheetId = queryItems.first(where: { $0.name == "id" })?.value,
+              !sheetId.isEmpty else {
+            return false
+        }
+
+        let sheetName = queryItems.first(where: { $0.name == "name" })?.value ?? "Shared Tracker"
+        pendingDeepLinkSheetId = sheetId
+        pendingDeepLinkSheetName = sheetName
+        showingDeepLinkConfirmation = true
+        return true
+    }
+
+    /// Confirms the pending deep link connection by saving the sheet ID/name.
+    func confirmDeepLinkConnection() {
+        guard let sheetId = pendingDeepLinkSheetId else { return }
+        let sheetName = pendingDeepLinkSheetName ?? "Shared Tracker"
+
+        let config = StorageConfiguration(
+            identifier: sheetId,
+            name: sheetName,
+            provider: .googleSheets
+        )
+        try? updateConfiguration(config)
+        cancelDeepLinkConnection()
+    }
+
+    /// Clears pending deep link state without connecting.
+    func cancelDeepLinkConnection() {
+        pendingDeepLinkSheetId = nil
+        pendingDeepLinkSheetName = nil
+        showingDeepLinkConfirmation = false
+    }
+
     // MARK: - iPad Compatibility Helper
     
     @MainActor

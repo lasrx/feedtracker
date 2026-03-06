@@ -5,7 +5,7 @@ struct HorizontalNavigationView: View {
     @State private var currentPage: Int = 1 // Start at center (feed logging)
     @GestureState private var dragOffset: CGFloat = 0
     @AppStorage(FeedConstants.UserDefaultsKeys.hapticFeedbackEnabled) private var hapticFeedbackEnabled = true
-    @StateObject private var storageService = GoogleSheetsStorageService()
+    @ObservedObject var storageService: GoogleSheetsStorageService
     @State private var pumpingViewTrigger: Int = 0
     @State private var feedHistoryViewTrigger: Int = 0
     @State private var pumpingHistoryViewTrigger: Int = 0
@@ -148,5 +148,5 @@ struct FeedLoggingView: View {
 
 
 #Preview {
-    HorizontalNavigationView()
+    HorizontalNavigationView(storageService: GoogleSheetsStorageService())
 }
