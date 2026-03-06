@@ -30,9 +30,19 @@
 				<string>YOUR_OAUTH_CLIENT_ID_HERE</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>MiniLog Deep Link</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>minilog</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>482</string>
+	<string>495</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
