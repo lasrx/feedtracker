@@ -150,8 +150,14 @@ enum StorageServiceError: LocalizedError {
     case dataFormatError
     case permissionDenied
     case quotaExceeded
+    case fileNotAuthorized(sheetId: String)
     case providerSpecific(String)
-    
+
+    var isFileNotAuthorized: Bool {
+        if case .fileNotAuthorized = self { return true }
+        return false
+    }
+
     var errorDescription: String? {
         switch self {
         case .notSignedIn:
@@ -168,6 +174,8 @@ enum StorageServiceError: LocalizedError {
             return "Permission denied"
         case .quotaExceeded:
             return "Storage quota exceeded"
+        case .fileNotAuthorized:
+            return "This spreadsheet needs to be authorized. Tap to select it in the file picker."
         case .providerSpecific(let message):
             return message
         }

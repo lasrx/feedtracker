@@ -14,6 +14,11 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     @Published var pendingDeepLinkSheetId: String?
     @Published var pendingDeepLinkSheetName: String?
     @Published var showingDeepLinkConfirmation = false
+
+    // Picker authorization state (403 recovery & deep link authorization)
+    @Published var needsPickerAuthorization = false
+    @Published var pendingPickerSheetId: String?
+    @Published var showingPickerForDeepLink = false
     
     private var spreadsheetId = ""
     private let range = FeedConstants.GoogleSheets.feedRange
@@ -255,35 +260,23 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     // MARK: - Feed Operations
     
     func appendFeed(date: String, time: String, volume: String, formulaType: String, wasteAmount: String = "0") async throws {
-        try await performAuthenticatedRequest { accessToken in
+        try await performAuthenticatedRequest { [self] accessToken in
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range):append?valueInputOption=USER_ENTERED")!
-            
+
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
+
             // 5-column model: Date, Time, Volume, Formula Type, Waste Amount
             let body: [String: Any] = [
                 "values": [[date, time, volume, formulaType, wasteAmount]]
             ]
-            
+
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let error = errorData["error"] as? [String: Any],
-                   let message = error["message"] as? String {
-                    throw StorageServiceError.providerSpecific(message)
-                }
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
+            try self.validateResponse(response, data: data)
         }
         
         // Invalidate related cache entries after successful append
@@ -300,31 +293,24 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return cachedTotal
         }
         
-        let total: Int = try await performAuthenticatedRequest { accessToken in
+        let total: Int = try await performAuthenticatedRequest { [self] accessToken in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
             let todayString = dateFormatter.string(from: Date())
-            
+
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range)")!
-            
+
             var request = URLRequest(url: url)
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
+            try self.validateResponse(response, data: data)
+
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let values = json["values"] as? [[String]] else {
                 return 0
             }
-            
+
             var totalVolume = 0
             for row in values {
                 if row.count >= 3,
@@ -333,7 +319,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                     totalVolume += volume
                 }
             }
-            
+
             return totalVolume
         }
 
@@ -352,31 +338,24 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return cachedFeeds
         }
         
-        let feeds: [FeedEntry] = try await performAuthenticatedRequest { accessToken in
+        let feeds: [FeedEntry] = try await performAuthenticatedRequest { [self] accessToken in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
             let todayString = dateFormatter.string(from: Date())
-            
+
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range)")!
-            
+
             var request = URLRequest(url: url)
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
+            try self.validateResponse(response, data: data)
+
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let values = json["values"] as? [[String]] else {
                 return []
             }
-            
+
             var todayFeeds: [FeedEntry] = []
             for (index, row) in values.enumerated() {
                 // Support both 4-column (legacy) and 5-column (with waste) models
@@ -395,7 +374,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                     todayFeeds.append(feedEntry)
                 }
             }
-            
+
             return todayFeeds
         }
 
@@ -414,39 +393,32 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return cachedEntries
         }
         
-        let entries: [FeedEntry] = try await performAuthenticatedRequest { accessToken in
+        let entries: [FeedEntry] = try await performAuthenticatedRequest { [self] accessToken in
             let calendar = Calendar.current
             let today = calendar.startOfDay(for: Date())
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
-            
+
             var recentDays: Set<String> = []
             for i in 0...days { // Include today plus requested number of days
                 if let date = calendar.date(byAdding: .day, value: -i, to: today) {
                     recentDays.insert(dateFormatter.string(from: date))
                 }
             }
-            
+
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range)")!
-            
+
             var request = URLRequest(url: url)
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
+            try self.validateResponse(response, data: data)
+
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let values = json["values"] as? [[String]] else {
                 return []
             }
-            
+
             var feedEntries: [FeedEntry] = []
             for (index, row) in values.enumerated() {
                 // Support both 4-column (legacy) and 5-column (with waste) models
@@ -465,7 +437,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                     feedEntries.append(feedEntry)
                 }
             }
-            
+
             return feedEntries.sorted { $0.fullDate > $1.fullDate } // Most recent first
         }
         
@@ -481,45 +453,38 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return cachedTotals
         }
         
-        let totals: [DailyTotal] = try await performAuthenticatedRequest { accessToken in
+        let totals: [DailyTotal] = try await performAuthenticatedRequest { [self] accessToken in
             let calendar = Calendar.current
             let today = calendar.startOfDay(for: Date())
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
-            
+
             var past7Days: [Date] = []
             for i in 1...7 {
                 if let date = calendar.date(byAdding: .day, value: -i, to: today) {
                     past7Days.append(date)
                 }
             }
-            
+
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(range)")!
-            
+
             var request = URLRequest(url: url)
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
+            try self.validateResponse(response, data: data)
+
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let values = json["values"] as? [[String]] else {
                 return []
             }
-            
+
             var dailyTotals: [DailyTotal] = []
-            
+
             for date in past7Days {
                 let dateString = dateFormatter.string(from: date)
                 var dayTotal = 0
-                
+
                 for row in values {
                     if row.count >= 4,
                        row[0] == dateString,
@@ -527,10 +492,10 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                         dayTotal += volume
                     }
                 }
-                
+
                 dailyTotals.append(DailyTotal(date: date, volume: dayTotal))
             }
-            
+
             return dailyTotals.sorted { $0.date < $1.date }
         }
 
@@ -545,34 +510,22 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     // MARK: - Pumping Operations
     
     func appendPumping(date: String, time: String, volume: String) async throws {
-        try await performAuthenticatedRequest { accessToken in
+        try await performAuthenticatedRequest { [self] accessToken in
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(pumpingRange):append?valueInputOption=USER_ENTERED")!
-            
+
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
+
             let body: [String: Any] = [
                 "values": [[date, time, volume]]
             ]
-            
+
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let error = errorData["error"] as? [String: Any],
-                   let message = error["message"] as? String {
-                    throw StorageServiceError.providerSpecific(message)
-                }
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
+            try self.validateResponse(response, data: data)
         }
         
         // Invalidate related cache entries after successful append
@@ -588,31 +541,24 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return cachedTotal
         }
         
-        let total: Int = try await performAuthenticatedRequest { accessToken in
+        let total: Int = try await performAuthenticatedRequest { [self] accessToken in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
             let todayString = dateFormatter.string(from: Date())
-            
+
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(pumpingRange)")!
-            
+
             var request = URLRequest(url: url)
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
+            try self.validateResponse(response, data: data)
+
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let values = json["values"] as? [[String]] else {
                 return 0
             }
-            
+
             var totalVolume = 0
             for row in values {
                 if row.count >= 3,
@@ -621,7 +567,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                     totalVolume += volume
                 }
             }
-            
+
             return totalVolume
         }
 
@@ -640,31 +586,24 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return cachedSessions
         }
         
-        let sessions: [PumpingEntry] = try await performAuthenticatedRequest { accessToken in
+        let sessions: [PumpingEntry] = try await performAuthenticatedRequest { [self] accessToken in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
             let todayString = dateFormatter.string(from: Date())
-            
+
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(pumpingRange)")!
-            
+
             var request = URLRequest(url: url)
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
+            try self.validateResponse(response, data: data)
+
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let values = json["values"] as? [[String]] else {
                 return []
             }
-            
+
             var todaySessions: [PumpingEntry] = []
             for (index, row) in values.enumerated() {
                 if row.count >= 3,
@@ -679,7 +618,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                     todaySessions.append(pumpingEntry)
                 }
             }
-            
+
             return todaySessions
         }
 
@@ -698,45 +637,38 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             return cachedTotals
         }
         
-        let totals: [DailyTotal] = try await performAuthenticatedRequest { accessToken in
+        let totals: [DailyTotal] = try await performAuthenticatedRequest { [self] accessToken in
             let calendar = Calendar.current
             let today = calendar.startOfDay(for: Date())
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/d/yyyy"
-            
+
             var past7Days: [Date] = []
             for i in 1...7 {
                 if let date = calendar.date(byAdding: .day, value: -i, to: today) {
                     past7Days.append(date)
                 }
             }
-            
+
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(pumpingRange)")!
-            
+
             var request = URLRequest(url: url)
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
+            try self.validateResponse(response, data: data)
+
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let values = json["values"] as? [[String]] else {
                 return []
             }
-            
+
             var dailyTotals: [DailyTotal] = []
-            
+
             for date in past7Days {
                 let dateString = dateFormatter.string(from: date)
                 var dayTotal = 0
-                
+
                 for row in values {
                     if row.count >= 3,
                        row[0] == dateString,
@@ -744,10 +676,10 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                         dayTotal += volume
                     }
                 }
-                
+
                 dailyTotals.append(DailyTotal(date: date, volume: dayTotal))
             }
-            
+
             return dailyTotals.sorted { $0.date < $1.date }
         }
 
@@ -762,7 +694,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     // MARK: - Storage Management
     
     func fetchAvailableStorageOptions() async throws -> [StorageOption] {
-        return try await performAuthenticatedRequest { accessToken in
+        return try await performAuthenticatedRequest { [self] accessToken in
             let query = "mimeType='application/vnd.google-apps.spreadsheet' and (name contains 'Feed Tracking' or name contains 'Feed Tracker')"
             let fields = "files(id,name,modifiedTime)"
             let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
@@ -776,19 +708,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
             let (data, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-
-            if httpResponse.statusCode != 200 {
-                if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let error = errorData["error"] as? [String: Any],
-                   let message = error["message"] as? String {
-                    throw StorageServiceError.providerSpecific(message)
-                }
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
+            try self.validateResponse(response, data: data)
 
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let files = json["files"] as? [[String: Any]] else {
@@ -810,14 +730,14 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
     }
     
     func createNewStorage(title: String) async throws -> String {
-        return try await performAuthenticatedRequest { accessToken in
+        return try await performAuthenticatedRequest { [self] accessToken in
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets")!
-            
+
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
+
             let spreadsheetBody: [String: Any] = [
                 "properties": [
                     "title": title
@@ -885,29 +805,17 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
                     ]
                 ]
             ]
-            
+
             request.httpBody = try JSONSerialization.data(withJSONObject: spreadsheetBody)
-            
+
             let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
-            }
-            
-            if httpResponse.statusCode != 200 {
-                if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let error = errorData["error"] as? [String: Any],
-                   let message = error["message"] as? String {
-                    throw StorageServiceError.providerSpecific(message)
-                }
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
-            }
-            
+            try self.validateResponse(response, data: data)
+
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let spreadsheetId = json["spreadsheetId"] as? String else {
                 throw StorageServiceError.dataFormatError
             }
-            
+
             return spreadsheetId
         }
     }
@@ -920,29 +828,23 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             throw StorageServiceError.dataFormatError
         }
         
-        let _: Void = try await performAuthenticatedRequest { accessToken in
+        let _: Void = try await performAuthenticatedRequest { [self] accessToken in
             let updateRange = "A\(rowIndex):E\(rowIndex)"
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(updateRange)?valueInputOption=USER_ENTERED")!
-            
+
             var request = URLRequest(url: url)
             request.httpMethod = "PUT"
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
+
             let body: [String: Any] = [
                 "values": [[newDate, newTime, newVolume, newFormulaType, newWasteAmount]]
             ]
-            
-            
+
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
-            
-            let (_, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1))
-            }
-            
-            return ()
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            try self.validateResponse(response, data: data)
         }
         
         // Invalidate related cache entries after successful update
@@ -958,23 +860,18 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         }
         
         // Clear the row content instead of deleting the entire row for simplicity
-        let _: Void = try await performAuthenticatedRequest { accessToken in
+        let _: Void = try await performAuthenticatedRequest { [self] accessToken in
             let updateRange = "A\(rowIndex):E\(rowIndex)"
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(updateRange):clear")!
-            
+
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
-            let (_, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1))
-            }
-            
-            return ()
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            try self.validateResponse(response, data: data)
         }
-        
+
         // Invalidate related cache entries after successful delete
         await dataCache.clear(forKey: CacheKeys.todayFeedTotal)
         await dataCache.clear(forKey: CacheKeys.todayFeeds)
@@ -987,26 +884,21 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
             throw StorageServiceError.dataFormatError
         }
         
-        let _: Void = try await performAuthenticatedRequest { accessToken in
+        let _: Void = try await performAuthenticatedRequest { [self] accessToken in
             let updateRange = "Pumping!A\(rowIndex):C\(rowIndex)"
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(updateRange)?valueInputOption=USER_ENTERED")!
-            
+
             var request = URLRequest(url: url)
             request.httpMethod = "PUT"
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
+
             let values = [[newDate, newTime, newVolume]]
             let body = ["values": values]
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
-            
-            let (_, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1))
-            }
-            
-            return ()
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            try self.validateResponse(response, data: data)
         }
         
         // Invalidate related cache entries after successful update
@@ -1022,21 +914,16 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         
         // For now, clear the row content instead of deleting the entire row
         // This is simpler and avoids the complexity of sheet ID lookups
-        let _: Void = try await performAuthenticatedRequest { accessToken in
+        let _: Void = try await performAuthenticatedRequest { [self] accessToken in
             let updateRange = "Pumping!A\(rowIndex):C\(rowIndex)"
             let url = URL(string: "https://sheets.googleapis.com/v4/spreadsheets/\(spreadsheetId)/values/\(updateRange):clear")!
-            
+
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            
-            let (_, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1))
-            }
-            
-            return ()
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            try self.validateResponse(response, data: data)
         }
         
         // Invalidate related cache entries after successful delete
@@ -1045,6 +932,37 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         await dataCache.clear(forKey: CacheKeys.past7DaysPumpingTotals)
     }
     
+    // MARK: - Access Token (for Picker)
+
+    /// Exposes the current OAuth access token for the Google Picker JS API.
+    func getAccessToken() -> String? {
+        return GIDSignIn.sharedInstance.currentUser?.accessToken.tokenString
+    }
+
+    // MARK: - Response Validation
+
+    /// Validates an HTTP response and throws typed errors for 403 (file not authorized)
+    /// and other non-200 status codes. Consolidates duplicated error handling.
+    private func validateResponse(_ response: URLResponse, data: Data) throws {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw StorageServiceError.networkError(NSError(domain: "InvalidResponse", code: -1))
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            // 403 = file not authorized under drive.file scope
+            if httpResponse.statusCode == 403 {
+                throw StorageServiceError.fileNotAuthorized(sheetId: spreadsheetId)
+            }
+
+            if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let error = errorData["error"] as? [String: Any],
+               let message = error["message"] as? String {
+                throw StorageServiceError.providerSpecific(message)
+            }
+            throw StorageServiceError.networkError(NSError(domain: "HTTPError", code: httpResponse.statusCode))
+        }
+    }
+
     // MARK: - Deep Link Handling
 
     /// Parses a `minilog://connect?id=ID&name=NAME` URL and stages a confirmation.
@@ -1066,18 +984,28 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         return true
     }
 
-    /// Confirms the pending deep link connection by saving the sheet ID/name.
-    func confirmDeepLinkConnection() {
-        guard let sheetId = pendingDeepLinkSheetId else { return }
-        let sheetName = pendingDeepLinkSheetName ?? "Shared Tracker"
+    /// Stages the Picker for deep link authorization instead of connecting directly.
+    /// The user must select the file in Google Picker to grant drive.file access.
+    func stagePickerForDeepLink() {
+        showingDeepLinkConfirmation = false
+        showingPickerForDeepLink = true
+    }
 
+    /// Completes Picker-based authorization by saving the selected file as the active sheet.
+    func completePickerAuthorization(fileId: String, fileName: String) {
         let config = StorageConfiguration(
-            identifier: sheetId,
-            name: sheetName,
+            identifier: fileId,
+            name: fileName,
             provider: .googleSheets
         )
         try? updateConfiguration(config)
-        cancelDeepLinkConnection()
+
+        // Clear all Picker/deep link state
+        pendingDeepLinkSheetId = nil
+        pendingDeepLinkSheetName = nil
+        showingPickerForDeepLink = false
+        needsPickerAuthorization = false
+        pendingPickerSheetId = nil
     }
 
     /// Clears pending deep link state without connecting.
@@ -1085,6 +1013,7 @@ class GoogleSheetsStorageService: StorageServiceProtocol {
         pendingDeepLinkSheetId = nil
         pendingDeepLinkSheetName = nil
         showingDeepLinkConfirmation = false
+        showingPickerForDeepLink = false
     }
 
     // MARK: - iPad Compatibility Helper

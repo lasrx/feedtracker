@@ -18,6 +18,7 @@ MiniLog is designed to help parents log baby feeding information quickly and eff
 - **Siri Integration** - Voice commands ("Log 100 to MiniLog")
 - **Multi-Caregiver Sharing** - Share sheets via deep links for instant multi-device setup
 - **My Sheets Browser** - Browse and connect existing Google Sheets from Drive
+- **Find Shared Sheet** - Google Picker integration to authorize and connect shared spreadsheets
 - **Configurable** - Custom volumes, formula types, daily goals, haptic preferences, drag speeds
 - **Multi-Layer Security** - Pre-commit hooks and GitHub Actions protect against credential leaks
 
@@ -27,6 +28,7 @@ MiniLog is designed to help parents log baby feeding information quickly and eff
 - **SwiftUI** - Declarative UI framework with iOS 26 visual enhancements
 - **Google Sign-In SDK** - OAuth authentication with async/await APIs
 - **Google Sheets API v4** - Data persistence with intelligent caching
+- **Google Picker API** - Per-file authorization for shared spreadsheets via WKWebView
 - **App Intents Framework** - Siri integration (iOS 16+)
 - **Async/await** - Modern concurrency with @MainActor isolation
 - **Thread-Safe Caching** - DataCache actor with configurable expiration
@@ -72,6 +74,7 @@ feedtracker/
     ├── PumpingHistoryView.swift       # Pumping analytics and insights with CRUD
     ├── WeeklySummaryView.swift        # Trend analysis charts
     ├── StackedWeeklySummaryView.swift # Stacked bar charts by formula type
+    ├── GooglePickerView.swift          # Google Picker WKWebView for file authorization
     ├── MySheetsPickerView.swift       # Drive-powered sheet browser
     ├── SettingsView.swift             # App configuration with share and deep link support
     ├── FormulaTypesEditorView.swift   # Formula type list editor

@@ -10,8 +10,6 @@ struct SettingsView: View {
     @AppStorage(FeedConstants.UserDefaultsKeys.pumpingQuickVolumes) private var pumpingQuickVolumesData = "130,140,150,170"
     @AppStorage("dragSpeed") private var dragSpeedRawValue = FeedConstants.DragSpeed.default.rawValue
     
-    @State private var showingSpreadsheetIdAlert = false
-    @State private var tempSpreadsheetId = ""
     @State private var showingFormulaTypesEditor = false
     @State private var showingCreateSheetAlert = false
     @State private var newSheetTitle = "Feed Tracking"
@@ -19,6 +17,7 @@ struct SettingsView: View {
     @State private var showingFeedQuickVolumesEditor = false
     @State private var showingPumpingQuickVolumesEditor = false
     @State private var showingMySheetsPicker = false
+    @State private var showingGooglePicker = false
     
     // Default formula types
     private let defaultFormulaTypes = FeedConstants.defaultFormulaTypes
@@ -119,7 +118,7 @@ struct SettingsView: View {
                     Text("My Sheets")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                    Text("Browse sheets created by MiniLog")
+                    Text("Browse your MiniLog sheets")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -132,23 +131,23 @@ struct SettingsView: View {
                 .disabled(!storageService.isSignedIn)
             }
 
-            // Manual entry / paste link
+            // Find shared sheet via Google Picker
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Connect Existing Sheet")
+                    Text("Find Shared Sheet")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                    Text("Paste a link or spreadsheet ID")
+                    Text("Search all sheets shared with you")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Paste Link") {
-                    tempSpreadsheetId = spreadsheetId
-                    showingSpreadsheetIdAlert = true
+                Button("Search") {
+                    showingGooglePicker = true
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+                .disabled(!storageService.isSignedIn)
             }
         }
     }
@@ -245,7 +244,7 @@ struct SettingsView: View {
                                     Text("1. Install MiniLog and sign in with Google")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
-                                    Text("2. Open the invite link you received")
+                                    Text("2. Open the invite link, or tap Find Shared Sheet")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                 }
@@ -439,22 +438,6 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .presentationBackground(.ultraThinMaterial)
             .presentationDetents([.large])
-            .alert("Connect Spreadsheet", isPresented: $showingSpreadsheetIdAlert) {
-                TextField("Link or Spreadsheet ID", text: $tempSpreadsheetId)
-                Button("Cancel", role: .cancel) { }
-                Button("Save") {
-                    let resolvedId = extractSpreadsheetId(from: tempSpreadsheetId)
-                    spreadsheetId = resolvedId
-                    let config = StorageConfiguration(
-                        identifier: resolvedId,
-                        name: "Current Spreadsheet",
-                        provider: .googleSheets
-                    )
-                    try? storageService.updateConfiguration(config)
-                }
-            } message: {
-                Text("Paste a Google Sheets link or enter the spreadsheet ID directly")
-            }
             .sheet(isPresented: $showingFormulaTypesEditor) {
                 FormulaTypesEditorView(formulaTypesData: $formulaTypesData)
             }
@@ -492,22 +475,17 @@ struct SettingsView: View {
                     try? storageService.updateConfiguration(config)
                 }
             }
+            .sheet(isPresented: $showingGooglePicker) {
+                GooglePickerSheet(
+                    storageService: storageService,
+                    preselectedFileIds: nil
+                ) { fileId, fileName in
+                    storageService.completePickerAuthorization(fileId: fileId, fileName: fileName)
+                }
+            }
         }
     }
     
-    /// Extracts a spreadsheet ID from a full Google Sheets URL or returns the input as-is if already an ID.
-    /// Handles URLs like: https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit...
-    private func extractSpreadsheetId(from input: String) -> String {
-        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let range = trimmed.range(of: "/d/"),
-           let endRange = trimmed[range.upperBound...].range(of: "/") {
-            return String(trimmed[range.upperBound..<endRange.lowerBound])
-        } else if let range = trimmed.range(of: "/d/") {
-            return String(trimmed[range.upperBound...])
-        }
-        return trimmed
-    }
-
     private func shareTracker() {
         let sheetName = storageService.currentConfiguration?.name ?? "Feed Tracking"
         let encodedName = sheetName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? sheetName

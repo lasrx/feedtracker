@@ -73,14 +73,14 @@ class PumpingEntryViewModel: ObservableObject {
         #if DEBUG
         print("PumpingEntryViewModel: loadTodayTotal called, isSignedIn: \(storageService.isSignedIn)")
         #endif
-        
-        guard storageService.isSignedIn else { 
+
+        guard storageService.isSignedIn else {
             #if DEBUG
             print("PumpingEntryViewModel: Not signed in, skipping load")
             #endif
-            return 
+            return
         }
-        
+
         Task {
             do {
                 #if DEBUG
@@ -94,6 +94,11 @@ class PumpingEntryViewModel: ObservableObject {
                 #if DEBUG
                 print("PumpingEntryViewModel: Updated UI with pumping total: \(totalVolumeToday)mL")
                 #endif
+            } catch let error as StorageServiceError where error.isFileNotAuthorized {
+                if case .fileNotAuthorized(let sheetId) = error {
+                    storageService.pendingPickerSheetId = sheetId
+                }
+                storageService.needsPickerAuthorization = true
             } catch {
                 #if DEBUG
                 print("Error loading today's pumping total: \(error)")
@@ -245,12 +250,20 @@ class PumpingEntryViewModel: ObservableObject {
                         print("Error refreshing pumping total: \(error)")
                     }
                 }
+            } catch let error as StorageServiceError where error.isFileNotAuthorized {
+                // 403 — file needs Picker re-authorization
+                if case .fileNotAuthorized(let sheetId) = error {
+                    storageService.pendingPickerSheetId = sheetId
+                }
+                storageService.needsPickerAuthorization = true
+                isSubmitting = false
+                hapticHelper.error(enabled: hapticFeedbackEnabled)
             } catch {
                 // Error - show error message
                 alertMessage = "Error: \(error.localizedDescription)"
                 showingAlert = true
                 isSubmitting = false
-                
+
                 // Error haptic
                 hapticHelper.error(enabled: hapticFeedbackEnabled)
             }

@@ -276,6 +276,15 @@ struct PumpingHistoryView: View {
                 self.isLoadingWeekly = false
             }
             
+        } catch let error as StorageServiceError where error.isFileNotAuthorized {
+            if case .fileNotAuthorized(let sheetId) = error {
+                await MainActor.run {
+                    storageService.pendingPickerSheetId = sheetId
+                    storageService.needsPickerAuthorization = true
+                    self.isLoading = false
+                    self.isLoadingWeekly = false
+                }
+            }
         } catch {
             await MainActor.run {
                 self.isLoading = false
@@ -283,7 +292,7 @@ struct PumpingHistoryView: View {
             }
         }
     }
-    
+
     private func loadTodaySessionsAsync(forceRefresh: Bool = true) async {
         guard storageService.isSignedIn else {
             await MainActor.run {

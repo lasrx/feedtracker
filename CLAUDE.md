@@ -111,7 +111,14 @@ The app uses a carefully designed gesture hierarchy to allow three competing ges
 - Feed Log: A=Date, B=Time, C=Volume, D=Formula Type, E=Waste Amount  
 - Pumping: A=Date, B=Time, C=Volume
 
-**OAuth Scopes**: `spreadsheets` + `drive.file` (both sensitive scopes, no CASA audit needed; `drive.file` only returns app-created files)
+**OAuth Scopes**: `drive.file` only (non-sensitive; covers app-created files + Picker-authorized files)
+
+**Google Picker Integration**:
+- `GooglePickerView.swift`: WKWebView wrapper loading Google Picker JS API for per-file authorization
+- Picker is the only way to grant `drive.file` access to files the app didn't create
+- Used for: Find Shared Sheet, deep link authorization, 403 recovery
+- API key restricted to HTTP referrers (`https://picker.minilog.app/*`) + Picker API only
+- `validateResponse()` helper detects 403 and triggers Picker re-authorization flow
 
 ## 🔒 SECURITY SYSTEM - CRITICAL FOR AI ASSISTANTS
 
@@ -150,6 +157,7 @@ The app uses a carefully designed gesture hierarchy to allow three competing ges
 - `FormulaTypesEditorView.swift`: iOS-native list editor with `.medium` detent and glass styling
 - `QuickVolumesEditorView.swift`: Volume preset editor with `.medium` detent and glass styling
 - `FeedEditSheet.swift` / `PumpingEditSheet.swift`: Modal editors with `.medium` detent and ultraThinMaterial
+- `GooglePickerView.swift`: Google Picker WKWebView wrapper + SwiftUI sheet with `.large` detent
 - `MySheetsPickerView.swift`: Drive-powered sheet browser with `.medium` detent and glass styling
 - `SettingsView.swift`: Full settings interface with `.large` detent and glass transparency
 - `Models.swift`: Data modeling with computed properties and row tracking

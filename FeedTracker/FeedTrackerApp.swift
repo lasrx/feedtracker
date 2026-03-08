@@ -29,15 +29,34 @@ struct FeedTrackerApp: App {
                         GIDSignIn.sharedInstance.handle(url)
                     }
                 }
+                // Deep link confirmation → stages Picker instead of connecting directly
                 .alert("Connect to Tracker", isPresented: $storageService.showingDeepLinkConfirmation) {
                     Button("Cancel", role: .cancel) {
                         storageService.cancelDeepLinkConnection()
                     }
-                    Button("Connect") {
-                        storageService.confirmDeepLinkConnection()
+                    Button("Authorize & Connect") {
+                        storageService.stagePickerForDeepLink()
                     }
                 } message: {
-                    Text("Connect MiniLog to \"\(storageService.pendingDeepLinkSheetName ?? "Shared Tracker")\"?\n\nThe sheet owner must also share the spreadsheet with you in Google Sheets.")
+                    Text("Connect MiniLog to \"\(storageService.pendingDeepLinkSheetName ?? "Shared Tracker")\"?\n\nYou'll select the sheet in a file picker to authorize access.")
+                }
+                // Picker for deep link authorization (with preselected file)
+                .sheet(isPresented: $storageService.showingPickerForDeepLink) {
+                    GooglePickerSheet(
+                        storageService: storageService,
+                        preselectedFileIds: storageService.pendingDeepLinkSheetId.map { [$0] }
+                    ) { fileId, fileName in
+                        storageService.completePickerAuthorization(fileId: fileId, fileName: fileName)
+                    }
+                }
+                // Picker for 403 recovery (re-authorize current sheet)
+                .sheet(isPresented: $storageService.needsPickerAuthorization) {
+                    GooglePickerSheet(
+                        storageService: storageService,
+                        preselectedFileIds: storageService.pendingPickerSheetId.map { [$0] }
+                    ) { fileId, fileName in
+                        storageService.completePickerAuthorization(fileId: fileId, fileName: fileName)
+                    }
                 }
         }
     }

@@ -92,9 +92,10 @@ struct FeedConstants {
         static let feedRange = "A:E"  // Date, Time, Volume (mL), Formula Type, Waste Amount - all rows
         static let pumpingRange = "Pumping!A:C"  // Date, Time, Volume (mL)
         static let scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive.file"
         ]
+        static let pickerMimeType = "application/vnd.google-apps.spreadsheet"
+        static let pickerTitle = "Select a spreadsheet"
     }
     
     // MARK: - Color Scheme Support

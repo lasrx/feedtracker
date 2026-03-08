@@ -90,11 +90,16 @@ class FeedEntryViewModel: ObservableObject {
     
     func loadTodayTotal() {
         guard storageService.isSignedIn else { return }
-        
+
         Task {
             do {
                 let total = try await storageService.fetchTodayFeedTotal(forceRefresh: false)
                 totalVolumeToday = total
+            } catch let error as StorageServiceError where error.isFileNotAuthorized {
+                if case .fileNotAuthorized(let sheetId) = error {
+                    storageService.pendingPickerSheetId = sheetId
+                }
+                storageService.needsPickerAuthorization = true
             } catch {
                 print("Error loading today's total: \(error)")
             }
@@ -271,12 +276,20 @@ class FeedEntryViewModel: ObservableObject {
                         print("Error refreshing total: \(error)")
                     }
                 }
+            } catch let error as StorageServiceError where error.isFileNotAuthorized {
+                // 403 — file needs Picker re-authorization
+                if case .fileNotAuthorized(let sheetId) = error {
+                    storageService.pendingPickerSheetId = sheetId
+                }
+                storageService.needsPickerAuthorization = true
+                isSubmitting = false
+                hapticHelper.error(enabled: hapticFeedbackEnabled)
             } catch {
                 // Error - show error message
                 alertMessage = "Error: \(error.localizedDescription)"
                 showingAlert = true
                 isSubmitting = false
-                
+
                 // Error haptic
                 hapticHelper.error(enabled: hapticFeedbackEnabled)
             }
